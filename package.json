@@ -5,8 +5,15 @@
   "scripts": {
     "build": "rimraf dist && npx tsc",
     "start": "npm run build && node dist/index.js",
-    "dev": "npm run build && concurrently \"npx tsc -w\" \"nodemon --exec ts-node src/index.ts\""
+    "dev": "npm run build && concurrently \"npx tsc -w\" \"nodemon --exec ts-node src/index.ts\"",
+    "ts-check": "tsc --project tsconfig.json",
+    "add-build": "git add dist"
   },
+  "pre-commit": [
+    "ts-check",
+    "build",
+    "add-build"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -35,6 +42,7 @@
     "@types/nodemailer": "^6.4.17",
     "concurrently": "^9.1.2",
     "nodemon": "^3.1.10",
+    "pre-commit": "^1.2.2",
     "prisma": "^6.8.2",
     "rimraf": "^6.0.1",
     "ts-node": "^10.9.2",
