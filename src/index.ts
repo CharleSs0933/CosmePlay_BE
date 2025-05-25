@@ -8,6 +8,7 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { errorMiddleware } from "./packages/error-handler/error-middleware";
 /* ROUTE IMPORT */
+import AuthRouter from "./routes/auth.router";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -38,6 +39,8 @@ app.use(limiter);
 app.get("/", (req, res) => {
   res.send("This is the home route");
 });
+
+app.use("/api/auth", AuthRouter);
 
 app.use(errorMiddleware);
 

@@ -21,13 +21,13 @@ const userRegistration = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     try {
         (0, auth_helper_1.validateRegistrationData)(req.body);
         const { name, email } = req.body;
-        const existingUser = yield prisma_1.default.user.findUnique({ where: email });
+        const existingUser = yield prisma_1.default.user.findUnique({ where: { email } });
         if (existingUser) {
             return next(new error_handler_1.ValidationError("User already exists with this email!"));
         }
         yield (0, auth_helper_1.checkOtpRestrictions)(email, next);
         yield (0, auth_helper_1.trackOtpRequests)(email, next);
-        yield (0, auth_helper_1.sendOtp)(email, name, "user-activation-mail");
+        yield (0, auth_helper_1.sendOtp)(name, email, "user-activation-mail");
         res.status(200).json({
             message: "OTP sent to email. Please verify your account.",
         });
