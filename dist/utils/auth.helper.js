@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendOtp = exports.trackOtpRequests = exports.checkOtpRestrictions = exports.validateRegistrationData = void 0;
+exports.verifyOtp = exports.sendOtp = exports.trackOtpRequests = exports.checkOtpRestrictions = exports.validateRegistrationData = void 0;
 const error_handler_1 = require("../packages/error-handler");
 const crypto_1 = __importDefault(require("crypto"));
 const redis_1 = __importDefault(require("../packages/libs/redis"));
@@ -57,3 +57,22 @@ const sendOtp = (name, email, template) => __awaiter(void 0, void 0, void 0, fun
     yield redis_1.default.set(`otp_cooldown:${email}`, "true", "EX", 60); // Set cooldown for OTP sending
 });
 exports.sendOtp = sendOtp;
+const verifyOtp = (email, otp, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const storedOtp = yield redis_1.default.get(`otp:${email}`);
+    if (!storedOtp) {
+        throw new error_handler_1.ValidationError("Invalid or expired OTP!");
+    }
+    const failedAttemptsKey = `otp_attempts:${email}`;
+    const failedAttempts = parseInt((yield redis_1.default.get(failedAttemptsKey)) || "0");
+    if (storedOtp !== otp) {
+        if (failedAttempts >= 2) {
+            yield redis_1.default.set(`otp_lock:${email}`, "locked", "EX", 1800); // Lock for 30 minutes
+            yield redis_1.default.del(`otp:${email}`, failedAttemptsKey);
+            throw new error_handler_1.ValidationError("Account locked due to multiple failed attempts! Try again after 30 minutes.");
+        }
+        yield redis_1.default.set(failedAttemptsKey, failedAttempts + 1, "EX", 300);
+        throw new error_handler_1.ValidationError(`Incorrect OTP! ${2 - failedAttempts} attempts left.`);
+    }
+    yield redis_1.default.del(`otp:${email}`, failedAttemptsKey);
+});
+exports.verifyOtp = verifyOtp;

@@ -13,10 +13,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userRegistration = void 0;
+exports.verifyUser = exports.userRegistration = void 0;
 const auth_helper_1 = require("../utils/auth.helper");
 const prisma_1 = __importDefault(require("../packages/libs/prisma"));
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const error_handler_1 = require("../packages/error-handler");
+// Register a new user
 const userRegistration = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         (0, auth_helper_1.validateRegistrationData)(req.body);
@@ -37,3 +39,33 @@ const userRegistration = (req, res, next) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.userRegistration = userRegistration;
+// Verify OTP
+const verifyUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, otp, password, name } = req.body;
+        if (!email || !otp || !password || !name) {
+            return next(new error_handler_1.ValidationError("All fields are required!"));
+        }
+        const existingUser = yield prisma_1.default.user.findUnique({ where: { email } });
+        if (existingUser) {
+            return next(new error_handler_1.ValidationError("User already exists with this email!"));
+        }
+        yield (0, auth_helper_1.verifyOtp)(email, otp, next);
+        const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
+        yield prisma_1.default.user.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+            },
+        });
+        res.status(201).json({
+            success: true,
+            message: "User registered successfully!",
+        });
+    }
+    catch (error) {
+        return next(error);
+    }
+});
+exports.verifyUser = verifyUser;
