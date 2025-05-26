@@ -8,4 +8,8 @@ const auth_controller_1 = require("../controller/auth.controller");
 const router = express_1.default.Router();
 router.post("/register", auth_controller_1.userRegistration);
 router.post("/verify-user", auth_controller_1.verifyUser);
+router.post("/login", auth_controller_1.loginUser);
+router.post("/forgot-password", auth_controller_1.userForgotPassword);
+router.post("/reset-password", auth_controller_1.resetUserPassword);
+router.post("/verify-forgot-password", auth_controller_1.verifyUserForgotPassword);
 exports.default = router;

@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyOtp = exports.sendOtp = exports.trackOtpRequests = exports.checkOtpRestrictions = exports.validateRegistrationData = void 0;
+exports.verifyForgotPasswordOtp = exports.handleForgotPassword = exports.verifyOtp = exports.sendOtp = exports.trackOtpRequests = exports.checkOtpRestrictions = exports.validateRegistrationData = void 0;
 const error_handler_1 = require("../packages/error-handler");
 const crypto_1 = __importDefault(require("crypto"));
 const redis_1 = __importDefault(require("../packages/libs/redis"));
 const sendMail_1 = require("./sendMail");
+const prisma_1 = __importDefault(require("../packages/libs/prisma"));
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validateRegistrationData = (data) => {
     const { name, email, password } = data;
@@ -76,3 +77,44 @@ const verifyOtp = (email, otp, next) => __awaiter(void 0, void 0, void 0, functi
     yield redis_1.default.del(`otp:${email}`, failedAttemptsKey);
 });
 exports.verifyOtp = verifyOtp;
+const handleForgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            throw new error_handler_1.ValidationError("Email is required!");
+        }
+        // Find user in DB
+        const user = yield prisma_1.default.user.findUnique({ where: { email } });
+        if (!user) {
+            throw new error_handler_1.ValidationError("User not found with this email!");
+        }
+        // Check otp restrictions
+        yield (0, exports.checkOtpRestrictions)(email, next);
+        yield (0, exports.trackOtpRequests)(email, next);
+        // Generate OTP and send Email
+        yield (0, exports.sendOtp)(user.name, email, "forgot-password-mail");
+        res.status(200).json({
+            message: "OTP sent to email. Please verify to reset your password.",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.handleForgotPassword = handleForgotPassword;
+const verifyForgotPasswordOtp = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) {
+            throw new error_handler_1.ValidationError("Email and OTP are required!");
+        }
+        yield (0, exports.verifyOtp)(email, otp, next);
+        res.status(200).json({
+            message: "OTP verified successfully! You can now reset your password.",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.verifyForgotPasswordOtp = verifyForgotPasswordOtp;
