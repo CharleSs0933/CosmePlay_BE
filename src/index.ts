@@ -20,20 +20,33 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_BASE_URL,
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cache-Control",
+      "Expires",
+      "Pragma",
+    ],
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 
 /* RATE LIMITER */
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: (req: any) => (req.user ? 1000 : 100), // limit each IP to 1000 requests per windowMs
-  message: { error: "Too many requests, please try again later!" },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: true,
-  keyGenerator: (req: any) => req.ip,
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: (req: any) => (req.user ? 1000 : 100), // limit each IP to 1000 requests per windowMs
+//   message: { error: "Too many requests, please try again later!" },
+//   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+//   legacyHeaders: true,
+//   keyGenerator: (req: any) => req.ip,
+// });
 
-app.use(limiter);
+// app.use(limiter);
 
 /* ROUTES */
 app.get("/", (req, res) => {

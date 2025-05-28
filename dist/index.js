@@ -10,7 +10,6 @@ const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const error_middleware_1 = require("./packages/error-handler/error-middleware");
 /* ROUTE IMPORT */
 const auth_router_1 = __importDefault(require("./routes/auth.router"));
@@ -24,18 +23,29 @@ app.use(helmet_1.default.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use((0, morgan_1.default)("common"));
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: process.env.CLIENT_BASE_URL,
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "Cache-Control",
+        "Expires",
+        "Pragma",
+    ],
+    credentials: true,
+}));
 app.use((0, cookie_parser_1.default)());
 /* RATE LIMITER */
-const limiter = (0, express_rate_limit_1.default)({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: (req) => (req.user ? 1000 : 100), // limit each IP to 1000 requests per windowMs
-    message: { error: "Too many requests, please try again later!" },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: true,
-    keyGenerator: (req) => req.ip,
-});
-app.use(limiter);
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: (req: any) => (req.user ? 1000 : 100), // limit each IP to 1000 requests per windowMs
+//   message: { error: "Too many requests, please try again later!" },
+//   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+//   legacyHeaders: true,
+//   keyGenerator: (req: any) => req.ip,
+// });
+// app.use(limiter);
 /* ROUTES */
 app.get("/", (req, res) => {
     res.send("This is the home route");

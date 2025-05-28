@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyForgotPasswordOtp = exports.handleForgotPassword = exports.verifyOtp = exports.sendOtp = exports.trackOtpRequests = exports.checkOtpRestrictions = exports.validateRegistrationData = void 0;
 const error_handler_1 = require("../packages/error-handler");
 const crypto_1 = __importDefault(require("crypto"));
-const redis_1 = __importDefault(require("../packages/libs/redis"));
+const redis_1 = __importDefault(require("../libs/redis"));
 const sendMail_1 = require("./sendMail");
-const prisma_1 = __importDefault(require("../packages/libs/prisma"));
+const prisma_1 = __importDefault(require("../libs/prisma"));
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validateRegistrationData = (data) => {
     const { name, email, password } = data;
@@ -31,13 +31,13 @@ const validateRegistrationData = (data) => {
 exports.validateRegistrationData = validateRegistrationData;
 const checkOtpRestrictions = (email, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (yield redis_1.default.get(`otp_lock:${email}`)) {
-        return next(new error_handler_1.ValidationError("Account locked due to multiple failed attempts! Try again after 30 minutes."));
+        throw new error_handler_1.ValidationError("Account locked due to multiple failed attempts! Try again after 30 minutes.");
     }
     if (yield redis_1.default.get(`otp_spam_lock:${email}`)) {
-        return next(new error_handler_1.ValidationError("Too many OTP requests! Please wait 1hour before requesting again."));
+        throw new error_handler_1.ValidationError("Too many OTP requests! Please wait 1hour before requesting again.");
     }
     if (yield redis_1.default.get(`otp_cooldown:${email}`)) {
-        return next(new error_handler_1.ValidationError("Please wait 1 minute before requesting a new OTP."));
+        throw new error_handler_1.ValidationError("Please wait 1 minute before requesting a new OTP.");
     }
 });
 exports.checkOtpRestrictions = checkOtpRestrictions;
@@ -46,7 +46,7 @@ const trackOtpRequests = (email, next) => __awaiter(void 0, void 0, void 0, func
     let otpRequests = parseInt((yield redis_1.default.get(otpRequestKey)) || "0");
     if (otpRequests >= 2) {
         yield redis_1.default.set(`otp_spam_lock:${email}`, "locked", "EX", 3600); // Lock for 1 hour
-        return next(new error_handler_1.ValidationError("Too many OTP requests! Please wait 1 hour before requesting again."));
+        throw new error_handler_1.ValidationError("Too many OTP requests! Please wait 1 hour before requesting again.");
     }
     yield redis_1.default.set(otpRequestKey, otpRequests + 1, "EX", 3600); // Increment request count and set expiration to 1 minute
 });
