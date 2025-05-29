@@ -1,5 +1,4 @@
 "use strict";
-// Register a new user
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -47,7 +46,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resetUserPassword = exports.verifyUserForgotPassword = exports.userForgotPassword = exports.getUser = exports.refreshTokenUser = exports.loginUser = exports.verifyUser = exports.userRegistration = void 0;
-const auth_helper_1 = require("../utils/auth.helper");
+const auth_service_1 = require("../services/auth.service");
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importStar(require("jsonwebtoken"));
@@ -56,15 +55,15 @@ const setCookie_1 = require("../utils/cookies/setCookie");
 // Register a new user
 const userRegistration = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        (0, auth_helper_1.validateRegistrationData)(req.body);
+        (0, auth_service_1.validateRegistrationData)(req.body);
         const { name, email } = req.body;
         const existingUser = yield prisma_1.default.user.findUnique({ where: { email } });
         if (existingUser) {
             return next(new error_handler_1.ValidationError("User already exists with this email!"));
         }
-        yield (0, auth_helper_1.checkOtpRestrictions)(email, next);
-        yield (0, auth_helper_1.trackOtpRequests)(email, next);
-        yield (0, auth_helper_1.sendOtp)(name, email, "user-activation-mail");
+        yield (0, auth_service_1.checkOtpRestrictions)(email, next);
+        yield (0, auth_service_1.trackOtpRequests)(email, next);
+        yield (0, auth_service_1.sendOtp)(name, email, "user-activation-mail");
         res.status(200).json({
             message: "OTP sent to email. Please verify your account.",
         });
@@ -85,7 +84,7 @@ const verifyUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         if (existingUser) {
             return next(new error_handler_1.ValidationError("User already exists with this email!"));
         }
-        yield (0, auth_helper_1.verifyOtp)(email, otp, next);
+        yield (0, auth_service_1.verifyOtp)(email, otp, next);
         const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
         yield prisma_1.default.user.create({
             data: {
@@ -192,12 +191,12 @@ const getUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
 exports.getUser = getUser;
 // User forgot password
 const userForgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, auth_helper_1.handleForgotPassword)(req, res, next);
+    yield (0, auth_service_1.handleForgotPassword)(req, res, next);
 });
 exports.userForgotPassword = userForgotPassword;
 // Verify OTP for forgot password
 const verifyUserForgotPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    yield (0, auth_helper_1.verifyForgotPasswordOtp)(req, res, next);
+    yield (0, auth_service_1.verifyForgotPasswordOtp)(req, res, next);
 });
 exports.verifyUserForgotPassword = verifyUserForgotPassword;
 // Reset user password

@@ -1,5 +1,3 @@
-// Register a new user
-
 import { NextFunction, Request, Response } from "express";
 import {
   checkOtpRestrictions,
@@ -9,7 +7,7 @@ import {
   validateRegistrationData,
   verifyForgotPasswordOtp,
   verifyOtp,
-} from "../utils/auth.helper";
+} from "../services/auth.service";
 import prisma from "../libs/prisma";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";

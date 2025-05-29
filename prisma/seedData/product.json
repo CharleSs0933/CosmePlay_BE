@@ -1,0 +1,112 @@
+[
+  {
+    "id": "1",
+    "title": "Kem chống nắng La Roche-Posay SPF50+",
+    "description": "Bảo vệ da khỏi tia UVA/UVB, phù hợp da nhạy cảm.",
+    "price": 350000,
+    "sale_price": 299000,
+    "image_url": "https://example.com/images/kem-chong-nang.jpg",
+    "total_stock": 120,
+    "product_category_id": "1",
+    "product_brand_id": "1"
+  },
+  {
+    "id": "2",
+    "title": "Sữa rửa mặt Cerave Hydrating Cleanser",
+    "description": "Làm sạch nhẹ nhàng, giữ ẩm cho da khô.",
+    "price": 250000,
+    "sale_price": null,
+    "image_url": "https://example.com/images/cerave-cleanser.jpg",
+    "total_stock": 80,
+    "product_category_id": "1",
+    "product_brand_id": "2"
+  },
+  {
+    "id": "3",
+    "title": "Serum Vitamin C Paula's Choice",
+    "description": "Làm sáng da, giảm thâm nám và chống lão hóa.",
+    "price": 890000,
+    "sale_price": 750000,
+    "image_url": "https://example.com/images/serum-vitamin-c.jpg",
+    "total_stock": 45,
+    "product_category_id": "2",
+    "product_brand_id": "3"
+  },
+  {
+    "id": "4",
+    "title": "Kem dưỡng ẩm Bioderma Atoderm",
+    "description": "Cấp ẩm chuyên sâu cho da khô và nhạy cảm.",
+    "price": 420000,
+    "sale_price": 390000,
+    "image_url": "https://example.com/images/kem-duong-am.jpg",
+    "total_stock": 100,
+    "product_category_id": "1",
+    "product_brand_id": "4"
+  },
+  {
+    "id": "5",
+    "title": "Toner Some By Mi AHA BHA PHA",
+    "description": "Tẩy tế bào chết nhẹ, giúp làm sáng và sạch da.",
+    "price": 320000,
+    "sale_price": 285000,
+    "image_url": "https://example.com/images/toner-some-by-mi.jpg",
+    "total_stock": 70,
+    "product_category_id": "3",
+    "product_brand_id": "5"
+  },
+  {
+    "id": "6",
+    "title": "Sữa rửa mặt La Roche-Posay Effaclar",
+    "description": "Dành cho da dầu mụn, giúp làm sạch sâu.",
+    "price": 340000,
+    "sale_price": null,
+    "image_url": "https://example.com/images/effaclar-cleanser.jpg",
+    "total_stock": 90,
+    "product_category_id": "1",
+    "product_brand_id": "1"
+  },
+  {
+    "id": "7",
+    "title": "Kem trị mụn Acnes Medical Cream",
+    "description": "Giúp giảm viêm và ngăn ngừa mụn.",
+    "price": 89000,
+    "sale_price": null,
+    "image_url": "https://example.com/images/acnes-cream.jpg",
+    "total_stock": 200,
+    "product_category_id": "2",
+    "product_brand_id": "6"
+  },
+  {
+    "id": "8",
+    "title": "Nước tẩy trang Bioderma Sensibio H2O",
+    "description": "Tẩy trang nhẹ nhàng cho da nhạy cảm.",
+    "price": 350000,
+    "sale_price": 310000,
+    "image_url": "https://example.com/images/bioderma-h2o.jpg",
+    "total_stock": 130,
+    "product_category_id": "1",
+    "product_brand_id": "4"
+  },
+  {
+    "id": "9",
+    "title": "Kem dưỡng mắt The Ordinary Caffeine Solution",
+    "description": "Giảm bọng mắt và quầng thâm hiệu quả.",
+    "price": 320000,
+    "sale_price": null,
+    "image_url": "https://example.com/images/the-ordinary-eye.jpg",
+    "total_stock": 60,
+    "product_category_id": "2",
+    "product_brand_id": "7"
+  },
+  {
+    "id": "10",
+    "title": "Serum phục hồi B5 La Roche-Posay",
+    "description": "Phục hồi da sau tổn thương, giảm kích ứng.",
+    "price": 500000,
+    "sale_price": 460000,
+    "image_url": "https://example.com/images/serum-b5.jpg",
+    "total_stock": 75,
+    "product_category_id": "2",
+    "product_brand_id": "1"
+  }
+]

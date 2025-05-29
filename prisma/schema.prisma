@@ -27,4 +27,97 @@ model User {
   password  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Review  Review[]
+  Cart    Cart?
+  Address Address[]
+}
+
+model Address {
+  id      String  @id @default(uuid())
+  user_id String
+  address String
+  city    String
+  pincode String
+  phone   String
+  notes   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model Product {
+  id                  String   @id @default(uuid())
+  title               String
+  description         String?
+  price               Float
+  sale_price          Float?
+  image_url           String?
+  total_stock         Int      @default(0)
+  product_category_id String
+  product_brand_id    String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  productCategory ProductCategory @relation(fields: [product_category_id], references: [id])
+  productBrand    ProductBrand    @relation(fields: [product_brand_id], references: [id])
+  Review          Review[]
+  CartLineItem    CartLineItem[]
+}
+
+model ProductCategory {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Product     Product[]
+}
+
+model ProductBrand {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Product     Product[]
+}
+
+model Review {
+  id             String   @id @default(uuid())
+  user_id        String
+  product_id     String
+  user_name      String
+  review_value   Int
+  review_message String?
+  createdAt      DateTime @default(now())
+
+  user    User    @relation(fields: [user_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+model Cart {
+  id        String   @id @default(uuid())
+  user_id   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User           @relation(fields: [user_id], references: [id])
+  CartItem CartLineItem[]
+
+  @@unique([user_id]) // Ensures a user can have only one cart
+}
+
+model CartLineItem {
+  id         String   @id @default(uuid())
+  cart_id    String
+  product_id String
+  quantity   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  cart    Cart    @relation(fields: [cart_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
 }

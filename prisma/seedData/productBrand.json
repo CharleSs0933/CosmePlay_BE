@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1",
+    "title": "La Roche-Posay",
+    "description": "Thương hiệu dược mỹ phẩm nổi tiếng đến từ Pháp."
+  },
+  {
+    "id": "2",
+    "title": "CeraVe",
+    "description": "Thương hiệu chăm sóc da dịu nhẹ của Mỹ, chuyên dùng cho da khô và nhạy cảm."
+  },
+  {
+    "id": "3",
+    "title": "Paula's Choice",
+    "description": "Chuyên về các dòng treatment hiệu quả, không chứa hương liệu."
+  },
+  {
+    "id": "4",
+    "title": "Bioderma",
+    "description": "Nổi tiếng với nước tẩy trang và dòng sản phẩm Sensibio."
+  },
+  {
+    "id": "5",
+    "title": "Some By Mi",
+    "description": "Thương hiệu Hàn Quốc nổi tiếng với AHA/BHA trị mụn."
+  },
+  {
+    "id": "6",
+    "title": "Acnes",
+    "description": "Dòng sản phẩm phổ biến tại Việt Nam, phù hợp với tuổi teen."
+  },
+  {
+    "id": "7",
+    "title": "The Ordinary",
+    "description": "Thương hiệu tối giản, chuyên treatment với giá cả hợp lý."
+  }
+]

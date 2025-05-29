@@ -16,7 +16,7 @@ exports.verifyForgotPasswordOtp = exports.handleForgotPassword = exports.verifyO
 const error_handler_1 = require("../packages/error-handler");
 const crypto_1 = __importDefault(require("crypto"));
 const redis_1 = __importDefault(require("../libs/redis"));
-const sendMail_1 = require("./sendMail");
+const sendMail_1 = require("../utils/sendMail");
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validateRegistrationData = (data) => {

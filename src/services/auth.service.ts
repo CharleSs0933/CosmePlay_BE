@@ -1,7 +1,7 @@
 import { ValidationError } from "../packages/error-handler";
 import crypto from "crypto";
 import redis from "../libs/redis";
-import { sendEmail } from "./sendMail";
+import { sendEmail } from "../utils/sendMail";
 import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 

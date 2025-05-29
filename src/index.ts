@@ -9,6 +9,7 @@ import rateLimit from "express-rate-limit";
 import { errorMiddleware } from "./packages/error-handler/error-middleware";
 /* ROUTE IMPORT */
 import AuthRouter from "./routes/auth.router";
+import ProductRouter from "./routes/product.router";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -54,6 +55,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", AuthRouter);
+app.use("/api/products", ProductRouter);
 
 app.use(errorMiddleware);
 

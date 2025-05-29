@@ -13,6 +13,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const error_middleware_1 = require("./packages/error-handler/error-middleware");
 /* ROUTE IMPORT */
 const auth_router_1 = __importDefault(require("./routes/auth.router"));
+const product_router_1 = __importDefault(require("./routes/product.router"));
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -51,6 +52,7 @@ app.get("/", (req, res) => {
     res.send("This is the home route");
 });
 app.use("/api/auth", auth_router_1.default);
+app.use("/api/products", product_router_1.default);
 app.use(error_middleware_1.errorMiddleware);
 const port = process.env.PORT || 8080;
 app.listen(port, () => {

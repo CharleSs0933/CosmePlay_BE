@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "title": "Chăm sóc da",
+    "description": "Các sản phẩm chăm sóc da cơ bản và chuyên sâu."
+  },
+  {
+    "id": "2",
+    "title": "Điều trị da",
+    "description": "Sản phẩm đặc trị các vấn đề về da như mụn, nám, thâm."
+  },
+  {
+    "id": "3",
+    "title": "Nước cân bằng",
+    "description": "Nước hoa hồng và toner giúp làm sạch và cân bằng da."
+  },
+  {
+    "id": "4",
+    "title": "Tẩy trang",
+    "description": "Sản phẩm làm sạch lớp trang điểm và bụi bẩn."
+  }
+]
