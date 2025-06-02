@@ -58,31 +58,39 @@ model Product {
   total_stock         Int      @default(0)
   product_category_id String
   product_brand_id    String
+  product_skinType_id String
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
-  productCategory ProductCategory @relation(fields: [product_category_id], references: [id])
-  productBrand    ProductBrand    @relation(fields: [product_brand_id], references: [id])
+  productCategory ProductCategory  @relation(fields: [product_category_id], references: [id])
+  productBrand    ProductBrand     @relation(fields: [product_brand_id], references: [id])
   Review          Review[]
   CartLineItem    CartLineItem[]
+  ProductSkinType ProductSkinType? @relation(fields: [product_skinType_id], references: [id])
 }
 
 model ProductCategory {
-  id          String    @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  Product     Product[]
+
+  Product Product[]
 }
 
 model ProductBrand {
-  id          String    @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  Product     Product[]
+
+  Product Product[]
+}
+
+model ProductSkinType {
+  id          String  @id @default(uuid())
+  title       String
+  description String?
+
+  Product Product[]
 }
 
 model Review {

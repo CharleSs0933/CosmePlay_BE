@@ -25,6 +25,7 @@ async function main() {
 
   const orderedFileNames = [
     "productBrand.json",
+    "productSkinType.json",
     "productCategory.json",
     "product.json",
   ];

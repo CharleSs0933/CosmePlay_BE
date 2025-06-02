@@ -1,0 +1,52 @@
+[
+  {
+    "id": "1",
+    "title": "Dry Skin",
+    "description": "Soothes and hydrates dry skin."
+  },
+  {
+    "id": "2",
+    "title": "Oily Skin",
+    "description": "Controls oil and shine."
+  },
+  {
+    "id": "3",
+    "title": "Combination Skin",
+    "description": "Balanced care for T-zone areas."
+  },
+  {
+    "id": "4",
+    "title": "Sensitive Skin",
+    "description": "Gentle formulas for sensitive users."
+  },
+  {
+    "id": "5",
+    "title": "Normal Skin",
+    "description": "Maintain natural skin balance."
+  },
+  {
+    "id": "6",
+    "title": "Acne-Prone",
+    "description": "Treat and prevent breakouts."
+  },
+  {
+    "id": "7",
+    "title": "Mature Skin",
+    "description": "Anti-aging and rejuvenation."
+  },
+  {
+    "id": "8",
+    "title": "Dehydrated Skin",
+    "description": "Boost skin hydration."
+  },
+  {
+    "id": "9",
+    "title": "Sun-Damaged Skin",
+    "description": "Repair and protect skin barrier."
+  },
+  {
+    "id": "10",
+    "title": "Hyperpigmented Skin",
+    "description": "Brightening and tone correction."
+  }
+]

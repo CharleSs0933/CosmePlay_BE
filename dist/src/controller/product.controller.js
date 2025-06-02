@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllProducts = void 0;
+exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
+const error_handler_1 = require("../packages/error-handler");
 const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { category, brand, sort, page = 1, limit = 10 } = req.query;
+        const { category, brand, sort, title, page = 1, limit = 10 } = req.query;
         const pageNumber = parseInt(page, 10);
         const pageSize = parseInt(limit, 10) || 10;
         const products = yield prisma_1.default.product.findMany({
@@ -32,6 +33,10 @@ const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         contains: brand ? brand : undefined,
                         mode: "insensitive",
                     },
+                },
+                title: {
+                    contains: title ? title : undefined,
+                    mode: "insensitive",
                 },
             },
             include: {
@@ -79,3 +84,28 @@ const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getAllProducts = getAllProducts;
+const getProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const { id } = req.params;
+    const product = yield prisma_1.default.product.findUnique({
+        where: { id },
+        include: {
+            productCategory: {
+                select: {
+                    title: true,
+                    description: true,
+                },
+            },
+            productBrand: {
+                select: {
+                    title: true,
+                    description: true,
+                },
+            },
+        },
+    });
+    if (!product) {
+        return next(new error_handler_1.ValidationError("Product not found!"));
+    }
+    res.status(200).json({ success: true, product });
+});
+exports.getProduct = getProduct;

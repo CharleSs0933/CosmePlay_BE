@@ -1,22 +1,52 @@
 [
   {
     "id": "1",
-    "title": "Chăm sóc da",
-    "description": "Các sản phẩm chăm sóc da cơ bản và chuyên sâu."
+    "title": "Moisturizers",
+    "description": "Hydrating creams for daily use."
   },
   {
     "id": "2",
-    "title": "Điều trị da",
-    "description": "Sản phẩm đặc trị các vấn đề về da như mụn, nám, thâm."
+    "title": "Cleansers",
+    "description": "Facial cleansers for deep cleaning."
   },
   {
     "id": "3",
-    "title": "Nước cân bằng",
-    "description": "Nước hoa hồng và toner giúp làm sạch và cân bằng da."
+    "title": "Serums",
+    "description": "Concentrated formulas for skin treatment."
   },
   {
     "id": "4",
-    "title": "Tẩy trang",
-    "description": "Sản phẩm làm sạch lớp trang điểm và bụi bẩn."
+    "title": "Toners",
+    "description": "Refresh your skin with balancing toners."
+  },
+  {
+    "id": "5",
+    "title": "Sunscreens",
+    "description": "Protect your skin from UV rays."
+  },
+  {
+    "id": "6",
+    "title": "Face Masks",
+    "description": "Revitalize and nourish your face."
+  },
+  {
+    "id": "7",
+    "title": "Eye Creams",
+    "description": "Reduce puffiness and dark circles."
+  },
+  {
+    "id": "8",
+    "title": "Lip Care",
+    "description": "Hydrate and protect your lips."
+  },
+  {
+    "id": "9",
+    "title": "Exfoliators",
+    "description": "Remove dead skin cells gently."
+  },
+  {
+    "id": "10",
+    "title": "Anti-Aging",
+    "description": "Prevent and reduce signs of aging."
   }
 ]

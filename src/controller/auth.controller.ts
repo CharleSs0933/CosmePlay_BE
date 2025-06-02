@@ -266,3 +266,5 @@ export const resetUserPassword = async (
     next(error);
   }
 };
+
+// Logout user

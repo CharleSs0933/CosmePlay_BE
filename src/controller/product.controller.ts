@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
+import { ValidationError } from "../packages/error-handler";
 
 export const getAllProducts = async (
   req: Request,
@@ -7,7 +8,7 @@ export const getAllProducts = async (
   next: NextFunction
 ) => {
   try {
-    const { category, brand, sort, page = 1, limit = 10 } = req.query;
+    const { category, brand, sort, title, page = 1, limit = 10 } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
     const pageSize = parseInt(limit as string, 10) || 10;
@@ -25,6 +26,10 @@ export const getAllProducts = async (
             contains: brand ? (brand as string) : undefined,
             mode: "insensitive",
           },
+        },
+        title: {
+          contains: title ? (title as string) : undefined,
+          mode: "insensitive",
         },
       },
       include: {
@@ -75,4 +80,35 @@ export const getAllProducts = async (
   } catch (error) {
     next(error);
   }
+};
+
+export const getProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      productCategory: {
+        select: {
+          title: true,
+          description: true,
+        },
+      },
+      productBrand: {
+        select: {
+          title: true,
+          description: true,
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    return next(new ValidationError("Product not found!"));
+  }
+
+  res.status(200).json({ success: true, product });
 };

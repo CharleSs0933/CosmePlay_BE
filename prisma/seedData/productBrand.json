@@ -1,37 +1,52 @@
 [
   {
     "id": "1",
-    "title": "La Roche-Posay",
-    "description": "Thương hiệu dược mỹ phẩm nổi tiếng đến từ Pháp."
+    "title": "GlowCare",
+    "description": "Natural skincare for glowing skin."
   },
   {
     "id": "2",
-    "title": "CeraVe",
-    "description": "Thương hiệu chăm sóc da dịu nhẹ của Mỹ, chuyên dùng cho da khô và nhạy cảm."
+    "title": "SkinLab",
+    "description": "Dermatologist-approved skincare products."
   },
   {
     "id": "3",
-    "title": "Paula's Choice",
-    "description": "Chuyên về các dòng treatment hiệu quả, không chứa hương liệu."
+    "title": "FreshEssence",
+    "description": "Botanical ingredients, fresh skin."
   },
   {
     "id": "4",
-    "title": "Bioderma",
-    "description": "Nổi tiếng với nước tẩy trang và dòng sản phẩm Sensibio."
+    "title": "PureBlend",
+    "description": "Simple, clean skincare formulas."
   },
   {
     "id": "5",
-    "title": "Some By Mi",
-    "description": "Thương hiệu Hàn Quốc nổi tiếng với AHA/BHA trị mụn."
+    "title": "RevitaDerm",
+    "description": "Advanced anti-aging technology."
   },
   {
     "id": "6",
-    "title": "Acnes",
-    "description": "Dòng sản phẩm phổ biến tại Việt Nam, phù hợp với tuổi teen."
+    "title": "AquaMist",
+    "description": "Hydration-focused skincare solutions."
   },
   {
     "id": "7",
-    "title": "The Ordinary",
-    "description": "Thương hiệu tối giản, chuyên treatment với giá cả hợp lý."
+    "title": "SilkyTouch",
+    "description": "Smooth and gentle care for all types."
+  },
+  {
+    "id": "8",
+    "title": "ZenSkin",
+    "description": "Mindful beauty and relaxation."
+  },
+  {
+    "id": "9",
+    "title": "BioGlow",
+    "description": "Eco-friendly and bio-active formulas."
+  },
+  {
+    "id": "10",
+    "title": "Lumière",
+    "description": "Luxury skincare for radiant beauty."
   }
 ]

@@ -38,6 +38,7 @@ function main() {
         const dataDirectory = path_1.default.join(__dirname, "seedData");
         const orderedFileNames = [
             "productBrand.json",
+            "productSkinType.json",
             "productCategory.json",
             "product.json",
         ];

@@ -232,3 +232,4 @@ const resetUserPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.resetUserPassword = resetUserPassword;
+// Logout user
