@@ -79,34 +79,44 @@ export const getProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: {
-      productCategory: {
-        select: {
-          title: true,
-          description: true,
-        },
-      },
-      productBrand: {
-        select: {
-          title: true,
-          description: true,
-        },
-      },
-      productSkinType: {
-        select: {
-          title: true,
-          description: true,
-        },
-      },
-    },
-  });
+  try {
+    const { id } = req.params;
 
-  if (!product) {
-    return next(new ValidationError("Product not found!"));
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        productCategory: { select: { title: true, description: true } },
+        productBrand: { select: { title: true, description: true } },
+        productSkinType: { select: { title: true, description: true } },
+      },
+    });
+
+    if (!product) {
+      return next(new ValidationError("Product not found!"));
+    }
+
+    res.status(200).json({ success: true, product });
+  } catch (error) {
+    next(error);
   }
+};
 
-  res.status(200).json({ success: true, product });
+export const getProductMeta = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const data = await prisma.$transaction(async (tx) => {
+      const categories = await tx.productCategory.findMany();
+      const brands = await tx.productBrand.findMany();
+      const skinTypes = await tx.productSkinType.findMany();
+
+      return { categories, brands, skinTypes };
+    });
+
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
 };

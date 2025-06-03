@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProduct = exports.getAllProducts = void 0;
+exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -76,33 +76,38 @@ const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
 });
 exports.getAllProducts = getAllProducts;
 const getProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const product = yield prisma_1.default.product.findUnique({
-        where: { id },
-        include: {
-            productCategory: {
-                select: {
-                    title: true,
-                    description: true,
-                },
+    try {
+        const { id } = req.params;
+        const product = yield prisma_1.default.product.findUnique({
+            where: { id },
+            include: {
+                productCategory: { select: { title: true, description: true } },
+                productBrand: { select: { title: true, description: true } },
+                productSkinType: { select: { title: true, description: true } },
             },
-            productBrand: {
-                select: {
-                    title: true,
-                    description: true,
-                },
-            },
-            productSkinType: {
-                select: {
-                    title: true,
-                    description: true,
-                },
-            },
-        },
-    });
-    if (!product) {
-        return next(new error_handler_1.ValidationError("Product not found!"));
+        });
+        if (!product) {
+            return next(new error_handler_1.ValidationError("Product not found!"));
+        }
+        res.status(200).json({ success: true, product });
     }
-    res.status(200).json({ success: true, product });
+    catch (error) {
+        next(error);
+    }
 });
 exports.getProduct = getProduct;
+const getProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            const categories = yield tx.productCategory.findMany();
+            const brands = yield tx.productBrand.findMany();
+            const skinTypes = yield tx.productSkinType.findMany();
+            return { categories, brands, skinTypes };
+        }));
+        res.status(200).json({ success: true, data });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getProductMeta = getProductMeta;

@@ -7,5 +7,6 @@ const express_1 = __importDefault(require("express"));
 const product_controller_1 = require("../controller/product.controller");
 const router = express_1.default.Router();
 router.get("/", product_controller_1.getAllProducts);
+router.get("/meta", product_controller_1.getProductMeta);
 router.get("/:id", product_controller_1.getProduct);
 exports.default = router;
