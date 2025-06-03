@@ -60,7 +60,7 @@ exports.addToCart = addToCart;
 const getCart = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        const cart = yield prisma_1.default.cart.findUnique({
+        let cart = yield prisma_1.default.cart.findUnique({
             where: { user_id: user.id },
             include: {
                 cartItems: {
@@ -70,6 +70,18 @@ const getCart = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                 },
             },
         });
+        if (!cart) {
+            cart = yield prisma_1.default.cart.create({
+                data: { user_id: user.id },
+                include: {
+                    cartItems: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                },
+            });
+        }
         res.status(200).json({ success: true, cart });
     }
     catch (error) {
