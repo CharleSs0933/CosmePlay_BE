@@ -2,6 +2,19 @@ import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../../libs/prisma";
 
+/*declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        email: string;
+        name: string;
+        role: string;
+      };
+    }
+  }
+} */
+
 export const isAuthenticated = async (
   req: any,
   res: Response,

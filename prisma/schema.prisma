@@ -108,24 +108,20 @@ model Review {
 }
 
 model Cart {
-  id        String   @id @default(uuid())
-  user_id   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id      String @id @default(uuid())
+  user_id String
 
-  user     User           @relation(fields: [user_id], references: [id])
-  CartItem CartLineItem[]
+  user      User           @relation(fields: [user_id], references: [id])
+  cartItems CartLineItem[]
 
   @@unique([user_id]) // Ensures a user can have only one cart
 }
 
 model CartLineItem {
-  id         String   @id @default(uuid())
+  id         String @id @default(uuid())
   cart_id    String
   product_id String
-  quantity   Int      @default(1)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  quantity   Int    @default(1)
 
   cart    Cart    @relation(fields: [cart_id], references: [id])
   product Product @relation(fields: [product_id], references: [id])

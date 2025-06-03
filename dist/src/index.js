@@ -14,6 +14,7 @@ const error_middleware_1 = require("./packages/error-handler/error-middleware");
 /* ROUTE IMPORT */
 const auth_router_1 = __importDefault(require("./routes/auth.router"));
 const product_router_1 = __importDefault(require("./routes/product.router"));
+const cart_router_1 = __importDefault(require("./routes/cart.router"));
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -53,6 +54,7 @@ app.get("/", (req, res) => {
 });
 app.use("/api/auth", auth_router_1.default);
 app.use("/api/products", product_router_1.default);
+app.use("/api/cart", cart_router_1.default);
 app.use(error_middleware_1.errorMiddleware);
 const port = process.env.PORT || 8080;
 app.listen(port, () => {

@@ -10,6 +10,7 @@ import { errorMiddleware } from "./packages/error-handler/error-middleware";
 /* ROUTE IMPORT */
 import AuthRouter from "./routes/auth.router";
 import ProductRouter from "./routes/product.router";
+import CartRouter from "./routes/cart.router";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -56,6 +57,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", AuthRouter);
 app.use("/api/products", ProductRouter);
+app.use("/api/cart", CartRouter);
 
 app.use(errorMiddleware);
 

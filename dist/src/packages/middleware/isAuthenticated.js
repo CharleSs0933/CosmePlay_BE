@@ -15,6 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.allowedRoles = exports.isAuthenticated = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma_1 = __importDefault(require("../../libs/prisma"));
+/*declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        email: string;
+        name: string;
+        role: string;
+      };
+    }
+  }
+} */
 const isAuthenticated = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
