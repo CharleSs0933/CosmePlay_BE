@@ -54,8 +54,8 @@ exports.isAuthenticated = isAuthenticated;
 const allowedRoles = (allowedRoles) => {
     return (req, res, next) => {
         try {
-            const { user } = req.user;
-            const hasAccess = allowedRoles.includes(user.role.toLowerCase());
+            const { role } = req.user;
+            const hasAccess = allowedRoles.includes(role.toLowerCase());
             if (!hasAccess) {
                 res.status(403).json({ message: "Access Denied" });
                 return;

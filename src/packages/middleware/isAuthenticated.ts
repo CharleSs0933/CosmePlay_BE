@@ -54,8 +54,8 @@ export const isAuthenticated = async (
 export const allowedRoles = (allowedRoles: string[]) => {
   return (req: any, res: Response, next: NextFunction): void => {
     try {
-      const { user } = req.user;
-      const hasAccess = allowedRoles.includes(user.role.toLowerCase());
+      const { role } = req.user;
+      const hasAccess = allowedRoles.includes(role.toLowerCase());
 
       if (!hasAccess) {
         res.status(403).json({ message: "Access Denied" });
