@@ -1,0 +1,15 @@
+[
+  {
+    "id": "1",
+    "name": "quan",
+    "email": "quansieuquay2013@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u"
+  },
+  {
+    "id": "2",
+    "name": "admin",
+    "email": "admin@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "ADMIN"
+  }
+]

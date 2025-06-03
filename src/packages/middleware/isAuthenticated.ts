@@ -2,7 +2,11 @@ import { NextFunction, Response } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../../libs/prisma";
 
-const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
+export const isAuthenticated = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const token =
       req.cookies.access_token || req.headers.authorization?.split(" ")[1];
@@ -47,4 +51,20 @@ const isAuthenticated = async (req: any, res: Response, next: NextFunction) => {
   }
 };
 
-export default isAuthenticated;
+export const allowedRoles = (allowedRoles: string[]) => {
+  return (req: any, res: Response, next: NextFunction): void => {
+    try {
+      const { user } = req.user;
+      const hasAccess = allowedRoles.includes(user.role.toLowerCase());
+
+      if (!hasAccess) {
+        res.status(403).json({ message: "Access Denied" });
+        return;
+      }
+
+      next();
+    } catch (error) {
+      return;
+    }
+  };
+};

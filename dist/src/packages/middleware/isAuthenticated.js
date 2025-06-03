@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.allowedRoles = exports.isAuthenticated = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma_1 = __importDefault(require("../../libs/prisma"));
 const isAuthenticated = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -49,4 +50,21 @@ const isAuthenticated = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         return;
     }
 });
-exports.default = isAuthenticated;
+exports.isAuthenticated = isAuthenticated;
+const allowedRoles = (allowedRoles) => {
+    return (req, res, next) => {
+        try {
+            const { user } = req.user;
+            const hasAccess = allowedRoles.includes(user.role.toLowerCase());
+            if (!hasAccess) {
+                res.status(403).json({ message: "Access Denied" });
+                return;
+            }
+            next();
+        }
+        catch (error) {
+            return;
+        }
+    };
+};
+exports.allowedRoles = allowedRoles;

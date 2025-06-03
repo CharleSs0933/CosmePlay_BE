@@ -41,6 +41,7 @@ function main() {
             "productSkinType.json",
             "productCategory.json",
             "product.json",
+            "user.json",
         ];
         const deleteFileNames = [...orderedFileNames].reverse();
         yield deleteAllData(deleteFileNames);

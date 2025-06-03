@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { Request } from "express";
+import { ValidationError } from "../packages/error-handler";
 
 export const buildProductFilter = (req: Request): Prisma.ProductWhereInput => {
   const { category, brand, skinType, title } = req.query;
@@ -18,4 +19,27 @@ export const buildProductFilter = (req: Request): Prisma.ProductWhereInput => {
       ? { contains: title as string, mode: "insensitive" }
       : undefined,
   };
+};
+
+export const validateProductData = (data: any) => {
+  const {
+    title,
+    description,
+    price,
+    sale_price,
+    image_url,
+    product_category_id,
+    product_brand_id,
+    product_skinType_id,
+  } = data;
+
+  if (
+    !title ||
+    !price ||
+    !product_category_id ||
+    !product_brand_id ||
+    !product_skinType_id
+  ) {
+    throw new ValidationError("Missing required fields!");
+  }
 };

@@ -28,6 +28,7 @@ async function main() {
     "productSkinType.json",
     "productCategory.json",
     "product.json",
+    "user.json",
   ];
 
   const deleteFileNames = [...orderedFileNames].reverse();

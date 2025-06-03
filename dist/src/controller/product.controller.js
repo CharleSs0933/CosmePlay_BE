@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -111,3 +111,26 @@ const getProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getProductMeta = getProductMeta;
+const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        (0, product_service_1.validateProductData)(req.body);
+        const { title, description, price, sale_price, image_url, product_category_id, product_brand_id, product_skinType_id, } = req.body;
+        const product = yield prisma_1.default.product.create({
+            data: {
+                title,
+                description,
+                price,
+                sale_price,
+                image_url,
+                product_category_id,
+                product_brand_id,
+                product_skinType_id,
+            },
+        });
+        res.status(201).json({ success: true, product });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.addProduct = addProduct;

@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 import { ValidationError } from "../packages/error-handler";
-import { buildProductFilter } from "../services/product.service";
+import {
+  buildProductFilter,
+  validateProductData,
+} from "../services/product.service";
 
 export const getAllProducts = async (
   req: Request,
@@ -116,6 +119,44 @@ export const getProductMeta = async (
     });
 
     res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    validateProductData(req.body);
+
+    const {
+      title,
+      description,
+      price,
+      sale_price,
+      image_url,
+      product_category_id,
+      product_brand_id,
+      product_skinType_id,
+    } = req.body;
+
+    const product = await prisma.product.create({
+      data: {
+        title,
+        description,
+        price,
+        sale_price,
+        image_url,
+        product_category_id,
+        product_brand_id,
+        product_skinType_id,
+      },
+    });
+
+    res.status(201).json({ success: true, product });
   } catch (error) {
     next(error);
   }

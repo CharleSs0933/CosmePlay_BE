@@ -9,7 +9,7 @@ import {
   verifyUser,
   verifyUserForgotPassword,
 } from "../controller/auth.controller";
-import isAuthenticated from "../packages/middleware/isAuthenticated";
+import { isAuthenticated } from "../packages/middleware/isAuthenticated";
 
 const router = express.Router();
 
