@@ -161,3 +161,25 @@ export const addProduct = async (
     next(error);
   }
 };
+
+export const deleteProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const product = await prisma.product.findUnique({ where: { id } });
+
+    if (!product) {
+      return next(new ValidationError("Product not found!"));
+    }
+
+    await prisma.product.delete({ where: { id } });
+
+    res.status(200).json({ success: true, message: "Product deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};

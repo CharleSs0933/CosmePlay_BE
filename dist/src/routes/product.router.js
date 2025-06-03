@@ -10,5 +10,6 @@ const router = express_1.default.Router();
 router.get("/", product_controller_1.getAllProducts);
 router.get("/meta", product_controller_1.getProductMeta);
 router.post("/", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), product_controller_1.addProduct);
+router.delete("/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), product_controller_1.deleteProduct);
 router.get("/:id", product_controller_1.getProduct);
 exports.default = router;

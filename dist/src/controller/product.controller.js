@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -134,3 +134,18 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.addProduct = addProduct;
+const deleteProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const product = yield prisma_1.default.product.findUnique({ where: { id } });
+        if (!product) {
+            return next(new error_handler_1.ValidationError("Product not found!"));
+        }
+        yield prisma_1.default.product.delete({ where: { id } });
+        res.status(200).json({ success: true, message: "Product deleted!" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.deleteProduct = deleteProduct;
