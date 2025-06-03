@@ -203,8 +203,8 @@ export const updateProduct = async (
       where: { id },
       data: {
         ...updateData,
-        price: parseInt(updateData.price),
-        sale_price: parseInt(updateData.sale_price),
+        price: parseInt(updateData.price) || undefined,
+        sale_price: parseInt(updateData.sale_price) || undefined,
       },
     });
 

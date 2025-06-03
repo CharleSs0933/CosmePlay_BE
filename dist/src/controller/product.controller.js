@@ -159,7 +159,7 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         }
         const updatedProduct = yield prisma_1.default.product.update({
             where: { id },
-            data: Object.assign(Object.assign({}, updateData), { price: parseInt(updateData.price), sale_price: parseInt(updateData.sale_price) }),
+            data: Object.assign(Object.assign({}, updateData), { price: parseInt(updateData.price) || undefined, sale_price: parseInt(updateData.sale_price) || undefined }),
         });
         res.status(200).json({ success: true, product: updatedProduct });
     }
