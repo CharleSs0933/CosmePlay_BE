@@ -197,7 +197,12 @@ export const getUser = async (req: any, res: Response, next: NextFunction) => {
     const user = req.user;
     res.status(201).json({
       success: true,
-      user,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
     next(error);
