@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 import { ValidationError } from "../packages/error-handler";
+import { buildProductFilter } from "../services/product.service";
 
 export const getAllProducts = async (
   req: Request,
@@ -8,30 +9,15 @@ export const getAllProducts = async (
   next: NextFunction
 ) => {
   try {
-    const { category, brand, sort, title, page = 1, limit = 10 } = req.query;
+    const { sort, page = 1, limit = 10 } = req.query;
 
     const pageNumber = parseInt(page as string, 10);
     const pageSize = parseInt(limit as string, 10) || 10;
 
+    const filters = buildProductFilter(req);
+
     const products = await prisma.product.findMany({
-      where: {
-        productCategory: {
-          title: {
-            contains: category ? (category as string) : undefined,
-            mode: "insensitive",
-          },
-        },
-        productBrand: {
-          title: {
-            contains: brand ? (brand as string) : undefined,
-            mode: "insensitive",
-          },
-        },
-        title: {
-          contains: title ? (title as string) : undefined,
-          mode: "insensitive",
-        },
-      },
+      where: filters,
       include: {
         productCategory: {
           select: {
@@ -40,6 +26,12 @@ export const getAllProducts = async (
           },
         },
         productBrand: {
+          select: {
+            title: true,
+            description: true,
+          },
+        },
+        productSkinType: {
           select: {
             title: true,
             description: true,
@@ -98,6 +90,12 @@ export const getProduct = async (
         },
       },
       productBrand: {
+        select: {
+          title: true,
+          description: true,
+        },
+      },
+      productSkinType: {
         select: {
           title: true,
           description: true,

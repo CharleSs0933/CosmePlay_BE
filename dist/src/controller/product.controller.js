@@ -15,30 +15,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
+const product_service_1 = require("../services/product.service");
 const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { category, brand, sort, title, page = 1, limit = 10 } = req.query;
+        const { sort, page = 1, limit = 10 } = req.query;
         const pageNumber = parseInt(page, 10);
         const pageSize = parseInt(limit, 10) || 10;
+        const filters = (0, product_service_1.buildProductFilter)(req);
         const products = yield prisma_1.default.product.findMany({
-            where: {
-                productCategory: {
-                    title: {
-                        contains: category ? category : undefined,
-                        mode: "insensitive",
-                    },
-                },
-                productBrand: {
-                    title: {
-                        contains: brand ? brand : undefined,
-                        mode: "insensitive",
-                    },
-                },
-                title: {
-                    contains: title ? title : undefined,
-                    mode: "insensitive",
-                },
-            },
+            where: filters,
             include: {
                 productCategory: {
                     select: {
@@ -47,6 +32,12 @@ const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     },
                 },
                 productBrand: {
+                    select: {
+                        title: true,
+                        description: true,
+                    },
+                },
+                productSkinType: {
                     select: {
                         title: true,
                         description: true,
@@ -96,6 +87,12 @@ const getProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 },
             },
             productBrand: {
+                select: {
+                    title: true,
+                    description: true,
+                },
+            },
+            productSkinType: {
                 select: {
                     title: true,
                     description: true,

@@ -55,6 +55,7 @@ model Product {
   price               Float
   sale_price          Float?
   image_url           String?
+  rating              Float    @default(0)
   total_stock         Int      @default(0)
   product_category_id String
   product_brand_id    String
@@ -64,9 +65,9 @@ model Product {
 
   productCategory ProductCategory  @relation(fields: [product_category_id], references: [id])
   productBrand    ProductBrand     @relation(fields: [product_brand_id], references: [id])
+  productSkinType ProductSkinType? @relation(fields: [product_skinType_id], references: [id])
   Review          Review[]
   CartLineItem    CartLineItem[]
-  ProductSkinType ProductSkinType? @relation(fields: [product_skinType_id], references: [id])
 }
 
 model ProductCategory {
