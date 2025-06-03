@@ -23,6 +23,10 @@ export const addToCart = async (
       return next(new ValidationError("Product not found!"));
     }
 
+    if (product.total_stock === 0) {
+      return next(new ValidationError("Product stock is not enough!"));
+    }
+
     let cart = await prisma.cart.findUnique({
       where: { user_id: user.id },
     });
@@ -99,6 +103,18 @@ export const updateCartItemQuantity = async (
 
     if (!productId || !quantity || quantity <= 0 || !user) {
       return next(new ValidationError("Invalid data provided!"));
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      return next(new ValidationError("Product not found!"));
+    }
+
+    if (quantity > product.total_stock) {
+      return next(new ValidationError("Product stock is not enough!"));
     }
 
     const cart = await prisma.cart.findUnique({

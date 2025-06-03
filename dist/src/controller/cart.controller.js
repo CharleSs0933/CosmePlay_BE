@@ -28,6 +28,9 @@ const addToCart = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         if (!product) {
             return next(new error_handler_1.ValidationError("Product not found!"));
         }
+        if (product.total_stock === 0) {
+            return next(new error_handler_1.ValidationError("Product stock is not enough!"));
+        }
         let cart = yield prisma_1.default.cart.findUnique({
             where: { user_id: user.id },
         });
@@ -95,6 +98,15 @@ const updateCartItemQuantity = (req, res, next) => __awaiter(void 0, void 0, voi
         const { productId, quantity } = req.body;
         if (!productId || !quantity || quantity <= 0 || !user) {
             return next(new error_handler_1.ValidationError("Invalid data provided!"));
+        }
+        const product = yield prisma_1.default.product.findUnique({
+            where: { id: productId },
+        });
+        if (!product) {
+            return next(new error_handler_1.ValidationError("Product not found!"));
+        }
+        if (quantity > product.total_stock) {
+            return next(new error_handler_1.ValidationError("Product stock is not enough!"));
         }
         const cart = yield prisma_1.default.cart.findUnique({
             where: { user_id: user.id },
