@@ -6,6 +6,7 @@ import {
   getAllProducts,
   getProduct,
   getProductMeta,
+  updateProduct,
 } from "../controller/product.controller";
 import {
   allowedRoles,
@@ -17,6 +18,12 @@ const router = express.Router();
 router.get("/", getAllProducts);
 router.get("/meta", getProductMeta);
 router.post("/", isAuthenticated, allowedRoles(["admin", "staff"]), addProduct);
+router.put(
+  "/:id",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  updateProduct
+);
 router.delete(
   "/:id",
   isAuthenticated,

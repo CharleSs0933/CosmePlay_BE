@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -149,3 +149,22 @@ const deleteProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.deleteProduct = deleteProduct;
+const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const updateData = Object.assign({}, req.body);
+        const product = yield prisma_1.default.product.findUnique({ where: { id } });
+        if (!product) {
+            return next(new error_handler_1.ValidationError("Product not found!"));
+        }
+        const updatedProduct = yield prisma_1.default.product.update({
+            where: { id },
+            data: Object.assign(Object.assign({}, updateData), { price: parseInt(updateData.price), sale_price: parseInt(updateData.sale_price) }),
+        });
+        res.status(200).json({ success: true, product: updatedProduct });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.updateProduct = updateProduct;

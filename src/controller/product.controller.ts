@@ -183,3 +183,33 @@ export const deleteProduct = async (
     next(error);
   }
 };
+
+export const updateProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const updateData = { ...req.body };
+
+    const product = await prisma.product.findUnique({ where: { id } });
+
+    if (!product) {
+      return next(new ValidationError("Product not found!"));
+    }
+
+    const updatedProduct = await prisma.product.update({
+      where: { id },
+      data: {
+        ...updateData,
+        price: parseInt(updateData.price),
+        sale_price: parseInt(updateData.sale_price),
+      },
+    });
+
+    res.status(200).json({ success: true, product: updatedProduct });
+  } catch (error) {
+    next(error);
+  }
+};
