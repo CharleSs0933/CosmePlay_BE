@@ -9,6 +9,10 @@ import {
 const router = express.Router();
 
 router.post("/create-checkout-session", isAuthenticated, createCheckoutSession);
-router.post("/stripe/webhook", createOrder);
+router.post(
+  "/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  createOrder
+);
 
 export default router;
