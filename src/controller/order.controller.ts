@@ -125,6 +125,8 @@ export const createOrder = async (
         const userId = session.metadata?.userId;
         const addressId = session.metadata?.addressId;
 
+        console.log(session.payment_method_types);
+
         if (!cardId || !userId || !addressId) {
           return next(new ValidationError("Missing metadata!"));
         }

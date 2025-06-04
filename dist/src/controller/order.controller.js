@@ -113,6 +113,7 @@ const createOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 const cardId = (_a = session.metadata) === null || _a === void 0 ? void 0 : _a.cartId;
                 const userId = (_b = session.metadata) === null || _b === void 0 ? void 0 : _b.userId;
                 const addressId = (_c = session.metadata) === null || _c === void 0 ? void 0 : _c.addressId;
+                console.log(session.payment_method_types);
                 if (!cardId || !userId || !addressId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
