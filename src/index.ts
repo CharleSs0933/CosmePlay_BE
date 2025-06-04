@@ -19,7 +19,7 @@ dotenv.config();
 const app = express();
 
 app.post(
-  "/stripe/webhook",
+  "/api/stripe/webhook",
   express.raw({ type: "application/json" }),
   createOrder
 );

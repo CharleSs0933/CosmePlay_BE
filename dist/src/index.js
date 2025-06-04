@@ -20,7 +20,7 @@ const order_router_1 = __importDefault(require("./routes/order.router"));
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.post("/stripe/webhook", express_1.default.raw({ type: "application/json" }), order_controller_1.createOrder);
+app.post("/api/stripe/webhook", express_1.default.raw({ type: "application/json" }), order_controller_1.createOrder);
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use(express_1.default.urlencoded({ limit: "100mb", extended: true }));
 app.use((0, helmet_1.default)());
