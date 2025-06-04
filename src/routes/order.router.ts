@@ -4,15 +4,14 @@ import { isAuthenticated } from "../packages/middleware/isAuthenticated";
 import {
   createCheckoutSession,
   createOrder,
+  getOrderDetail,
+  getOrdersByUser,
 } from "../controller/order.controller";
 
 const router = express.Router();
 
 router.post("/create-checkout-session", isAuthenticated, createCheckoutSession);
-router.post(
-  "/stripe/webhook",
-  express.raw({ type: "application/json" }),
-  createOrder
-);
+router.get("/", isAuthenticated, getOrdersByUser);
+router.get("/details/:id", getOrderDetail);
 
 export default router;

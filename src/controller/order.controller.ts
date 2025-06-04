@@ -189,3 +189,45 @@ export const createOrder = async (
     next(error);
   }
 };
+
+export const getOrdersByUser = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+
+    const orders = await prisma.order.findMany({
+      where: { user_id: user.id },
+      include: { orderItems: true, address: true },
+    });
+
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getOrderDetail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { orderItems: true, address: true },
+    });
+
+    if (!order) {
+      return next(new ValidationError("Order not found!"));
+    }
+
+    res.status(200).json({ success: true, order });
+  } catch (error) {
+    next(error);
+  }
+};

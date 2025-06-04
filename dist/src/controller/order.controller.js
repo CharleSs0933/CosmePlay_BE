@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createOrder = exports.createCheckoutSession = void 0;
+exports.getOrderDetail = exports.getOrdersByUser = exports.createOrder = exports.createCheckoutSession = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const stripe_1 = __importDefault(require("../libs/stripe"));
@@ -172,3 +172,34 @@ const createOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.createOrder = createOrder;
+const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = req.user;
+        const orders = yield prisma_1.default.order.findMany({
+            where: { user_id: user.id },
+            include: { orderItems: true, address: true },
+        });
+        res.status(200).json({ success: true, orders });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getOrdersByUser = getOrdersByUser;
+const getOrderDetail = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const order = yield prisma_1.default.order.findUnique({
+            where: { id },
+            include: { orderItems: true, address: true },
+        });
+        if (!order) {
+            return next(new error_handler_1.ValidationError("Order not found!"));
+        }
+        res.status(200).json({ success: true, order });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getOrderDetail = getOrderDetail;
