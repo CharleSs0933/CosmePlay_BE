@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createCheckoutSession = void 0;
+exports.createOrder = exports.createCheckoutSession = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const stripe_1 = __importDefault(require("../libs/stripe"));
@@ -98,3 +98,76 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
     }
 });
 exports.createCheckoutSession = createCheckoutSession;
+const createOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c;
+    try {
+        const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+        const sig = req.headers["stripe-signature"];
+        if (!sig) {
+            return next(new error_handler_1.ValidationError("Missing Stripe signature!"));
+        }
+        const event = stripe_1.default.webhooks.constructEvent(req.body, sig, webhookSecret);
+        switch (event.type) {
+            case `checkout.session.completed`: {
+                const session = event.data.object;
+                const cardId = (_a = session.metadata) === null || _a === void 0 ? void 0 : _a.cartId;
+                const userId = (_b = session.metadata) === null || _b === void 0 ? void 0 : _b.userId;
+                const addressId = (_c = session.metadata) === null || _c === void 0 ? void 0 : _c.addressId;
+                if (!cardId || !userId || !addressId) {
+                    return next(new error_handler_1.ValidationError("Missing metadata!"));
+                }
+                const cart = yield prisma_1.default.cart.findUnique({
+                    where: {
+                        id: cardId,
+                    },
+                    include: {
+                        cartItems: {
+                            include: {
+                                product: true,
+                            },
+                        },
+                    },
+                });
+                if (!cart) {
+                    return next(new error_handler_1.ValidationError("Cart not found!"));
+                }
+                const order = yield prisma_1.default.order.create({
+                    data: {
+                        user_id: userId,
+                        checkout_session_id: session.id,
+                        address_id: addressId,
+                        total_amount: Number(session.amount_total),
+                        status: "PROCESSING",
+                        orderItems: {
+                            createMany: {
+                                data: cart.cartItems.map((item) => ({
+                                    product_id: item.product.id,
+                                    quantity: item.quantity,
+                                    title: item.product.title,
+                                    price: item.product.price,
+                                    image_url: item.product.image_url,
+                                })),
+                            },
+                        },
+                    },
+                });
+                yield prisma_1.default.cart.delete({
+                    where: {
+                        id: cardId,
+                        user_id: userId,
+                    },
+                });
+                break;
+            }
+            default: {
+                console.log(`Unhandled event type: ${event.type}`);
+                break;
+            }
+        }
+        res.status(200).json({ success: true, message: "Order created!" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.createOrder = createOrder;

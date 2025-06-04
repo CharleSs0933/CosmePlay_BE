@@ -8,4 +8,5 @@ const isAuthenticated_1 = require("../packages/middleware/isAuthenticated");
 const order_controller_1 = require("../controller/order.controller");
 const router = express_1.default.Router();
 router.post("/create-checkout-session", isAuthenticated_1.isAuthenticated, order_controller_1.createCheckoutSession);
+router.post("/stripe/webhook", order_controller_1.createOrder);
 exports.default = router;
