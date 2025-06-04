@@ -126,8 +126,8 @@ model CartLineItem {
   product_id String
   quantity   Int    @default(1)
 
-  cart    Cart    @relation(fields: [cart_id], references: [id])
-  product Product @relation(fields: [product_id], references: [id])
+  cart    Cart    @relation(fields: [cart_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model Order {
@@ -137,6 +137,7 @@ model Order {
   status              OrderStatus
   total_amount        Int
   checkout_session_id String
+  payment_method      String
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
 
