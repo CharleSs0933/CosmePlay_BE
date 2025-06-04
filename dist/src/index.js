@@ -11,6 +11,7 @@ const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const error_middleware_1 = require("./packages/error-handler/error-middleware");
+const order_controller_1 = require("./controller/order.controller");
 /* ROUTE IMPORT */
 const auth_router_1 = __importDefault(require("./routes/auth.router"));
 const product_router_1 = __importDefault(require("./routes/product.router"));
@@ -19,6 +20,7 @@ const order_router_1 = __importDefault(require("./routes/order.router"));
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
+app.post("/stripe/webhook", express_1.default.raw({ type: "application/json" }), order_controller_1.createOrder);
 app.use(express_1.default.json({ limit: "100mb" }));
 app.use(express_1.default.urlencoded({ limit: "100mb", extended: true }));
 app.use((0, helmet_1.default)());

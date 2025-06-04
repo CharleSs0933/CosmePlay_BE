@@ -7,6 +7,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { errorMiddleware } from "./packages/error-handler/error-middleware";
+import { createOrder } from "./controller/order.controller";
 /* ROUTE IMPORT */
 import AuthRouter from "./routes/auth.router";
 import ProductRouter from "./routes/product.router";
@@ -16,6 +17,13 @@ import OrderRouter from "./routes/order.router";
 /* CONFIGURATIONS */
 dotenv.config();
 const app = express();
+
+app.post(
+  "/stripe/webhook",
+  express.raw({ type: "application/json" }),
+  createOrder
+);
+
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
 app.use(helmet());
