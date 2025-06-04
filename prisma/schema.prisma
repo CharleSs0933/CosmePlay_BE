@@ -31,6 +31,7 @@ model User {
   Review  Review[]
   Cart    Cart?
   Address Address[]
+  Order   Order[]
 }
 
 model Address {
@@ -45,7 +46,8 @@ model Address {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [user_id], references: [id])
+  user  User    @relation(fields: [user_id], references: [id])
+  Order Order[]
 }
 
 model Product {
@@ -68,6 +70,7 @@ model Product {
   productSkinType ProductSkinType? @relation(fields: [product_skinType_id], references: [id])
   Review          Review[]
   CartLineItem    CartLineItem[]
+  OrderItem       OrderItem[]
 }
 
 model ProductCategory {
@@ -124,5 +127,32 @@ model CartLineItem {
   quantity   Int    @default(1)
 
   cart    Cart    @relation(fields: [cart_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+}
+
+model Order {
+  id                  String   @id @default(uuid())
+  user_id             String
+  address_id          String
+  status              String
+  total_amount        Int
+  checkout_session_id String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user    User    @relation(fields: [user_id], references: [id])
+  address Address @relation(fields: [address_id], references: [id])
+}
+
+model OrderItem {
+  id         String @id @default(uuid())
+  order_id   String
+  product_id String
+
+  title     String
+  price     Float
+  image_url String?
+  quantity  Int
+
   product Product @relation(fields: [product_id], references: [id])
 }

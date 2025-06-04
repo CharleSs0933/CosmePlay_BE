@@ -1,0 +1,11 @@
+[
+  {
+    "id": "1",
+    "user_id": "1",
+    "address": "Address 1",
+    "city": "City 1",
+    "pincode": "12345",
+    "phone": "1234567890",
+    "notes": "Notes 1"
+  }
+]
