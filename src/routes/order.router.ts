@@ -3,7 +3,6 @@ import express from "express";
 import { isAuthenticated } from "../packages/middleware/isAuthenticated";
 import {
   createCheckoutSession,
-  createOrder,
   getOrderDetail,
   getOrdersByUser,
 } from "../controller/order.controller";

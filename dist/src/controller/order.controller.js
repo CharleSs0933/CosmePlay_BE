@@ -57,8 +57,8 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                 },
                 quantity: item.quantity,
             })),
-            success_url: `${process.env.CLIENT_BASE_URL}/success`,
-            cancel_url: `${process.env.CLIENT_BASE_URL}/cancel`,
+            success_url: `${process.env.CLIENT_BASE_URL}/checkout/successs`,
+            cancel_url: `${process.env.CLIENT_BASE_URL}/checkout/failure`,
             customer_email: user.email,
             metadata: {
                 cartId: cart.id,
@@ -177,7 +177,16 @@ const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         const user = req.user;
         const orders = yield prisma_1.default.order.findMany({
             where: { user_id: user.id },
-            include: { orderItems: true, address: true },
+            include: {
+                orderItems: true,
+                address: true,
+                user: {
+                    select: {
+                        email: true,
+                        name: true,
+                    },
+                },
+            },
         });
         res.status(200).json({ success: true, orders });
     }
@@ -191,7 +200,16 @@ const getOrderDetail = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         const { id } = req.params;
         const order = yield prisma_1.default.order.findUnique({
             where: { id },
-            include: { orderItems: true, address: true },
+            include: {
+                orderItems: true,
+                address: true,
+                user: {
+                    select: {
+                        email: true,
+                        name: true,
+                    },
+                },
+            },
         });
         if (!order) {
             return next(new error_handler_1.ValidationError("Order not found!"));

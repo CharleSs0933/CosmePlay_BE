@@ -13,6 +13,7 @@ import AuthRouter from "./routes/auth.router";
 import ProductRouter from "./routes/product.router";
 import CartRouter from "./routes/cart.router";
 import OrderRouter from "./routes/order.router";
+import AddressRouter from "./routes/address.router";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -68,6 +69,7 @@ app.use("/api/auth", AuthRouter);
 app.use("/api/products", ProductRouter);
 app.use("/api/cart", CartRouter);
 app.use("/api/orders", OrderRouter);
+app.use("/api/addresses", AddressRouter);
 
 app.use(errorMiddleware);
 
