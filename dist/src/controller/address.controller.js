@@ -48,7 +48,6 @@ const updateAddress = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         const user = req.user;
         const { id } = req.params;
         const { address, city, pincode, phone, notes } = req.body;
-        (0, address_service_1.validateAddressData)(req.body);
         const addressToUpdate = yield prisma_1.default.address.findUnique({
             where: { id, user_id: user.id },
         });

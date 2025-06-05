@@ -53,8 +53,6 @@ export const updateAddress = async (
     const { id } = req.params;
     const { address, city, pincode, phone, notes } = req.body;
 
-    validateAddressData(req.body);
-
     const addressToUpdate = await prisma.address.findUnique({
       where: { id, user_id: user.id },
     });
