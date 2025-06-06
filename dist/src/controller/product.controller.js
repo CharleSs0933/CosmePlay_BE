@@ -16,14 +16,12 @@ exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.get
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
-const stripe_1 = __importDefault(require("../libs/stripe"));
 const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { sort, page = 1, limit = 10 } = req.query;
         const pageNumber = parseInt(page, 10);
         const pageSize = parseInt(limit, 10) || 10;
         const filters = (0, product_service_1.buildProductFilter)(req);
-        const stripeData = (yield stripe_1.default.checkout.sessions.list()).data;
         const products = yield prisma_1.default.product.findMany({
             where: filters,
             include: {
@@ -70,7 +68,6 @@ const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 pageSize,
                 totalPages: Math.ceil(total / pageSize),
             },
-            stripeData,
         });
     }
     catch (error) {

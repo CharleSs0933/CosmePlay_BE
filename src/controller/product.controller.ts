@@ -20,8 +20,6 @@ export const getAllProducts = async (
 
     const filters = buildProductFilter(req);
 
-    const stripeData = (await stripe.checkout.sessions.list()).data;
-
     const products = await prisma.product.findMany({
       where: filters,
       include: {
@@ -74,7 +72,6 @@ export const getAllProducts = async (
         pageSize,
         totalPages: Math.ceil(total / pageSize),
       },
-      stripeData,
     });
   } catch (error) {
     next(error);
