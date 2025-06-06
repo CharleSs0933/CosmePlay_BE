@@ -43,8 +43,8 @@ export const addProductReview = async (
 
     await prisma.review.create({
       data: {
-        review_value: reviewMessage,
-        review_message: reviewValue,
+        review_value: parseInt(reviewValue),
+        review_message: reviewMessage,
         user_id: user.id,
         product_id: productId,
         user_name: user.name,

@@ -46,8 +46,8 @@ const addProductReview = (req, res, next) => __awaiter(void 0, void 0, void 0, f
         }
         yield prisma_1.default.review.create({
             data: {
-                review_value: reviewMessage,
-                review_message: reviewValue,
+                review_value: parseInt(reviewValue),
+                review_message: reviewMessage,
                 user_id: user.id,
                 product_id: productId,
                 user_name: user.name,
