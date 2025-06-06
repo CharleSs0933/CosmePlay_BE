@@ -32,6 +32,7 @@ model User {
   Cart    Cart?
   Address Address[]
   Order   Order[]
+  Post    Post[]
 }
 
 model Address {
@@ -72,10 +73,11 @@ model Product {
 
 model ProductCategory {
   id          String  @id @default(uuid())
-  title       String
+  title       String  @unique
   description String?
 
   Product Product[]
+  Post    Post[]
 }
 
 model ProductBrand {
@@ -156,6 +158,33 @@ model OrderItem {
 
   order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product Product @relation(fields: [product_id], references: [id])
+}
+
+model Post {
+  id            String   @id @default(uuid())
+  category_id   String
+  author_id     String
+  title         String
+  thumbnail_url String
+  description   String?
+  warnings      String[]
+  benefits      String[]
+
+  author    User            @relation(fields: [author_id], references: [id])
+  category  ProductCategory @relation(fields: [category_id], references: [id])
+  postSteps PostStep[]
+}
+
+model PostStep {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  details     String
+  image_url   String?
+  tips        String[]
+  post_id     String
+
+  post Post @relation(fields: [post_id], references: [id], onDelete: Cascade)
 }
 
 enum OrderStatus {
