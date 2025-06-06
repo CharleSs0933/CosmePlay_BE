@@ -14,6 +14,7 @@ import ProductRouter from "./routes/product.router";
 import CartRouter from "./routes/cart.router";
 import OrderRouter from "./routes/order.router";
 import AddressRouter from "./routes/address.router";
+import ReviewRouter from "./routes/review.router";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -70,6 +71,7 @@ app.use("/api/products", ProductRouter);
 app.use("/api/cart", CartRouter);
 app.use("/api/orders", OrderRouter);
 app.use("/api/addresses", AddressRouter);
+app.use("/api/reviews", ReviewRouter);
 
 app.use(errorMiddleware);
 
