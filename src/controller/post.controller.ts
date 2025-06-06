@@ -9,11 +9,14 @@ export const getPost = async (
   try {
     const { category } = req.params;
 
-    const post = prisma.post.findFirst({
+    const post = await prisma.post.findFirst({
       where: {
         category: {
           title: { equals: category, mode: "insensitive" },
         },
+      },
+      include: {
+        postSteps: true,
       },
     });
 

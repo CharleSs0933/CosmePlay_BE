@@ -17,11 +17,14 @@ const prisma_1 = __importDefault(require("../libs/prisma"));
 const getPost = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { category } = req.params;
-        const post = prisma_1.default.post.findFirst({
+        const post = yield prisma_1.default.post.findFirst({
             where: {
                 category: {
                     title: { equals: category, mode: "insensitive" },
                 },
+            },
+            include: {
+                postSteps: true,
             },
         });
         res.status(200).json({ success: true, post });
