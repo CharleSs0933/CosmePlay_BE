@@ -19,6 +19,7 @@ const cart_router_1 = __importDefault(require("./routes/cart.router"));
 const order_router_1 = __importDefault(require("./routes/order.router"));
 const address_router_1 = __importDefault(require("./routes/address.router"));
 const review_router_1 = __importDefault(require("./routes/review.router"));
+const post_router_1 = __importDefault(require("./routes/post.router"));
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -63,6 +64,7 @@ app.use("/api/cart", cart_router_1.default);
 app.use("/api/orders", order_router_1.default);
 app.use("/api/addresses", address_router_1.default);
 app.use("/api/reviews", review_router_1.default);
+app.use("/api/posts", post_router_1.default);
 app.use(error_middleware_1.errorMiddleware);
 const port = process.env.PORT || 8080;
 app.listen(port, () => {

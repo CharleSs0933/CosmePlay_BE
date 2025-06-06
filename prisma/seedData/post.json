@@ -1,0 +1,156 @@
+[
+  {
+    "id": "358f895b-c138-4d6d-81f4-d63946abb44f",
+    "category_id": "1",
+    "author_id": "2",
+    "title": "Moisturizers Routine",
+    "thumbnail_url": "https://example.com/thumbnails/1.jpg",
+    "description": "Hydrating creams for daily use.",
+    "warnings": [
+      "Do not use moisturizers near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Moisturizers improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "7ab67dc7-5a18-44b1-b5ab-03cac968508f",
+    "category_id": "2",
+    "author_id": "2",
+    "title": "Cleansers Routine",
+    "thumbnail_url": "https://example.com/thumbnails/2.jpg",
+    "description": "Facial cleansers for deep cleaning.",
+    "warnings": [
+      "Do not use cleansers near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Cleansers improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "50a8eaaf-303f-4117-b85c-5fcce7a4ae13",
+    "category_id": "3",
+    "author_id": "2",
+    "title": "Serums Routine",
+    "thumbnail_url": "https://example.com/thumbnails/3.jpg",
+    "description": "Concentrated formulas for skin treatment.",
+    "warnings": ["Do not use serums near eyes.", "Patch test before full use."],
+    "benefits": [
+      "Serums improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "5aeea437-3f40-42ef-b515-0c9997583946",
+    "category_id": "4",
+    "author_id": "2",
+    "title": "Toners Routine",
+    "thumbnail_url": "https://example.com/thumbnails/4.jpg",
+    "description": "Refresh your skin with balancing toners.",
+    "warnings": ["Do not use toners near eyes.", "Patch test before full use."],
+    "benefits": [
+      "Toners improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "ae99a559-76f9-4932-abe3-7eb367acda23",
+    "category_id": "5",
+    "author_id": "2",
+    "title": "Sunscreens Routine",
+    "thumbnail_url": "https://example.com/thumbnails/5.jpg",
+    "description": "Protect your skin from UV rays.",
+    "warnings": [
+      "Do not use sunscreens near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Sunscreens improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "09d14f4a-2cae-4190-be72-fc13b8afcf3f",
+    "category_id": "6",
+    "author_id": "2",
+    "title": "Face Masks Routine",
+    "thumbnail_url": "https://example.com/thumbnails/6.jpg",
+    "description": "Revitalize and nourish your face.",
+    "warnings": [
+      "Do not use face masks near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Face Masks improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "addf91f1-30a5-47f1-9ebd-21ad65db7110",
+    "category_id": "7",
+    "author_id": "2",
+    "title": "Eye Creams Routine",
+    "thumbnail_url": "https://example.com/thumbnails/7.jpg",
+    "description": "Reduce puffiness and dark circles.",
+    "warnings": [
+      "Do not use eye creams near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Eye Creams improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "764a5f39-b7e1-4077-90e8-acdd79d1d133",
+    "category_id": "8",
+    "author_id": "2",
+    "title": "Lip Care Routine",
+    "thumbnail_url": "https://example.com/thumbnails/8.jpg",
+    "description": "Hydrate and protect your lips.",
+    "warnings": [
+      "Do not use lip care near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Lip Care improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "1b1559c1-9cfc-4ad8-908d-37f1a8258e0f",
+    "category_id": "9",
+    "author_id": "2",
+    "title": "Exfoliators Routine",
+    "thumbnail_url": "https://example.com/thumbnails/9.jpg",
+    "description": "Remove dead skin cells gently.",
+    "warnings": [
+      "Do not use exfoliators near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Exfoliators improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  },
+  {
+    "id": "79b3088d-c5da-485d-9350-bbe8e2522354",
+    "category_id": "10",
+    "author_id": "2",
+    "title": "Anti-Aging Routine",
+    "thumbnail_url": "https://example.com/thumbnails/10.jpg",
+    "description": "Prevent and reduce signs of aging.",
+    "warnings": [
+      "Do not use anti-aging near eyes.",
+      "Patch test before full use."
+    ],
+    "benefits": [
+      "Anti-Aging improve skin health.",
+      "Gives visible results in 2 weeks."
+    ]
+  }
+]

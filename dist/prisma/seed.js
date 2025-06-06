@@ -43,7 +43,8 @@ function main() {
             "product.json",
             "user.json",
             "address.json",
-            "cart.json",
+            "post.json",
+            "postStep.json",
         ];
         const deleteFileNames = [...orderedFileNames].reverse();
         yield deleteAllData(deleteFileNames);

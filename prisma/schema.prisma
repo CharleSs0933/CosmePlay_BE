@@ -77,7 +77,7 @@ model ProductCategory {
   description String?
 
   Product Product[]
-  Post    Post[]
+  Post    Post?
 }
 
 model ProductBrand {
@@ -173,6 +173,8 @@ model Post {
   author    User            @relation(fields: [author_id], references: [id])
   category  ProductCategory @relation(fields: [category_id], references: [id])
   postSteps PostStep[]
+
+  @@unique([category_id])
 }
 
 model PostStep {
