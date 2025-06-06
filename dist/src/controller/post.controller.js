@@ -20,7 +20,7 @@ const getPost = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
         const post = prisma_1.default.post.findFirst({
             where: {
                 category: {
-                    title: { contains: category, mode: "insensitive" },
+                    title: { equals: category, mode: "insensitive" },
                 },
             },
         });

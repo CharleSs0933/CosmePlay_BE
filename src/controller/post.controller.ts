@@ -12,7 +12,7 @@ export const getPost = async (
     const post = prisma.post.findFirst({
       where: {
         category: {
-          title: { contains: category, mode: "insensitive" },
+          title: { equals: category, mode: "insensitive" },
         },
       },
     });
