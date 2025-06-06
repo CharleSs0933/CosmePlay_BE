@@ -131,33 +131,51 @@ const createOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 if (!cart) {
                     return next(new error_handler_1.ValidationError("Cart not found!"));
                 }
-                const order = yield prisma_1.default.order.create({
-                    data: {
-                        user_id: userId,
-                        checkout_session_id: session.id,
-                        address_id: addressId,
-                        total_amount: Number(session.amount_total),
-                        payment_method: session.payment_method_types[0],
-                        status: "PROCESSING",
-                        orderItems: {
-                            createMany: {
-                                data: cart.cartItems.map((item) => ({
-                                    product_id: item.product.id,
-                                    quantity: item.quantity,
-                                    title: item.product.title,
-                                    price: item.product.price,
-                                    image_url: item.product.image_url,
-                                })),
+                yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+                    // Create order
+                    yield tx.order.create({
+                        data: {
+                            user_id: userId,
+                            checkout_session_id: session.id,
+                            payment_intent_id: session.payment_intent,
+                            address_id: addressId,
+                            total_amount: Number(session.amount_total),
+                            payment_method: session.payment_method_types[0],
+                            status: "PROCESSING",
+                            orderItems: {
+                                createMany: {
+                                    data: cart.cartItems.map((item) => ({
+                                        product_id: item.product.id,
+                                        quantity: item.quantity,
+                                        title: item.product.title,
+                                        price: item.product.price,
+                                        image_url: item.product.image_url,
+                                    })),
+                                },
                             },
                         },
-                    },
-                });
-                yield prisma_1.default.cart.delete({
-                    where: {
-                        id: cardId,
-                        user_id: userId,
-                    },
-                });
+                    });
+                    // Decrement stock
+                    yield prisma_1.default.product.updateMany({
+                        where: {
+                            id: {
+                                in: cart.cartItems.map((item) => item.product.id),
+                            },
+                        },
+                        data: {
+                            total_stock: {
+                                decrement: cart.cartItems.reduce((total, item) => total + item.quantity, 0),
+                            },
+                        },
+                    });
+                    // Delete cart
+                    yield prisma_1.default.cart.delete({
+                        where: {
+                            id: cardId,
+                            user_id: userId,
+                        },
+                    });
+                }));
                 break;
             }
             default: {

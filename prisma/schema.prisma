@@ -134,6 +134,7 @@ model Order {
   status              OrderStatus
   total_amount        Int
   checkout_session_id String
+  payment_intent_id   String
   payment_method      String
   createdAt           DateTime    @default(now())
   updatedAt           DateTime    @updatedAt
@@ -153,7 +154,7 @@ model OrderItem {
   image_url String?
   quantity  Int
 
-  order   Order   @relation(fields: [order_id], references: [id])
+  order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product Product @relation(fields: [product_id], references: [id])
 }
 

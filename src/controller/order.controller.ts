@@ -146,33 +146,55 @@ export const createOrder = async (
           return next(new ValidationError("Cart not found!"));
         }
 
-        const order = await prisma.order.create({
-          data: {
-            user_id: userId,
-            checkout_session_id: session.id,
-            address_id: addressId,
-            total_amount: Number(session.amount_total),
-            payment_method: session.payment_method_types[0],
-            status: "PROCESSING",
-            orderItems: {
-              createMany: {
-                data: cart.cartItems.map((item) => ({
-                  product_id: item.product.id,
-                  quantity: item.quantity,
-                  title: item.product.title,
-                  price: item.product.price,
-                  image_url: item.product.image_url,
-                })),
+        await prisma.$transaction(async (tx) => {
+          // Create order
+          await tx.order.create({
+            data: {
+              user_id: userId,
+              checkout_session_id: session.id,
+              payment_intent_id: session.payment_intent as string,
+              address_id: addressId,
+              total_amount: Number(session.amount_total),
+              payment_method: session.payment_method_types[0],
+              status: "PROCESSING",
+              orderItems: {
+                createMany: {
+                  data: cart.cartItems.map((item) => ({
+                    product_id: item.product.id,
+                    quantity: item.quantity,
+                    title: item.product.title,
+                    price: item.product.price,
+                    image_url: item.product.image_url,
+                  })),
+                },
               },
             },
-          },
-        });
+          });
 
-        await prisma.cart.delete({
-          where: {
-            id: cardId,
-            user_id: userId,
-          },
+          // Decrement stock
+          await prisma.product.updateMany({
+            where: {
+              id: {
+                in: cart.cartItems.map((item) => item.product.id),
+              },
+            },
+            data: {
+              total_stock: {
+                decrement: cart.cartItems.reduce(
+                  (total, item) => total + item.quantity,
+                  0
+                ),
+              },
+            },
+          });
+
+          // Delete cart
+          await prisma.cart.delete({
+            where: {
+              id: cardId,
+              user_id: userId,
+            },
+          });
         });
 
         break;

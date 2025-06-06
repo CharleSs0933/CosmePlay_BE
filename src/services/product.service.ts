@@ -24,10 +24,8 @@ export const buildProductFilter = (req: Request): Prisma.ProductWhereInput => {
 export const validateProductData = (data: any) => {
   const {
     title,
-    description,
     price,
-    sale_price,
-    image_url,
+    total_stock,
     product_category_id,
     product_brand_id,
     product_skinType_id,
@@ -36,6 +34,7 @@ export const validateProductData = (data: any) => {
   if (
     !title ||
     !price ||
+    !total_stock ||
     !product_category_id ||
     !product_brand_id ||
     !product_skinType_id

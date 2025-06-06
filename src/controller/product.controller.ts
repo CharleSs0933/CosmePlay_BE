@@ -5,6 +5,7 @@ import {
   buildProductFilter,
   validateProductData,
 } from "../services/product.service";
+import stripe from "../libs/stripe";
 
 export const getAllProducts = async (
   req: Request,
@@ -18,6 +19,8 @@ export const getAllProducts = async (
     const pageSize = parseInt(limit as string, 10) || 10;
 
     const filters = buildProductFilter(req);
+
+    const stripeData = (await stripe.checkout.sessions.list()).data;
 
     const products = await prisma.product.findMany({
       where: filters,
@@ -71,6 +74,7 @@ export const getAllProducts = async (
         pageSize,
         totalPages: Math.ceil(total / pageSize),
       },
+      stripeData,
     });
   } catch (error) {
     next(error);
@@ -138,6 +142,7 @@ export const addProduct = async (
       price,
       sale_price,
       image_url,
+      total_stock,
       product_category_id,
       product_brand_id,
       product_skinType_id,
@@ -149,6 +154,7 @@ export const addProduct = async (
         description,
         price,
         sale_price,
+        total_stock,
         image_url,
         product_category_id,
         product_brand_id,
@@ -205,6 +211,7 @@ export const updateProduct = async (
         ...updateData,
         price: parseInt(updateData.price) || undefined,
         sale_price: parseInt(updateData.sale_price) || undefined,
+        total_stock: parseInt(updateData.total_stock) || undefined,
       },
     });
 

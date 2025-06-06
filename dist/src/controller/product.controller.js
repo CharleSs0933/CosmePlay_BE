@@ -16,12 +16,14 @@ exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.get
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
+const stripe_1 = __importDefault(require("../libs/stripe"));
 const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { sort, page = 1, limit = 10 } = req.query;
         const pageNumber = parseInt(page, 10);
         const pageSize = parseInt(limit, 10) || 10;
         const filters = (0, product_service_1.buildProductFilter)(req);
+        const stripeData = (yield stripe_1.default.checkout.sessions.list()).data;
         const products = yield prisma_1.default.product.findMany({
             where: filters,
             include: {
@@ -68,6 +70,7 @@ const getAllProducts = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 pageSize,
                 totalPages: Math.ceil(total / pageSize),
             },
+            stripeData,
         });
     }
     catch (error) {
@@ -114,13 +117,14 @@ exports.getProductMeta = getProductMeta;
 const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         (0, product_service_1.validateProductData)(req.body);
-        const { title, description, price, sale_price, image_url, product_category_id, product_brand_id, product_skinType_id, } = req.body;
+        const { title, description, price, sale_price, image_url, total_stock, product_category_id, product_brand_id, product_skinType_id, } = req.body;
         const product = yield prisma_1.default.product.create({
             data: {
                 title,
                 description,
                 price,
                 sale_price,
+                total_stock,
                 image_url,
                 product_category_id,
                 product_brand_id,
@@ -159,7 +163,7 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         }
         const updatedProduct = yield prisma_1.default.product.update({
             where: { id },
-            data: Object.assign(Object.assign({}, updateData), { price: parseInt(updateData.price) || undefined, sale_price: parseInt(updateData.sale_price) || undefined }),
+            data: Object.assign(Object.assign({}, updateData), { price: parseInt(updateData.price) || undefined, sale_price: parseInt(updateData.sale_price) || undefined, total_stock: parseInt(updateData.total_stock) || undefined }),
         });
         res.status(200).json({ success: true, product: updatedProduct });
     }
