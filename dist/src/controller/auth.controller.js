@@ -45,7 +45,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetUserPassword = exports.verifyUserForgotPassword = exports.userForgotPassword = exports.getUser = exports.refreshTokenUser = exports.loginUser = exports.verifyUser = exports.userRegistration = void 0;
+exports.logoutUser = exports.resetUserPassword = exports.verifyUserForgotPassword = exports.userForgotPassword = exports.getUser = exports.refreshTokenUser = exports.loginUser = exports.verifyUser = exports.userRegistration = void 0;
 const auth_service_1 = require("../services/auth.service");
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -238,3 +238,17 @@ const resetUserPassword = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 });
 exports.resetUserPassword = resetUserPassword;
 // Logout user
+const logoutUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        (0, setCookie_1.clearCookie)(res, "refresh_token");
+        (0, setCookie_1.clearCookie)(res, "access_token");
+        res.status(200).json({
+            success: true,
+            message: "Logout successfully!",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.logoutUser = logoutUser;

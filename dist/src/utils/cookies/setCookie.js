@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCookie = void 0;
+exports.clearCookie = exports.setCookie = void 0;
 const setCookie = (res, name, value) => {
     res.cookie(name, value, {
         httpOnly: true,
@@ -10,3 +10,7 @@ const setCookie = (res, name, value) => {
     });
 };
 exports.setCookie = setCookie;
+const clearCookie = (res, name) => {
+    res.clearCookie(name);
+};
+exports.clearCookie = clearCookie;

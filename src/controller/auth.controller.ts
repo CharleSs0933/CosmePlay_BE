@@ -12,7 +12,7 @@ import prisma from "../libs/prisma";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken";
 import { AuthError, ValidationError } from "../packages/error-handler";
-import { setCookie } from "../utils/cookies/setCookie";
+import { clearCookie, setCookie } from "../utils/cookies/setCookie";
 
 // Register a new user
 export const userRegistration = async (
@@ -273,3 +273,20 @@ export const resetUserPassword = async (
 };
 
 // Logout user
+export const logoutUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    clearCookie(res, "refresh_token");
+    clearCookie(res, "access_token");
+
+    res.status(200).json({
+      success: true,
+      message: "Logout successfully!",
+    });
+  } catch (error) {
+    next(error);
+  }
+};

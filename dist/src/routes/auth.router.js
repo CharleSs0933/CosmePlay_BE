@@ -10,6 +10,7 @@ const router = express_1.default.Router();
 router.post("/register", auth_controller_1.userRegistration);
 router.post("/verify-user", auth_controller_1.verifyUser);
 router.post("/login", auth_controller_1.loginUser);
+router.post("/logout", auth_controller_1.logoutUser);
 router.post("/refresh-token", auth_controller_1.refreshTokenUser);
 router.get("/logged-in-user", isAuthenticated_1.isAuthenticated, auth_controller_1.getUser);
 router.post("/forgot-password", auth_controller_1.userForgotPassword);
