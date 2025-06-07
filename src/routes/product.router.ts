@@ -4,6 +4,7 @@ import {
   addProduct,
   addProductMeta,
   deleteProduct,
+  deleteProductMeta,
   getAllProducts,
   getProduct,
   getProductMeta,
@@ -37,7 +38,7 @@ router.delete(
   "/meta/:id",
   isAuthenticated,
   allowedRoles(["admin", "staff"]),
-  deleteProduct
+  deleteProductMeta
 );
 
 router.put(
