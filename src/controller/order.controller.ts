@@ -271,3 +271,53 @@ export const getOrderDetail = async (
     next(error);
   }
 };
+
+export const getAllOrders = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const orders = await prisma.order.findMany();
+
+    res.status(200).json({ success: true, orders });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateOrderStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (
+      !status ||
+      status !== "PROCESSING" ||
+      status !== "SHIPPED" ||
+      status !== "DELIVERD" ||
+      status !== "CANCELLED"
+    ) {
+      return next(new ValidationError("Status is invalid!"));
+    }
+
+    const order = await prisma.order.findUnique({ where: { id } });
+
+    if (!order) {
+      return next(new ValidationError("Order not found!"));
+    }
+
+    const updatedOrder = await prisma.order.update({
+      where: { id },
+      data: { status },
+    });
+
+    res.status(200).json({ success: true, order: updatedOrder });
+  } catch (error) {
+    next(error);
+  }
+};
