@@ -4,8 +4,8 @@ import { ValidationError } from "../packages/error-handler";
 import {
   buildProductFilter,
   validateProductData,
+  validateProductMetaData,
 } from "../services/product.service";
-import stripe from "../libs/stripe";
 
 export const getAllProducts = async (
   req: Request,
@@ -213,6 +213,43 @@ export const updateProduct = async (
     });
 
     res.status(200).json({ success: true, product: updatedProduct });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addProductMeta = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { title, description, type } = req.body;
+    validateProductMetaData(req.body);
+
+    switch (type) {
+      case "category":
+        const productCategory = await prisma.productCategory.findUnique({
+          where: { title },
+        });
+
+        if (productCategory) {
+          return next(new ValidationError("Product category already exists!"));
+        }
+
+        await prisma.productCategory.create({ data: { title, description } });
+        break;
+      case "brand":
+        await prisma.productBrand.create({ data: { title, description } });
+        break;
+      case "skinType":
+        await prisma.productSkinType.create({ data: { title, description } });
+        break;
+      default:
+        throw new ValidationError("Invalid type!");
+    }
+
+    res.status(201).json({ success: true, message: `Product ${type} added!` });
   } catch (error) {
     next(error);
   }

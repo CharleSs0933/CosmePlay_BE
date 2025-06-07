@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -169,3 +169,33 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.updateProduct = updateProduct;
+const addProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { title, description, type } = req.body;
+        (0, product_service_1.validateProductMetaData)(req.body);
+        switch (type) {
+            case "category":
+                const productCategory = yield prisma_1.default.productCategory.findUnique({
+                    where: { title },
+                });
+                if (productCategory) {
+                    return next(new error_handler_1.ValidationError("Product category already exists!"));
+                }
+                yield prisma_1.default.productCategory.create({ data: { title, description } });
+                break;
+            case "brand":
+                yield prisma_1.default.productBrand.create({ data: { title, description } });
+                break;
+            case "skinType":
+                yield prisma_1.default.productSkinType.create({ data: { title, description } });
+                break;
+            default:
+                throw new error_handler_1.ValidationError("Invalid type!");
+        }
+        res.status(201).json({ success: true, message: `Product ${type} added!` });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.addProductMeta = addProductMeta;

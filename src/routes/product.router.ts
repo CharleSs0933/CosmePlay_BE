@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   addProduct,
+  addProductMeta,
   deleteProduct,
   getAllProducts,
   getProduct,
@@ -16,8 +17,15 @@ import {
 const router = express.Router();
 
 router.get("/", getAllProducts);
-router.get("/meta", getProductMeta);
 router.post("/", isAuthenticated, allowedRoles(["admin", "staff"]), addProduct);
+router.get("/meta", getProductMeta);
+router.post(
+  "/meta",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  addProductMeta
+);
+
 router.put(
   "/:id",
   isAuthenticated,

@@ -42,3 +42,15 @@ export const validateProductData = (data: any) => {
     throw new ValidationError("Missing required fields!");
   }
 };
+
+export const validateProductMetaData = (data: any) => {
+  const { title, description, type } = data;
+
+  if (!title || !description || !type) {
+    throw new ValidationError("Missing required fields!");
+  }
+
+  if (type !== "category" && type !== "brand" && type !== "skinType") {
+    throw new ValidationError("Invalid type!");
+  }
+};

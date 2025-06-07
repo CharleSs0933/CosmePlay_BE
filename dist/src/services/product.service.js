@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateProductData = exports.buildProductFilter = void 0;
+exports.validateProductMetaData = exports.validateProductData = exports.buildProductFilter = void 0;
 const error_handler_1 = require("../packages/error-handler");
 const buildProductFilter = (req) => {
     const { category, brand, skinType, title } = req.query;
@@ -32,3 +32,13 @@ const validateProductData = (data) => {
     }
 };
 exports.validateProductData = validateProductData;
+const validateProductMetaData = (data) => {
+    const { title, description, type } = data;
+    if (!title || !description || !type) {
+        throw new error_handler_1.ValidationError("Missing required fields!");
+    }
+    if (type !== "category" && type !== "brand" && type !== "skinType") {
+        throw new error_handler_1.ValidationError("Invalid type!");
+    }
+};
+exports.validateProductMetaData = validateProductMetaData;
