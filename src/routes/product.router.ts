@@ -33,6 +33,13 @@ router.put(
   updateProductMeta
 );
 
+router.delete(
+  "/meta/:id",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  deleteProduct
+);
+
 router.put(
   "/:id",
   isAuthenticated,

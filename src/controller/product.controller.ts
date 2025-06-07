@@ -324,3 +324,54 @@ export const updateProductMeta = async (
     next(error);
   }
 };
+
+export const deleteProductMeta = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const productMeta = await prisma.$transaction(async (tx) => {
+      const category = await tx.productCategory.findUnique({ where: { id } });
+      const brand = await tx.productBrand.findUnique({ where: { id } });
+      const skinType = await tx.productSkinType.findUnique({ where: { id } });
+      return { category, brand, skinType };
+    });
+
+    if (!productMeta) {
+      return next(new ValidationError("Product meta not found!"));
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        OR: [
+          { productCategory: { id } },
+          { productBrand: { id } },
+          { productSkinType: { id } },
+        ],
+      },
+    });
+
+    if (products.length > 0) {
+      return next(
+        new ValidationError("Product meta is used in one or more products!")
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      if (productMeta.category) {
+        await tx.productCategory.delete({ where: { id } });
+      } else if (productMeta.brand) {
+        await tx.productBrand.delete({ where: { id } });
+      } else if (productMeta.skinType) {
+        await tx.productSkinType.delete({ where: { id } });
+      }
+    });
+
+    res.status(200).json({ success: true, message: "Product meta deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};

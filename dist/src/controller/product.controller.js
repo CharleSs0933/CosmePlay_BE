@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateProductMeta = exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.deleteProductMeta = exports.updateProductMeta = exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -258,3 +258,45 @@ const updateProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.updateProductMeta = updateProductMeta;
+const deleteProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const productMeta = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            const category = yield tx.productCategory.findUnique({ where: { id } });
+            const brand = yield tx.productBrand.findUnique({ where: { id } });
+            const skinType = yield tx.productSkinType.findUnique({ where: { id } });
+            return { category, brand, skinType };
+        }));
+        if (!productMeta) {
+            return next(new error_handler_1.ValidationError("Product meta not found!"));
+        }
+        const products = yield prisma_1.default.product.findMany({
+            where: {
+                OR: [
+                    { productCategory: { id } },
+                    { productBrand: { id } },
+                    { productSkinType: { id } },
+                ],
+            },
+        });
+        if (products.length > 0) {
+            return next(new error_handler_1.ValidationError("Product meta is used in one or more products!"));
+        }
+        yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            if (productMeta.category) {
+                yield tx.productCategory.delete({ where: { id } });
+            }
+            else if (productMeta.brand) {
+                yield tx.productBrand.delete({ where: { id } });
+            }
+            else if (productMeta.skinType) {
+                yield tx.productSkinType.delete({ where: { id } });
+            }
+        }));
+        res.status(200).json({ success: true, message: "Product meta deleted!" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.deleteProductMeta = deleteProductMeta;
