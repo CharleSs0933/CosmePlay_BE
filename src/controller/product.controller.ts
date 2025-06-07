@@ -254,3 +254,73 @@ export const addProductMeta = async (
     next(error);
   }
 };
+
+export const updateProductMeta = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { title, description, type } = req.body;
+    validateProductMetaData(req.body);
+
+    const productMeta = await prisma.$transaction(async (tx) => {
+      switch (type) {
+        case "category":
+          return await tx.productCategory.findUnique({ where: { id } });
+        case "brand":
+          return await tx.productBrand.findUnique({ where: { id } });
+        case "skinType":
+          return await tx.productSkinType.findUnique({ where: { id } });
+        default:
+          throw new ValidationError("Invalid type!");
+      }
+    });
+
+    if (!productMeta) {
+      return next(new ValidationError("Product meta not found!"));
+    }
+
+    await prisma.$transaction(async (tx) => {
+      switch (type) {
+        case "category":
+          const productCategory = await tx.productCategory.findUnique({
+            where: { title },
+          });
+
+          if (productCategory) {
+            return next(
+              new ValidationError("Product category already exists!")
+            );
+          }
+
+          await tx.productCategory.update({
+            where: { id },
+            data: { title, description },
+          });
+          break;
+        case "brand":
+          await tx.productBrand.update({
+            where: { id },
+            data: { title, description },
+          });
+          break;
+        case "skinType":
+          await tx.productSkinType.update({
+            where: { id },
+            data: { title, description },
+          });
+          break;
+        default:
+          throw new ValidationError("Invalid type!");
+      }
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: `Product ${type} updated!` });
+  } catch (error) {
+    next(error);
+  }
+};

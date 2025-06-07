@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.updateProductMeta = exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -199,3 +199,62 @@ const addProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.addProductMeta = addProductMeta;
+const updateProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const { title, description, type } = req.body;
+        (0, product_service_1.validateProductMetaData)(req.body);
+        const productMeta = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            switch (type) {
+                case "category":
+                    return yield tx.productCategory.findUnique({ where: { id } });
+                case "brand":
+                    return yield tx.productBrand.findUnique({ where: { id } });
+                case "skinType":
+                    return yield tx.productSkinType.findUnique({ where: { id } });
+                default:
+                    throw new error_handler_1.ValidationError("Invalid type!");
+            }
+        }));
+        if (!productMeta) {
+            return next(new error_handler_1.ValidationError("Product meta not found!"));
+        }
+        yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            switch (type) {
+                case "category":
+                    const productCategory = yield tx.productCategory.findUnique({
+                        where: { title },
+                    });
+                    if (productCategory) {
+                        return next(new error_handler_1.ValidationError("Product category already exists!"));
+                    }
+                    yield tx.productCategory.update({
+                        where: { id },
+                        data: { title, description },
+                    });
+                    break;
+                case "brand":
+                    yield tx.productBrand.update({
+                        where: { id },
+                        data: { title, description },
+                    });
+                    break;
+                case "skinType":
+                    yield tx.productSkinType.update({
+                        where: { id },
+                        data: { title, description },
+                    });
+                    break;
+                default:
+                    throw new error_handler_1.ValidationError("Invalid type!");
+            }
+        }));
+        res
+            .status(200)
+            .json({ success: true, message: `Product ${type} updated!` });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.updateProductMeta = updateProductMeta;

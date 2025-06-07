@@ -8,6 +8,7 @@ import {
   getProduct,
   getProductMeta,
   updateProduct,
+  updateProductMeta,
 } from "../controller/product.controller";
 import {
   allowedRoles,
@@ -24,6 +25,12 @@ router.post(
   isAuthenticated,
   allowedRoles(["admin", "staff"]),
   addProductMeta
+);
+router.put(
+  "/meta/:id",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  updateProductMeta
 );
 
 router.put(
