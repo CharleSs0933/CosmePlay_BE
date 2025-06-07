@@ -33,6 +33,7 @@ model User {
   Address Address[]
   Order   Order[]
   Post    Post[]
+  Voucher Voucher[]
 }
 
 model Address {
@@ -194,4 +195,68 @@ enum OrderStatus {
   SHIPPED
   DELIVERD
   CANCELLED
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  start_time  DateTime
+  end_time    DateTime
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  questions Question[]
+}
+
+model Question {
+  id        String  @id @default(uuid())
+  event_id  String
+  content   String
+  image_url String?
+
+  event           Event            @relation(fields: [event_id], references: [id])
+  questionOptions QuestionOption[]
+}
+
+model QuestionOption {
+  id          String  @id @default(uuid())
+  question_id String
+  content     String
+  is_correct  Boolean @default(false)
+
+  question Question @relation(fields: [question_id], references: [id])
+}
+
+enum RewardType {
+  PERCENT
+  AMOUNT
+}
+
+model EventReward {
+  id             String     @id @default(uuid())
+  event_id       String
+  min_correct    Int
+  discount_value Float
+  type           RewardType @default(PERCENT)
+
+  vouchers Voucher[]
+}
+
+model Voucher {
+  id                   String     @id @default(uuid())
+  user_id              String
+  event_reward_id      String
+  stripe_customer_id   String
+  stripe_promo_code_id String
+  promo_code_display   String
+  stripe_coupon_id     String
+  discount_value       Float
+  type                 RewardType @default(PERCENT)
+  redeemed             Boolean    @default(false)
+  redeemed_at          DateTime?
+  created_at           DateTime   @default(now())
+
+  user        User        @relation(fields: [user_id], references: [id])
+  eventReward EventReward @relation(fields: [event_reward_id], references: [id])
 }

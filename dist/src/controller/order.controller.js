@@ -44,6 +44,30 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
         if (!address) {
             return next(new error_handler_1.ValidationError("Address not found!"));
         }
+        let customer;
+        const doesCustomerExist = yield stripe_1.default.customers.list({
+            email: user.email || `${user.name}@email.com`,
+        });
+        if (doesCustomerExist.data.length > 0) {
+            customer = doesCustomerExist.data[0];
+        }
+        else {
+            const newCustomer = yield stripe_1.default.customers.create({
+                name: user.username,
+                email: user.email || `${user.username}@email.com`,
+            });
+            customer = newCustomer;
+        }
+        const coupon = yield stripe_1.default.coupons.create({
+            currency: "vnd",
+            percent_off: 20,
+        });
+        const promotion = yield stripe_1.default.promotionCodes.create({
+            coupon: coupon.id,
+            customer: customer.id,
+            max_redemptions: 1,
+            code: `TEST`,
+        });
         const session = yield stripe_1.default.checkout.sessions.create({
             mode: "payment",
             line_items: cart.cartItems.map((item) => ({
@@ -57,9 +81,10 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                 },
                 quantity: item.quantity,
             })),
+            allow_promotion_codes: true,
             success_url: `${process.env.CLIENT_BASE_URL}/checkout/successs`,
             cancel_url: `${process.env.CLIENT_BASE_URL}/checkout/failure`,
-            customer_email: user.email,
+            customer: customer.id,
             metadata: {
                 cartId: cart.id,
                 userId: user.id,
@@ -254,10 +279,10 @@ const updateOrderStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         const { id } = req.params;
         const { status } = req.body;
         if (!status ||
-            status !== "PROCESSING" ||
-            status !== "SHIPPED" ||
-            status !== "DELIVERD" ||
-            status !== "CANCELLED") {
+            (status !== "PROCESSING" &&
+                status !== "SHIPPED" &&
+                status !== "DELIVERD" &&
+                status !== "CANCELLED")) {
             return next(new error_handler_1.ValidationError("Status is invalid!"));
         }
         const order = yield prisma_1.default.order.findUnique({ where: { id } });
