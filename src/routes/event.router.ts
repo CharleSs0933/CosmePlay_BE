@@ -69,6 +69,6 @@ router.delete(
   deleteEventReward
 );
 router.post("/play", isAuthenticated, playEvent);
-router.post("/calculate-reward", isAuthenticated, calculateEventReward);
+router.post("/:id/calculate-reward", isAuthenticated, calculateEventReward);
 
 export default router;
