@@ -6,6 +6,7 @@ import {
 } from "../packages/middleware/isAuthenticated";
 import {
   addEvent,
+  deleteEvent,
   get20QuestionsByEvent,
   getAllEvents,
   getAllQuestionsByEvent,
@@ -28,6 +29,12 @@ router.post(
   isAuthenticated,
   allowedRoles(["admin", "staff"]),
   addEvent
+);
+router.delete(
+  "/:id",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  deleteEvent
 );
 router.get(
   "/:id/questions",

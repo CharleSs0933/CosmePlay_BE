@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
+exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
 const getAllEvents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -68,6 +68,21 @@ const updateEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.updateEvent = updateEvent;
+const deleteEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
+        if (!event) {
+            return next(new Error("Event not found!"));
+        }
+        yield prisma_1.default.event.delete({ where: { id } });
+        res.status(200).json({ success: true, message: "Event deleted!" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.deleteEvent = deleteEvent;
 const getAllQuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;

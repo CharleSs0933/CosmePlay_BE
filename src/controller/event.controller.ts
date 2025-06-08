@@ -73,6 +73,28 @@ export const updateEvent = async (
   }
 };
 
+export const deleteEvent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return next(new Error("Event not found!"));
+    }
+
+    await prisma.event.delete({ where: { id } });
+
+    res.status(200).json({ success: true, message: "Event deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAllQuestionsByEvent = async (
   req: Request,
   res: Response,
