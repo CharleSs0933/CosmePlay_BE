@@ -19,7 +19,7 @@ const stripe_1 = __importDefault(require("../libs/stripe"));
 const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        const { shippingCost = 0, addressId } = req.body;
+        const { shippingCost = 0, addressId, couponId } = req.body;
         const cart = yield prisma_1.default.cart.findUnique({
             where: {
                 user_id: user.id,
@@ -58,16 +58,6 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
             });
             customer = newCustomer;
         }
-        const coupon = yield stripe_1.default.coupons.create({
-            currency: "vnd",
-            percent_off: 20,
-        });
-        const promotion = yield stripe_1.default.promotionCodes.create({
-            coupon: coupon.id,
-            customer: customer.id,
-            max_redemptions: 1,
-            code: `TEST`,
-        });
         const session = yield stripe_1.default.checkout.sessions.create({
             mode: "payment",
             line_items: cart.cartItems.map((item) => ({
@@ -81,7 +71,11 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                 },
                 quantity: item.quantity,
             })),
-            allow_promotion_codes: true,
+            discounts: [
+                {
+                    coupon: couponId,
+                },
+            ],
             success_url: `${process.env.CLIENT_BASE_URL}/checkout/successs`,
             cancel_url: `${process.env.CLIENT_BASE_URL}/checkout/failure`,
             customer: customer.id,

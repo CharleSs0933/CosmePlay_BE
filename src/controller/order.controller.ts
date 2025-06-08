@@ -11,7 +11,7 @@ export const createCheckoutSession = async (
 ) => {
   try {
     const user = req.user;
-    const { shippingCost = 0, addressId } = req.body;
+    const { shippingCost = 0, addressId, couponId } = req.body;
 
     const cart = await prisma.cart.findUnique({
       where: {
@@ -57,18 +57,6 @@ export const createCheckoutSession = async (
       customer = newCustomer;
     }
 
-    const coupon = await stripe.coupons.create({
-      currency: "vnd",
-      percent_off: 20,
-    });
-
-    const promotion = await stripe.promotionCodes.create({
-      coupon: coupon.id,
-      customer: customer.id,
-      max_redemptions: 1,
-      code: `TEST`,
-    });
-
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: cart.cartItems.map((item) => ({
@@ -82,7 +70,11 @@ export const createCheckoutSession = async (
         },
         quantity: item.quantity,
       })),
-      allow_promotion_codes: true,
+      discounts: [
+        {
+          coupon: couponId,
+        },
+      ],
       success_url: `${process.env.CLIENT_BASE_URL}/checkout/successs`,
       cancel_url: `${process.env.CLIENT_BASE_URL}/checkout/failure`,
       customer: customer.id,
