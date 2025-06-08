@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addEventReward = exports.getEventReward = exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
+exports.deleteEventReward = exports.updateEventReward = exports.addEventReward = exports.getEventReward = exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
 const error_handler_1 = require("../packages/error-handler");
@@ -190,3 +190,64 @@ const addEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.addEventReward = addEventReward;
+const updateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id, rewardId } = req.params;
+        const { min_correct, discount_value, type } = req.body;
+        if (type && type !== "AMOUNT" && type !== "PERCENT") {
+            return next(new error_handler_1.ValidationError("Invalid type!"));
+        }
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
+        if (!event) {
+            return next(new error_handler_1.ValidationError("Event not found!"));
+        }
+        const eventReward = yield prisma_1.default.eventReward.findUnique({
+            where: { id: rewardId },
+        });
+        if (!eventReward) {
+            return next(new error_handler_1.ValidationError("Reward not found!"));
+        }
+        if (eventReward.min_correct !== min_correct) {
+            const existingReward = yield prisma_1.default.eventReward.findMany({
+                where: { event_id: id, min_correct },
+            });
+            if (existingReward.length > 0) {
+                return next(new error_handler_1.ValidationError("Reward with this min_correct already exists!"));
+            }
+        }
+        const updatedEventReward = yield prisma_1.default.eventReward.update({
+            where: { id: rewardId },
+            data: {
+                discount_value: discount_value ? parseFloat(discount_value) : undefined,
+                min_correct: min_correct ? parseInt(min_correct) : undefined,
+                type: type ? type : undefined,
+            },
+        });
+        res.status(200).json({ success: true, eventReward: updatedEventReward });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.updateEventReward = updateEventReward;
+const deleteEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id, rewardId } = req.params;
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
+        if (!event) {
+            return next(new Error("Event not found!"));
+        }
+        const eventReward = yield prisma_1.default.eventReward.findUnique({
+            where: { id: rewardId },
+        });
+        if (!eventReward) {
+            return next(new Error("Reward not found!"));
+        }
+        yield prisma_1.default.eventReward.delete({ where: { id: rewardId } });
+        res.status(200).json({ success: true, message: "Reward deleted!" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.deleteEventReward = deleteEventReward;

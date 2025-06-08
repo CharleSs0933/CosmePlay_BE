@@ -8,12 +8,14 @@ import {
   addEvent,
   addEventReward,
   deleteEvent,
+  deleteEventReward,
   get20QuestionsByEvent,
   getAllEvents,
   getAllQuestionsByEvent,
   getEvent,
   getEventReward,
   updateEvent,
+  updateEventReward,
 } from "../controller/event.controller";
 
 const router = express.Router();
@@ -51,6 +53,18 @@ router.post(
   isAuthenticated,
   allowedRoles(["admin", "staff"]),
   addEventReward
+);
+router.put(
+  "/:id/rewards/update/:rewardId",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  updateEventReward
+);
+router.delete(
+  "/:id/rewards/:rewardId",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  deleteEventReward
 );
 
 export default router;

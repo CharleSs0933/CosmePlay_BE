@@ -237,3 +237,87 @@ export const addEventReward = async (
     next(error);
   }
 };
+
+export const updateEventReward = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id, rewardId } = req.params;
+    const { min_correct, discount_value, type } = req.body;
+
+    if (type && type !== "AMOUNT" && type !== "PERCENT") {
+      return next(new ValidationError("Invalid type!"));
+    }
+
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return next(new ValidationError("Event not found!"));
+    }
+
+    const eventReward = await prisma.eventReward.findUnique({
+      where: { id: rewardId },
+    });
+
+    if (!eventReward) {
+      return next(new ValidationError("Reward not found!"));
+    }
+
+    if (eventReward.min_correct !== min_correct) {
+      const existingReward = await prisma.eventReward.findMany({
+        where: { event_id: id, min_correct },
+      });
+
+      if (existingReward.length > 0) {
+        return next(
+          new ValidationError("Reward with this min_correct already exists!")
+        );
+      }
+    }
+
+    const updatedEventReward = await prisma.eventReward.update({
+      where: { id: rewardId },
+      data: {
+        discount_value: discount_value ? parseFloat(discount_value) : undefined,
+        min_correct: min_correct ? parseInt(min_correct) : undefined,
+        type: type ? type : undefined,
+      },
+    });
+
+    res.status(200).json({ success: true, eventReward: updatedEventReward });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteEventReward = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id, rewardId } = req.params;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return next(new Error("Event not found!"));
+    }
+
+    const eventReward = await prisma.eventReward.findUnique({
+      where: { id: rewardId },
+    });
+
+    if (!eventReward) {
+      return next(new Error("Reward not found!"));
+    }
+
+    await prisma.eventReward.delete({ where: { id: rewardId } });
+
+    res.status(200).json({ success: true, message: "Reward deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
