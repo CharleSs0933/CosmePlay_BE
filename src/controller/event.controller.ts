@@ -218,7 +218,9 @@ export const addEventReward = async (
     });
 
     if (existingReward) {
-      return next(new Error("Reward with this min_correct already exists!"));
+      return next(
+        new ValidationError("Reward with this min_correct already exists!")
+      );
     }
 
     const eventReward = await prisma.eventReward.create({

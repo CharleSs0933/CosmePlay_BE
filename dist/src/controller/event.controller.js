@@ -173,7 +173,7 @@ const addEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             where: { event_id: id, min_correct },
         });
         if (existingReward) {
-            return next(new Error("Reward with this min_correct already exists!"));
+            return next(new error_handler_1.ValidationError("Reward with this min_correct already exists!"));
         }
         const eventReward = yield prisma_1.default.eventReward.create({
             data: {
