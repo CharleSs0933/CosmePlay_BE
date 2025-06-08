@@ -216,7 +216,7 @@ model Question {
   content   String
   image_url String?
 
-  event           Event            @relation(fields: [event_id], references: [id])
+  event           Event            @relation(fields: [event_id], references: [id], onDelete: Cascade)
   questionOptions QuestionOption[]
 }
 
@@ -226,7 +226,7 @@ model QuestionOption {
   content     String
   is_correct  Boolean @default(false)
 
-  question Question @relation(fields: [question_id], references: [id])
+  question Question @relation(fields: [question_id], references: [id], onDelete: Cascade)
 }
 
 enum RewardType {
@@ -242,13 +242,13 @@ model EventReward {
   type           RewardType @default(PERCENT)
 
   vouchers Voucher[]
-  event    Event     @relation(fields: [event_id], references: [id])
+  event    Event     @relation(fields: [event_id], references: [id], onDelete: Cascade)
 }
 
 model Voucher {
   id               String     @id @default(uuid())
   user_id          String
-  event_reward_id  String
+  event_reward_id  String?
   stripe_coupon_id String
   discount_value   Float
   type             RewardType @default(PERCENT)
@@ -256,6 +256,6 @@ model Voucher {
   redeemed_at      DateTime?
   created_at       DateTime   @default(now())
 
-  user        User        @relation(fields: [user_id], references: [id])
-  eventReward EventReward @relation(fields: [event_reward_id], references: [id])
+  user        User         @relation(fields: [user_id], references: [id])
+  eventReward EventReward? @relation(fields: [event_reward_id], references: [id], onDelete: SetNull)
 }
