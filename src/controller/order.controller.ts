@@ -3,6 +3,7 @@ import prisma from "../libs/prisma";
 import { ValidationError } from "../packages/error-handler";
 import stripe from "../libs/stripe";
 import Stripe from "stripe";
+import { Prisma, Voucher } from "@prisma/client";
 
 export const createCheckoutSession = async (
   req: any,
@@ -41,6 +42,18 @@ export const createCheckoutSession = async (
       return next(new ValidationError("Address not found!"));
     }
 
+    if (couponId) {
+      const coupon = await prisma.voucher.findUnique({
+        where: {
+          stripe_coupon_id: couponId,
+        },
+      });
+
+      if (!coupon) {
+        return next(new ValidationError("Coupon not found!"));
+      }
+    }
+
     let customer;
     const doesCustomerExist = await stripe.customers.list({
       email: user.email || `${user.name}@email.com`,
@@ -72,7 +85,7 @@ export const createCheckoutSession = async (
       })),
       discounts: [
         {
-          coupon: couponId,
+          coupon: couponId ? couponId : undefined,
         },
       ],
       success_url: `${process.env.CLIENT_BASE_URL}/checkout/successs`,
@@ -82,6 +95,7 @@ export const createCheckoutSession = async (
         cartId: cart.id,
         userId: user.id,
         addressId,
+        couponId,
       },
       shipping_options: [
         {
@@ -193,7 +207,7 @@ export const stripeWebhooks = async (
           });
 
           // Decrement stock
-          await prisma.product.updateMany({
+          await tx.product.updateMany({
             where: {
               id: {
                 in: cart.cartItems.map((item) => item.product.id),
@@ -210,12 +224,32 @@ export const stripeWebhooks = async (
           });
 
           // Delete cart
-          await prisma.cart.delete({
+          await tx.cart.delete({
             where: {
               id: cardId,
               user_id: userId,
             },
           });
+
+          if (session.discounts && session.discounts.length > 0) {
+            const discount = session.discounts[0];
+
+            // Kiểm tra chắc chắn coupon là string
+            const couponId =
+              typeof discount.coupon === "string" ? discount.coupon : null;
+
+            if (couponId) {
+              await tx.voucher.update({
+                where: {
+                  stripe_coupon_id: couponId,
+                },
+                data: {
+                  redeemed: true,
+                  redeemed_at: new Date(),
+                },
+              });
+            }
+          }
         });
 
         break;

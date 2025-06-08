@@ -44,6 +44,16 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
         if (!address) {
             return next(new error_handler_1.ValidationError("Address not found!"));
         }
+        if (couponId) {
+            const coupon = yield prisma_1.default.voucher.findUnique({
+                where: {
+                    stripe_coupon_id: couponId,
+                },
+            });
+            if (!coupon) {
+                return next(new error_handler_1.ValidationError("Coupon not found!"));
+            }
+        }
         let customer;
         const doesCustomerExist = yield stripe_1.default.customers.list({
             email: user.email || `${user.name}@email.com`,
@@ -73,7 +83,7 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
             })),
             discounts: [
                 {
-                    coupon: couponId,
+                    coupon: couponId ? couponId : undefined,
                 },
             ],
             success_url: `${process.env.CLIENT_BASE_URL}/checkout/successs`,
@@ -83,6 +93,7 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                 cartId: cart.id,
                 userId: user.id,
                 addressId,
+                couponId,
             },
             shipping_options: [
                 {
@@ -175,7 +186,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         },
                     });
                     // Decrement stock
-                    yield prisma_1.default.product.updateMany({
+                    yield tx.product.updateMany({
                         where: {
                             id: {
                                 in: cart.cartItems.map((item) => item.product.id),
@@ -188,12 +199,28 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         },
                     });
                     // Delete cart
-                    yield prisma_1.default.cart.delete({
+                    yield tx.cart.delete({
                         where: {
                             id: cardId,
                             user_id: userId,
                         },
                     });
+                    if (session.discounts && session.discounts.length > 0) {
+                        const discount = session.discounts[0];
+                        // Kiểm tra chắc chắn coupon là string
+                        const couponId = typeof discount.coupon === "string" ? discount.coupon : null;
+                        if (couponId) {
+                            yield tx.voucher.update({
+                                where: {
+                                    stripe_coupon_id: couponId,
+                                },
+                                data: {
+                                    redeemed: true,
+                                    redeemed_at: new Date(),
+                                },
+                            });
+                        }
+                    }
                 }));
                 break;
             }

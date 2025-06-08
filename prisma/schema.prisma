@@ -249,7 +249,7 @@ model Voucher {
   id               String     @id @default(uuid())
   user_id          String
   event_reward_id  String?
-  stripe_coupon_id String
+  stripe_coupon_id String     @unique
   discount_value   Float
   type             RewardType @default(PERCENT)
   redeemed         Boolean    @default(false)
