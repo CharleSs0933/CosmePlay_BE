@@ -33,6 +33,7 @@ async function main() {
     "post.json",
     "postStep.json",
     "event.json",
+    "eventReward.json",
     "question.json",
     "questionOption.json",
   ];

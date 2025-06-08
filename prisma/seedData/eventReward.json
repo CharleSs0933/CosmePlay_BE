@@ -1,0 +1,37 @@
+[
+  {
+    "id": "2",
+    "event_id": "1",
+    "min_correct": 16,
+    "discount_value": 50000.0,
+    "type": "AMOUNT"
+  },
+  {
+    "id": "3",
+    "event_id": "1",
+    "min_correct": 17,
+    "discount_value": 15.0,
+    "type": "PERCENT"
+  },
+  {
+    "id": "4",
+    "event_id": "1",
+    "min_correct": 18,
+    "discount_value": 18.0,
+    "type": "PERCENT"
+  },
+  {
+    "id": "5",
+    "event_id": "1",
+    "min_correct": 19,
+    "discount_value": 20.0,
+    "type": "PERCENT"
+  },
+  {
+    "id": "6",
+    "event_id": "1",
+    "min_correct": 20,
+    "discount_value": 25.0,
+    "type": "PERCENT"
+  }
+]

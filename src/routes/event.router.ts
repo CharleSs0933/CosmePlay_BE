@@ -6,11 +6,13 @@ import {
 } from "../packages/middleware/isAuthenticated";
 import {
   addEvent,
+  addEventReward,
   deleteEvent,
   get20QuestionsByEvent,
   getAllEvents,
   getAllQuestionsByEvent,
   getEvent,
+  getEventReward,
   updateEvent,
 } from "../controller/event.controller";
 
@@ -43,5 +45,12 @@ router.get(
   getAllQuestionsByEvent
 );
 router.get("/:id/questions/random", isAuthenticated, get20QuestionsByEvent);
+router.get("/:id/rewards", getEventReward);
+router.post(
+  "/:id/rewards/add",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  addEventReward
+);
 
 export default router;

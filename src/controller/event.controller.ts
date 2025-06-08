@@ -163,3 +163,74 @@ export const get20QuestionsByEvent = async (
     next(error);
   }
 };
+
+export const getEventReward = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return next(new Error("Event not found!"));
+    }
+
+    const eventRewards = await prisma.eventReward.findMany({
+      where: { event_id: id },
+    });
+
+    res.status(200).json({ success: true, eventRewards });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addEventReward = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { min_correct, discount_value, type } = req.body;
+
+    if (
+      !min_correct ||
+      !discount_value ||
+      !type ||
+      (type !== "AMOUNT" && type !== "PERCENT")
+    ) {
+      return next(new Error("Missing required fields!"));
+    }
+
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return next(new Error("Event not found!"));
+    }
+
+    const existingReward = await prisma.eventReward.findMany({
+      where: { event_id: id, min_correct },
+    });
+
+    if (existingReward) {
+      return next(new Error("Reward with this min_correct already exists!"));
+    }
+
+    const eventReward = await prisma.eventReward.create({
+      data: {
+        discount_value: parseFloat(discount_value),
+        event_id: id,
+        min_correct: parseInt(min_correct),
+        type,
+      },
+    });
+
+    res.status(201).json({ success: true, eventReward });
+  } catch (error) {
+    next(error);
+  }
+};

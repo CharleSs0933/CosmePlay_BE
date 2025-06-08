@@ -237,7 +237,7 @@ enum RewardType {
 model EventReward {
   id             String     @id @default(uuid())
   event_id       String
-  min_correct    Int
+  min_correct    Int        @unique
   discount_value Float
   type           RewardType @default(PERCENT)
 
