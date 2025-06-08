@@ -348,18 +348,18 @@ export const calculateEventReward = async (
 ) => {
   try {
     const user = req.user;
-    const { id: eventId } = req.params;
+    const { id } = req.params;
     const { correct_answers } = req.body;
 
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    const event = await prisma.event.findUnique({ where: { id } });
 
     if (!event) {
-      return next(new ValidationError("Sự kiện không tồn tại!"));
+      return next(new ValidationError("Event not found!"));
     }
 
     const reward = await calculateReward(user, event.id, correct_answers, next);
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       reward: reward ?? null,
       message: reward

@@ -7,6 +7,7 @@ import {
 import {
   addEvent,
   addEventReward,
+  calculateEventReward,
   deleteEvent,
   deleteEventReward,
   get20QuestionsByEvent,
@@ -68,5 +69,6 @@ router.delete(
   deleteEventReward
 );
 router.post("/play", isAuthenticated, playEvent);
+router.post("/calculate-reward", isAuthenticated, calculateEventReward);
 
 export default router;

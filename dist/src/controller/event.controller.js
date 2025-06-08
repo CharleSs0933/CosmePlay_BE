@@ -265,14 +265,14 @@ exports.playEvent = playEvent;
 const calculateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        const { id: eventId } = req.params;
+        const { id } = req.params;
         const { correct_answers } = req.body;
-        const event = yield prisma_1.default.event.findUnique({ where: { id: eventId } });
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
-            return next(new error_handler_1.ValidationError("Sự kiện không tồn tại!"));
+            return next(new error_handler_1.ValidationError("Event not found!"));
         }
         const reward = yield (0, event_service_1.calculateReward)(user, event.id, correct_answers, next);
-        return res.status(200).json({
+        res.status(200).json({
             success: true,
             reward: reward !== null && reward !== void 0 ? reward : null,
             message: reward
