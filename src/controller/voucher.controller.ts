@@ -9,7 +9,7 @@ export const getVouchersByUser = async (
   try {
     const user = req.user;
     const vouchers = await prisma.voucher.findMany({
-      where: { user_id: user.id },
+      where: { user_id: user.id, redeemed: false },
     });
     res.status(200).json({ success: true, vouchers });
   } catch (error) {
