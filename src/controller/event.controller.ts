@@ -217,7 +217,7 @@ export const addEventReward = async (
       where: { event_id: id, min_correct },
     });
 
-    if (existingReward) {
+    if (existingReward.length > 0) {
       return next(
         new ValidationError("Reward with this min_correct already exists!")
       );
