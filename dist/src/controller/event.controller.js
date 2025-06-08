@@ -1,0 +1,124 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
+const prisma_1 = __importDefault(require("../libs/prisma"));
+const event_service_1 = require("../services/event.service");
+const getAllEvents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const events = yield prisma_1.default.event.findMany({});
+        res.status(200).json({ success: true, events });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getAllEvents = getAllEvents;
+const getEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
+        res.status(200).json({ success: true, event });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getEvent = getEvent;
+const addEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        (0, event_service_1.validateEventData)(req.body);
+        const event = yield prisma_1.default.event.create({ data: req.body });
+        res.status(201).json({ success: true, event });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.addEvent = addEvent;
+const updateEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const updatedData = Object.assign({}, req.body);
+        const event = yield prisma_1.default.event.findUnique({
+            where: { id },
+        });
+        if (!event) {
+            return next(new Error("Event not found!"));
+        }
+        const updatedEvent = yield prisma_1.default.event.update({
+            where: { id },
+            data: updatedData,
+        });
+        res.status(200).json({ success: true, event: updatedEvent });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.updateEvent = updateEvent;
+const getAllQuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
+        if (!event) {
+            return next(new Error("Event not found!"));
+        }
+        const questions = yield prisma_1.default.question.findMany({
+            where: { event_id: id },
+            include: {
+                questionOptions: {
+                    select: {
+                        content: true,
+                        is_correct: true,
+                    },
+                },
+            },
+        });
+        res.status(200).json({ success: true, questions });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getAllQuestionsByEvent = getAllQuestionsByEvent;
+const get20QuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
+        if (!event) {
+            return next(new Error("Event not found!"));
+        }
+        const questions = yield prisma_1.default.question.findMany({
+            where: { event_id: id },
+            include: {
+                questionOptions: {
+                    select: {
+                        content: true,
+                        is_correct: true,
+                    },
+                },
+            },
+        });
+        // Get random 20 questions
+        const randomQuestions = questions
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 20);
+        res.status(200).json({ success: true, questions: randomQuestions });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.get20QuestionsByEvent = get20QuestionsByEvent;

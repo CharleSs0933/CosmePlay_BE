@@ -1,0 +1,486 @@
+[
+  {
+    "id": "1",
+    "content": "5 phút",
+    "question_id": "1",
+    "is_correct": false
+  },
+  {
+    "id": "2",
+    "content": "15-20 phút",
+    "question_id": "1",
+    "is_correct": true
+  },
+  {
+    "id": "3",
+    "content": "Ngay khi ra ngoài",
+    "question_id": "1",
+    "is_correct": false
+  },
+  {
+    "id": "4",
+    "content": "30 phút sau khi ra ngoài",
+    "question_id": "1",
+    "is_correct": false
+  },
+
+  {
+    "id": "5",
+    "question_id": "2",
+    "content": "Số lần bôi lại kem trong ngày",
+    "is_correct": false
+  },
+  {
+    "id": "6",
+    "question_id": "2",
+
+    "content": "Khả năng chống tia UVB",
+    "is_correct": true
+  },
+  {
+    "id": "7",
+    "content": "Độ ẩm của da",
+    "question_id": "2",
+    "is_correct": false
+  },
+  {
+    "id": "8",
+    "content": "Chỉ số chống nước",
+    "question_id": "2",
+    "is_correct": false
+  },
+
+  {
+    "id": "9",
+    "content": "Kem nền chứa SPF",
+    "question_id": "3",
+    "is_correct": false
+  },
+  {
+    "id": "10",
+    "content": "Kem chống nắng dạng gel",
+    "question_id": "3",
+    "is_correct": true
+  },
+  {
+    "id": "11",
+    "content": "Kem chống nắng dạng dầu",
+    "question_id": "3",
+    "is_correct": false
+  },
+  {
+    "id": "12",
+    "content": "Không dùng kem chống nắng",
+    "question_id": "3",
+    "is_correct": false
+  },
+
+  {
+    "id": "13",
+    "content": "Khi da đổ dầu",
+    "question_id": "4",
+    "is_correct": false
+  },
+  {
+    "id": "14",
+    "content": "Chỉ khi trang điểm",
+    "question_id": "4",
+    "is_correct": false
+  },
+  {
+    "id": "15",
+    "content": "Mỗi tối trước khi rửa mặt",
+    "question_id": "4",
+    "is_correct": true
+  },
+  {
+    "id": "16",
+    "content": "Khi sử dụng sữa rửa mặt",
+    "question_id": "4",
+    "is_correct": false
+  },
+  {
+    "id": "17",
+    "content": "The Ordinary Vitamin C",
+    "question_id": "5",
+    "is_correct": true
+  },
+  {
+    "id": "18",
+    "content": "Cetaphil Cleanser",
+    "question_id": "5",
+    "is_correct": false
+  },
+  {
+    "id": "19",
+    "content": "La Roche-Posay Micellar Water",
+    "question_id": "5",
+    "is_correct": false
+  },
+  {
+    "id": "20",
+    "content": "Nivea Cream",
+    "question_id": "5",
+    "is_correct": false
+  },
+  {
+    "id": "21",
+    "content": "1 lần/ngày",
+    "question_id": "6",
+    "is_correct": false
+  },
+  {
+    "id": "22",
+    "content": "2 lần/ngày",
+    "question_id": "6",
+    "is_correct": true
+  },
+  {
+    "id": "23",
+    "content": "3 lần/ngày",
+    "question_id": "6",
+    "is_correct": false
+  },
+  {
+    "id": "24",
+    "content": "Mỗi khi thấy da khô",
+    "question_id": "6",
+    "is_correct": false
+  },
+  {
+    "id": "25",
+    "content": "Niacinamide",
+    "question_id": "7",
+    "is_correct": true
+  },
+  {
+    "id": "26",
+    "content": "Retinol",
+    "question_id": "7",
+    "is_correct": false
+  },
+  {
+    "id": "27",
+    "content": "AHA",
+    "question_id": "7",
+    "is_correct": false
+  },
+  {
+    "id": "28",
+    "content": "BHA",
+    "question_id": "7",
+    "is_correct": false
+  },
+  {
+    "id": "29",
+    "content": "Cồn",
+    "question_id": "8",
+    "is_correct": false
+  },
+  {
+    "id": "30",
+    "content": "Glycerin",
+    "question_id": "8",
+    "is_correct": true
+  },
+  {
+    "id": "31",
+    "content": "Sulfate",
+    "question_id": "8",
+    "is_correct": false
+  },
+  {
+    "id": "32",
+    "content": "Silicone",
+    "question_id": "8",
+    "is_correct": false
+  },
+  {
+    "id": "33",
+    "content": "Trước khi rửa mặt",
+    "question_id": "9",
+    "is_correct": false
+  },
+  {
+    "id": "34",
+    "content": "Sau khi serum",
+    "question_id": "9",
+    "is_correct": false
+  },
+  {
+    "id": "35",
+    "content": "Sau khi rửa mặt",
+    "question_id": "9",
+    "is_correct": true
+  },
+  {
+    "id": "36",
+    "content": "Sau khi chống nắng",
+    "question_id": "9",
+    "is_correct": false
+  },
+  {
+    "id": "37",
+    "content": "BHA",
+    "question_id": "10",
+    "is_correct": false
+  },
+  {
+    "id": "38",
+    "content": "Vitamin C",
+    "question_id": "10",
+    "is_correct": false
+  },
+  {
+    "id": "39",
+    "content": "Mineral oil",
+    "question_id": "10",
+    "is_correct": true
+  },
+  {
+    "id": "40",
+    "content": "Niacinamide",
+    "question_id": "10",
+    "is_correct": false
+  },
+  {
+    "id": "41",
+    "content": "Chống nắng",
+    "question_id": "11",
+    "is_correct": false
+  },
+  {
+    "id": "42",
+    "content": "Dưỡng ẩm",
+    "question_id": "11",
+    "is_correct": false
+  },
+  {
+    "id": "43",
+    "content": "Chống lão hóa và trị mụn",
+    "question_id": "11",
+    "is_correct": true
+  },
+  {
+    "id": "44",
+    "content": "Làm trắng tức thì",
+    "question_id": "11",
+    "is_correct": false
+  },
+  {
+    "id": "45",
+    "content": "Hydroquinone",
+    "question_id": "12",
+    "is_correct": false
+  },
+  {
+    "id": "46",
+    "content": "Vitamin C",
+    "question_id": "12",
+    "is_correct": true
+  },
+  {
+    "id": "47",
+    "content": "Petroleum",
+    "question_id": "12",
+    "is_correct": false
+  },
+  {
+    "id": "48",
+    "content": "Lanolin",
+    "question_id": "12",
+    "is_correct": false
+  },
+  {
+    "id": "49",
+    "content": "Không chứa hóa chất độc hại",
+    "question_id": "13",
+    "is_correct": true
+  },
+  {
+    "id": "50",
+    "content": "Chứa nhiều hương liệu",
+    "question_id": "13",
+    "is_correct": false
+  },
+  {
+    "id": "51",
+    "content": "Chống nắng cao",
+    "question_id": "13",
+    "is_correct": false
+  },
+  {
+    "id": "52",
+    "content": "Làm trắng nhanh",
+    "question_id": "13",
+    "is_correct": false
+  },
+  {
+    "id": "53",
+    "content": "Trước khi rửa mặt",
+    "question_id": "14",
+    "is_correct": false
+  },
+  {
+    "id": "54",
+    "content": "Trước khi makeup",
+    "question_id": "14",
+    "is_correct": false
+  },
+  {
+    "id": "55",
+    "content": "Sau bước toner",
+    "question_id": "14",
+    "is_correct": true
+  },
+  {
+    "id": "56",
+    "content": "Khi da khô",
+    "question_id": "14",
+    "is_correct": false
+  },
+  {
+    "id": "57",
+    "content": "Da khô thiếu dầu, da thiếu nước thiếu ẩm",
+    "question_id": "15",
+    "is_correct": true
+  },
+  {
+    "id": "58",
+    "content": "Da khô và da thiếu nước là giống nhau",
+    "question_id": "15",
+    "is_correct": false
+  },
+  {
+    "id": "59",
+    "content": "Da thiếu nước thường nhiều dầu",
+    "question_id": "15",
+    "is_correct": false
+  },
+  {
+    "id": "60",
+    "content": "Không thể phân biệt",
+    "question_id": "15",
+    "is_correct": false
+  },
+  {
+    "id": "61",
+    "content": "Dưỡng ẩm và chống oxy hóa",
+    "question_id": "16",
+    "is_correct": true
+  },
+  {
+    "id": "62",
+    "content": "Gây mụn",
+    "question_id": "16",
+    "is_correct": false
+  },
+  {
+    "id": "63",
+    "content": "Tẩy tế bào chết",
+    "question_id": "16",
+    "is_correct": false
+  },
+  {
+    "id": "64",
+    "content": "Làm sạch da",
+    "question_id": "16",
+    "is_correct": false
+  },
+  {
+    "id": "65",
+    "content": "Giúp làm sạch lỗ chân lông và kiểm soát dầu",
+    "question_id": "17",
+    "is_correct": true
+  },
+  {
+    "id": "66",
+    "content": "Làm trắng da",
+    "question_id": "17",
+    "is_correct": false
+  },
+  {
+    "id": "67",
+    "content": "Giữ ẩm lâu dài",
+    "question_id": "17",
+    "is_correct": false
+  },
+  {
+    "id": "68",
+    "content": "Thay thế cho retinol",
+    "question_id": "17",
+    "is_correct": false
+  },
+  {
+    "id": "69",
+    "content": "Serum chứa dưỡng chất đậm đặc hơn",
+    "question_id": "18",
+    "is_correct": true
+  },
+  {
+    "id": "70",
+    "content": "Kem dưỡng dùng trước serum",
+    "question_id": "18",
+    "is_correct": false
+  },
+  {
+    "id": "71",
+    "content": "Cả hai giống nhau",
+    "question_id": "18",
+    "is_correct": false
+  },
+  {
+    "id": "72",
+    "content": "Serum là để tẩy trang",
+    "question_id": "18",
+    "is_correct": false
+  },
+  {
+    "id": "73",
+    "content": "Mặt nạ đất sét",
+    "question_id": "19",
+    "is_correct": true
+  },
+  {
+    "id": "74",
+    "content": "Mặt nạ giấy",
+    "question_id": "19",
+    "is_correct": false
+  },
+  {
+    "id": "75",
+    "content": "Mặt nạ ngủ",
+    "question_id": "19",
+    "is_correct": false
+  },
+  {
+    "id": "76",
+    "content": "Mặt nạ dưỡng ẩm",
+    "question_id": "19",
+    "is_correct": false
+  },
+  {
+    "id": "77",
+    "content": "Để nơi khô ráo, tránh ánh sáng",
+    "question_id": "20",
+    "is_correct": true
+  },
+  {
+    "id": "78",
+    "content": "Bảo quản trong phòng tắm",
+    "question_id": "20",
+    "is_correct": false
+  },
+  {
+    "id": "79",
+    "content": "Để trong cốp xe",
+    "question_id": "20",
+    "is_correct": false
+  },
+  {
+    "id": "80",
+    "content": "Bảo quản ở nơi có ánh sáng trực tiếp",
+    "question_id": "20",
+    "is_correct": false
+  }
+]

@@ -1,0 +1,16 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const isAuthenticated_1 = require("../packages/middleware/isAuthenticated");
+const event_controller_1 = require("../controller/event.controller");
+const router = express_1.default.Router();
+router.get("/get", event_controller_1.getAllEvents);
+router.get("/get/:id", event_controller_1.getEvent);
+router.put("/update/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.updateEvent);
+router.post("/add", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.addEvent);
+router.get("/:id/questions", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.getAllQuestionsByEvent);
+router.get("/:id/questions/random", isAuthenticated_1.isAuthenticated, event_controller_1.get20QuestionsByEvent);
+exports.default = router;

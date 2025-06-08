@@ -45,6 +45,9 @@ function main() {
             "address.json",
             "post.json",
             "postStep.json",
+            "event.json",
+            "question.json",
+            "questionOption.json",
         ];
         const deleteFileNames = [...orderedFileNames].reverse();
         yield deleteAllData(deleteFileNames);
