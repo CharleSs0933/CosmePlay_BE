@@ -254,7 +254,7 @@ exports.deleteEventReward = deleteEventReward;
 const playEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        (0, event_service_1.checkPlayedRestrictions)(user.email, next);
+        yield (0, event_service_1.checkPlayedRestrictions)(user.email, next);
         res.status(200).json({ success: true });
     }
     catch (error) {

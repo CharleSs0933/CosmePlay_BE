@@ -230,27 +230,27 @@ export const stripeWebhooks = async (
               user_id: userId,
             },
           });
-
-          if (session.discounts && session.discounts.length > 0) {
-            const discount = session.discounts[0];
-
-            // Kiểm tra chắc chắn coupon là string
-            const couponId =
-              typeof discount.coupon === "string" ? discount.coupon : null;
-
-            if (couponId) {
-              await tx.voucher.update({
-                where: {
-                  stripe_coupon_id: couponId,
-                },
-                data: {
-                  redeemed: true,
-                  redeemed_at: new Date(),
-                },
-              });
-            }
-          }
         });
+
+        if (session.discounts && session.discounts.length > 0) {
+          const discount = session.discounts[0];
+
+          // Kiểm tra chắc chắn coupon là string
+          const couponId =
+            typeof discount.coupon === "string" ? discount.coupon : null;
+
+          if (couponId) {
+            await prisma.voucher.update({
+              where: {
+                stripe_coupon_id: couponId,
+              },
+              data: {
+                redeemed: true,
+                redeemed_at: new Date(),
+              },
+            });
+          }
+        }
 
         break;
       }

@@ -205,23 +205,23 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             user_id: userId,
                         },
                     });
-                    if (session.discounts && session.discounts.length > 0) {
-                        const discount = session.discounts[0];
-                        // Kiểm tra chắc chắn coupon là string
-                        const couponId = typeof discount.coupon === "string" ? discount.coupon : null;
-                        if (couponId) {
-                            yield tx.voucher.update({
-                                where: {
-                                    stripe_coupon_id: couponId,
-                                },
-                                data: {
-                                    redeemed: true,
-                                    redeemed_at: new Date(),
-                                },
-                            });
-                        }
-                    }
                 }));
+                if (session.discounts && session.discounts.length > 0) {
+                    const discount = session.discounts[0];
+                    // Kiểm tra chắc chắn coupon là string
+                    const couponId = typeof discount.coupon === "string" ? discount.coupon : null;
+                    if (couponId) {
+                        yield prisma_1.default.voucher.update({
+                            where: {
+                                stripe_coupon_id: couponId,
+                            },
+                            data: {
+                                redeemed: true,
+                                redeemed_at: new Date(),
+                            },
+                        });
+                    }
+                }
                 break;
             }
             case `coupon.created`: {

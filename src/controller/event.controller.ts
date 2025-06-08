@@ -333,7 +333,7 @@ export const playEvent = async (
 ) => {
   try {
     const user = req.user;
-    checkPlayedRestrictions(user.email, next);
+    await checkPlayedRestrictions(user.email, next);
 
     res.status(200).json({ success: true });
   } catch (error) {
