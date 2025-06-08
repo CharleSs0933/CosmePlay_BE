@@ -12,7 +12,7 @@ import {
 
 const router = express.Router();
 
-router.post("/", isAuthenticated, getVouchersByUser);
+router.get("/", isAuthenticated, getVouchersByUser);
 router.get(
   "/all",
   isAuthenticated,
