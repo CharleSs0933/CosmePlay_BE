@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addEventReward = exports.getEventReward = exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
+const error_handler_1 = require("../packages/error-handler");
 const getAllEvents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const events = yield prisma_1.default.event.findMany({});
@@ -162,11 +163,11 @@ const addEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
             !discount_value ||
             !type ||
             (type !== "AMOUNT" && type !== "PERCENT")) {
-            return next(new Error("Missing required fields!"));
+            return next(new error_handler_1.ValidationError("Missing required fields!"));
         }
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
-            return next(new Error("Event not found!"));
+            return next(new error_handler_1.ValidationError("Event not found!"));
         }
         const existingReward = yield prisma_1.default.eventReward.findMany({
             where: { event_id: id, min_correct },

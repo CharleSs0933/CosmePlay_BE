@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 import { validateEventData } from "../services/event.service";
+import { ValidationError } from "../packages/error-handler";
 
 export const getAllEvents = async (
   req: Request,
@@ -203,13 +204,13 @@ export const addEventReward = async (
       !type ||
       (type !== "AMOUNT" && type !== "PERCENT")
     ) {
-      return next(new Error("Missing required fields!"));
+      return next(new ValidationError("Missing required fields!"));
     }
 
     const event = await prisma.event.findUnique({ where: { id } });
 
     if (!event) {
-      return next(new Error("Event not found!"));
+      return next(new ValidationError("Event not found!"));
     }
 
     const existingReward = await prisma.eventReward.findMany({
