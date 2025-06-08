@@ -126,7 +126,7 @@ export const createCheckoutSession = async (
   }
 };
 
-export const createOrder = async (
+export const stripeWebhooks = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -224,6 +224,32 @@ export const createOrder = async (
               user_id: userId,
             },
           });
+        });
+
+        break;
+      }
+
+      case `coupon.created`: {
+        const coupon = event.data.object as Stripe.Coupon;
+
+        const userId = coupon.metadata?.userId;
+        const eventId = coupon.metadata?.eventId;
+        const eventRewardId = coupon.metadata?.eventRewardId;
+
+        if (!userId || !eventId || !eventRewardId) {
+          return next(new ValidationError("Missing metadata!"));
+        }
+
+        await prisma.voucher.create({
+          data: {
+            user_id: userId,
+            discount_value: coupon.percent_off
+              ? coupon.percent_off!
+              : coupon.amount_off!,
+            type: coupon.percent_off ? "PERCENT" : "AMOUNT",
+            stripe_coupon_id: coupon.id,
+            event_reward_id: eventRewardId,
+          },
         });
 
         break;

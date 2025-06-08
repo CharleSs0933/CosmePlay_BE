@@ -14,6 +14,7 @@ import {
   getAllQuestionsByEvent,
   getEvent,
   getEventReward,
+  playEvent,
   updateEvent,
   updateEventReward,
 } from "../controller/event.controller";
@@ -66,5 +67,6 @@ router.delete(
   allowedRoles(["admin", "staff"]),
   deleteEventReward
 );
+router.post("/play", isAuthenticated, playEvent);
 
 export default router;

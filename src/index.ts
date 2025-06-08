@@ -7,7 +7,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import { errorMiddleware } from "./packages/error-handler/error-middleware";
-import { createOrder } from "./controller/order.controller";
+import { stripeWebhooks } from "./controller/order.controller";
 /* ROUTE IMPORT */
 import AuthRouter from "./routes/auth.router";
 import ProductRouter from "./routes/product.router";
@@ -25,7 +25,7 @@ const app = express();
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json" }),
-  createOrder
+  stripeWebhooks
 );
 
 app.use(express.json({ limit: "100mb" }));

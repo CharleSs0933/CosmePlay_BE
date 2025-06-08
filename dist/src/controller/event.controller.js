@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteEventReward = exports.updateEventReward = exports.addEventReward = exports.getEventReward = exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
+exports.calculateEventReward = exports.playEvent = exports.deleteEventReward = exports.updateEventReward = exports.addEventReward = exports.getEventReward = exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
 const error_handler_1 = require("../packages/error-handler");
@@ -251,3 +251,37 @@ const deleteEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.deleteEventReward = deleteEventReward;
+const playEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = req.user;
+        (0, event_service_1.checkPlayedRestrictions)(user.email, next);
+        res.status(200).json({ success: true });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.playEvent = playEvent;
+const calculateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const user = req.user;
+        const { id: eventId } = req.params;
+        const { correct_answers } = req.body;
+        const event = yield prisma_1.default.event.findUnique({ where: { id: eventId } });
+        if (!event) {
+            return next(new error_handler_1.ValidationError("Sự kiện không tồn tại!"));
+        }
+        const reward = yield (0, event_service_1.calculateReward)(user, event.id, correct_answers, next);
+        return res.status(200).json({
+            success: true,
+            reward: reward !== null && reward !== void 0 ? reward : null,
+            message: reward
+                ? "Coupon created successfully!"
+                : "Not enough correct answers!",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.calculateEventReward = calculateEventReward;

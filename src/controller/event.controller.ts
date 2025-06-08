@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
-import { validateEventData } from "../services/event.service";
+import {
+  calculateReward,
+  checkPlayedRestrictions,
+  validateEventData,
+} from "../services/event.service";
 import { ValidationError } from "../packages/error-handler";
 
 export const getAllEvents = async (
@@ -317,6 +321,51 @@ export const deleteEventReward = async (
     await prisma.eventReward.delete({ where: { id: rewardId } });
 
     res.status(200).json({ success: true, message: "Reward deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const playEvent = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+    checkPlayedRestrictions(user.email, next);
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const calculateEventReward = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = req.user;
+    const { id: eventId } = req.params;
+    const { correct_answers } = req.body;
+
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+
+    if (!event) {
+      return next(new ValidationError("Sự kiện không tồn tại!"));
+    }
+
+    const reward = await calculateReward(user, event.id, correct_answers, next);
+
+    return res.status(200).json({
+      success: true,
+      reward: reward ?? null,
+      message: reward
+        ? "Coupon created successfully!"
+        : "Not enough correct answers!",
+    });
   } catch (error) {
     next(error);
   }

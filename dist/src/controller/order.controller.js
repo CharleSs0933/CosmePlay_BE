@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatus = exports.getAllOrders = exports.getOrderDetail = exports.getOrdersByUser = exports.createOrder = exports.createCheckoutSession = void 0;
+exports.updateOrderStatus = exports.getAllOrders = exports.getOrderDetail = exports.getOrdersByUser = exports.stripeWebhooks = exports.createCheckoutSession = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const stripe_1 = __importDefault(require("../libs/stripe"));
@@ -123,8 +123,8 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
     }
 });
 exports.createCheckoutSession = createCheckoutSession;
-const createOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c;
+const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b, _c, _d, _e, _f;
     try {
         const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
         const sig = req.headers["stripe-signature"];
@@ -203,6 +203,27 @@ const createOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
                 }));
                 break;
             }
+            case `coupon.created`: {
+                const coupon = event.data.object;
+                const userId = (_d = coupon.metadata) === null || _d === void 0 ? void 0 : _d.userId;
+                const eventId = (_e = coupon.metadata) === null || _e === void 0 ? void 0 : _e.eventId;
+                const eventRewardId = (_f = coupon.metadata) === null || _f === void 0 ? void 0 : _f.eventRewardId;
+                if (!userId || !eventId || !eventRewardId) {
+                    return next(new error_handler_1.ValidationError("Missing metadata!"));
+                }
+                yield prisma_1.default.voucher.create({
+                    data: {
+                        user_id: userId,
+                        discount_value: coupon.percent_off
+                            ? coupon.percent_off
+                            : coupon.amount_off,
+                        type: coupon.percent_off ? "PERCENT" : "AMOUNT",
+                        stripe_coupon_id: coupon.id,
+                        event_reward_id: eventRewardId,
+                    },
+                });
+                break;
+            }
             default: {
                 console.log(`Unhandled event type: ${event.type}`);
                 break;
@@ -214,7 +235,7 @@ const createOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         next(error);
     }
 });
-exports.createOrder = createOrder;
+exports.stripeWebhooks = stripeWebhooks;
 const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
