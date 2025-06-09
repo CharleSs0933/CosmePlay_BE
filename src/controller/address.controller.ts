@@ -51,7 +51,16 @@ export const updateAddress = async (
   try {
     const user = req.user;
     const { id } = req.params;
-    const { address, city, pincode, phone, notes } = req.body;
+    const {
+      address,
+      city,
+      pincode,
+      phone,
+      notes,
+      to_city_id,
+      to_district_id,
+      to_ward_code,
+    } = req.body;
 
     const addressToUpdate = await prisma.address.findUnique({
       where: { id, user_id: user.id },
@@ -69,6 +78,9 @@ export const updateAddress = async (
         pincode,
         phone,
         notes,
+        to_city_id,
+        to_district_id,
+        to_ward_code,
       },
     });
 
