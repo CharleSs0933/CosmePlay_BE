@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.validateProductMetaData = exports.validateProductData = exports.buildProductFilter = void 0;
 const error_handler_1 = require("../packages/error-handler");
 const buildProductFilter = (req) => {
-    const { category, brand, skinType, title } = req.query;
+    const { category, brand, skinType, title, sale } = req.query;
     return {
         productCategory: category
             ? { title: { contains: category, mode: "insensitive" } }
@@ -16,6 +16,13 @@ const buildProductFilter = (req) => {
             : undefined,
         title: title
             ? { contains: title, mode: "insensitive" }
+            : undefined,
+        sale_price: sale
+            ? sale === "true"
+                ? { not: null }
+                : sale === "false"
+                    ? { equals: null }
+                    : undefined
             : undefined,
     };
 };

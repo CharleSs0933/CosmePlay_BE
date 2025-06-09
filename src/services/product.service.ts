@@ -3,7 +3,7 @@ import { Request } from "express";
 import { ValidationError } from "../packages/error-handler";
 
 export const buildProductFilter = (req: Request): Prisma.ProductWhereInput => {
-  const { category, brand, skinType, title } = req.query;
+  const { category, brand, skinType, title, sale } = req.query;
 
   return {
     productCategory: category
@@ -17,6 +17,13 @@ export const buildProductFilter = (req: Request): Prisma.ProductWhereInput => {
       : undefined,
     title: title
       ? { contains: title as string, mode: "insensitive" }
+      : undefined,
+    sale_price: sale
+      ? sale === "true"
+        ? { not: null }
+        : sale === "false"
+        ? { equals: null }
+        : undefined
       : undefined,
   };
 };
