@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 import { Prisma } from "@prisma/client";
 import { ValidationError } from "../packages/error-handler";
+import bcrypt from "bcryptjs";
 
 export const getAllUsers = async (
   req: Request,
@@ -78,6 +79,91 @@ export const getUser = async (
     if (!user) {
       return next(new ValidationError("User not found!"));
     }
+
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !role ||
+      (role !== "ADMIN" && role !== "STAFF" && role !== "USER")
+    ) {
+      return next(new ValidationError("Invalid request!"));
+    }
+
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+
+    if (existingUser) {
+      return next(new ValidationError("User already exists with this email!"));
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role,
+      },
+      omit: {
+        password: true,
+      },
+    });
+
+    res.status(201).json({ success: true, user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const { name, email, password, role } = req.body;
+
+    if (role && role !== "ADMIN" && role !== "STAFF" && role !== "USER") {
+      return next(new ValidationError("Invalid role"));
+    }
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await prisma.user.update({
+        where: { id },
+        data: {
+          password: hashedPassword,
+        },
+      });
+    }
+
+    const user = await prisma.user.update({
+      where: { id },
+      data: {
+        name,
+        email,
+        role,
+      },
+      omit: {
+        password: true,
+      },
+    });
 
     res.status(200).json({ success: true, user });
   } catch (error) {

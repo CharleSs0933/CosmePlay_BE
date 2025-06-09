@@ -9,4 +9,6 @@ const isAuthenticated_1 = require("../packages/middleware/isAuthenticated");
 const router = express_1.default.Router();
 router.get("/", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin"]), user_controller_1.getAllUsers);
 router.get("/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin"]), user_controller_1.getUser);
+router.post("/add", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin"]), user_controller_1.createUser);
+router.put("/update/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin"]), user_controller_1.updateUser);
 exports.default = router;
