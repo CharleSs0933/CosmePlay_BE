@@ -18,6 +18,7 @@ import ReviewRouter from "./routes/review.router";
 import PostRouter from "./routes/post.router";
 import EventRouter from "./routes/event.router";
 import VoucherRouter from "./routes/voucher.router";
+import UserRouter from "./routes/user.router";
 
 /* CONFIGURATIONS */
 dotenv.config();
@@ -78,6 +79,7 @@ app.use("/api/reviews", ReviewRouter);
 app.use("/api/posts", PostRouter);
 app.use("/api/events", EventRouter);
 app.use("/api/vouchers", VoucherRouter);
+app.use("/api/users", UserRouter);
 
 app.use(errorMiddleware);
 

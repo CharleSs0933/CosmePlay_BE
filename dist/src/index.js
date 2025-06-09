@@ -22,6 +22,7 @@ const review_router_1 = __importDefault(require("./routes/review.router"));
 const post_router_1 = __importDefault(require("./routes/post.router"));
 const event_router_1 = __importDefault(require("./routes/event.router"));
 const voucher_router_1 = __importDefault(require("./routes/voucher.router"));
+const user_router_1 = __importDefault(require("./routes/user.router"));
 /* CONFIGURATIONS */
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -69,6 +70,7 @@ app.use("/api/reviews", review_router_1.default);
 app.use("/api/posts", post_router_1.default);
 app.use("/api/events", event_router_1.default);
 app.use("/api/vouchers", voucher_router_1.default);
+app.use("/api/users", user_router_1.default);
 app.use(error_middleware_1.errorMiddleware);
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
