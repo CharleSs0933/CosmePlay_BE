@@ -88,7 +88,7 @@ export const createCheckoutSession = async (
           coupon: couponId ? couponId : undefined,
         },
       ],
-      success_url: `${process.env.CLIENT_BASE_URL}/checkout/successs`,
+      success_url: `${process.env.CLIENT_BASE_URL}/checkout/success`,
       cancel_url: `${process.env.CLIENT_BASE_URL}/checkout/failure`,
       customer: customer.id,
       metadata: {
