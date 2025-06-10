@@ -22,6 +22,15 @@ export const checkPlayedRestrictions = async (
       "You have already played today! Please come back tomorrow!"
     );
   }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    throw new ValidationError("User not found!");
+  }
+
+  // Set lock trong Redis để giới hạn 1 lần/ngày
+  await redis.set(`is_played:${user.email}`, "true", "EX", 86400);
 };
 
 export const calculateReward = async (
@@ -38,9 +47,6 @@ export const calculateReward = async (
     if (!eventReward) {
       return null;
     }
-
-    // Set lock trong Redis để giới hạn 1 lần/ngày
-    await redis.set(`is_played:${user.email}`, "true", "EX", 86400);
 
     const couponData: Stripe.CouponCreateParams = {
       max_redemptions: 1,

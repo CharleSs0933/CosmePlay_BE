@@ -28,6 +28,12 @@ const checkPlayedRestrictions = (email, next) => __awaiter(void 0, void 0, void 
     if (yield redis_1.default.get(`is_played:${email}`)) {
         throw new error_handler_1.ValidationError("You have already played today! Please come back tomorrow!");
     }
+    const user = yield prisma_1.default.user.findUnique({ where: { email } });
+    if (!user) {
+        throw new error_handler_1.ValidationError("User not found!");
+    }
+    // Set lock trong Redis để giới hạn 1 lần/ngày
+    yield redis_1.default.set(`is_played:${user.email}`, "true", "EX", 86400);
 });
 exports.checkPlayedRestrictions = checkPlayedRestrictions;
 const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -38,8 +44,6 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
         if (!eventReward) {
             return null;
         }
-        // Set lock trong Redis để giới hạn 1 lần/ngày
-        yield redis_1.default.set(`is_played:${user.email}`, "true", "EX", 86400);
         const couponData = {
             max_redemptions: 1,
             metadata: {
