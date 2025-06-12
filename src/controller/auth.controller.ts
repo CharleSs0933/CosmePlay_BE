@@ -130,6 +130,8 @@ export const loginUser = async (
     res.status(200).json({
       success: true,
       message: "Login successfully!",
+      accessToken,
+      refreshToken,
       user: {
         id: user.id,
         name: user.name,
