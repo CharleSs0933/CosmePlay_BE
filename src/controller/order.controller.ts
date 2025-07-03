@@ -91,7 +91,7 @@ export const createCheckoutSession = async (
         ? `${process.env.MOBILE_CLIENT_BASE_URL}?Success`
         : `${process.env.CLIENT_BASE_URL}/checkout/success`,
       cancel_url: isMobile
-        ? `${process.env.MOBILE_CLIENT_BASE_URL}?Failure`
+        ? `${process.env.MOBILE_CLIENT_BASE_URL}?path=/Failure`
         : `${process.env.CLIENT_BASE_URL}/checkout/failure`,
       customer: customer.id,
       metadata: {
