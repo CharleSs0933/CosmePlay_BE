@@ -3,7 +3,6 @@ import prisma from "../libs/prisma";
 import { ValidationError } from "../packages/error-handler";
 import stripe from "../libs/stripe";
 import Stripe from "stripe";
-import { Prisma, Voucher } from "@prisma/client";
 
 export const createCheckoutSession = async (
   req: any,
@@ -12,7 +11,7 @@ export const createCheckoutSession = async (
 ) => {
   try {
     const user = req.user;
-    const { shippingCost = 0, addressId, couponId } = req.body;
+    const { shippingCost = 0, addressId, couponId, isMobile } = req.body;
 
     const cart = await prisma.cart.findUnique({
       where: {
@@ -88,8 +87,12 @@ export const createCheckoutSession = async (
           coupon: couponId ? couponId : undefined,
         },
       ],
-      success_url: `${process.env.CLIENT_BASE_URL}/checkout/success`,
-      cancel_url: `${process.env.CLIENT_BASE_URL}/checkout/failure`,
+      success_url: isMobile
+        ? `${process.env.MOBILE_CLIENT_BASE_URL}?Success`
+        : `${process.env.CLIENT_BASE_URL}/checkout/success`,
+      cancel_url: isMobile
+        ? `${process.env.MOBILE_CLIENT_BASE_URL}?Failure`
+        : `${process.env.CLIENT_BASE_URL}/checkout/failure`,
       customer: customer.id,
       metadata: {
         cartId: cart.id,

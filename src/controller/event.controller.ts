@@ -118,12 +118,7 @@ export const getAllQuestionsByEvent = async (
     const questions = await prisma.question.findMany({
       where: { event_id: id },
       include: {
-        questionOptions: {
-          select: {
-            content: true,
-            is_correct: true,
-          },
-        },
+        questionOptions: true,
       },
     });
 
@@ -150,12 +145,7 @@ export const get20QuestionsByEvent = async (
     const questions = await prisma.question.findMany({
       where: { event_id: id },
       include: {
-        questionOptions: {
-          select: {
-            content: true,
-            is_correct: true,
-          },
-        },
+        questionOptions: true,
       },
     });
 
@@ -332,11 +322,12 @@ export const addEventQuestion = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { id } = req.params;
-  const { content, options, image_url } = req.body;
-
   try {
+    const { id } = req.params;
+    const { content, options, image_url } = req.body;
+
     const event = await prisma.event.findUnique({ where: { id } });
+
     if (!event) {
       return next(new ValidationError("Event not found!"));
     }
@@ -433,6 +424,9 @@ export const updateEventQuestion = async (
             })),
           },
         },
+      },
+      include: {
+        questionOptions: true,
       },
     });
 

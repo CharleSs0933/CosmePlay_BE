@@ -94,12 +94,7 @@ const getAllQuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, voi
         const questions = yield prisma_1.default.question.findMany({
             where: { event_id: id },
             include: {
-                questionOptions: {
-                    select: {
-                        content: true,
-                        is_correct: true,
-                    },
-                },
+                questionOptions: true,
             },
         });
         res.status(200).json({ success: true, questions });
@@ -119,12 +114,7 @@ const get20QuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, void
         const questions = yield prisma_1.default.question.findMany({
             where: { event_id: id },
             include: {
-                questionOptions: {
-                    select: {
-                        content: true,
-                        is_correct: true,
-                    },
-                },
+                questionOptions: true,
             },
         });
         // Get random 20 questions
@@ -252,9 +242,9 @@ const deleteEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 });
 exports.deleteEventReward = deleteEventReward;
 const addEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const { content, options, image_url } = req.body;
     try {
+        const { id } = req.params;
+        const { content, options, image_url } = req.body;
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
@@ -330,6 +320,9 @@ const updateEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0
                         })),
                     },
                 },
+            },
+            include: {
+                questionOptions: true,
             },
         });
         res.status(200).json({ success: true, question });

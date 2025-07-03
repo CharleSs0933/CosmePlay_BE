@@ -19,7 +19,7 @@ const stripe_1 = __importDefault(require("../libs/stripe"));
 const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        const { shippingCost = 0, addressId, couponId } = req.body;
+        const { shippingCost = 0, addressId, couponId, isMobile } = req.body;
         const cart = yield prisma_1.default.cart.findUnique({
             where: {
                 user_id: user.id,
@@ -86,8 +86,12 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                     coupon: couponId ? couponId : undefined,
                 },
             ],
-            success_url: `${process.env.CLIENT_BASE_URL}/checkout/success`,
-            cancel_url: `${process.env.CLIENT_BASE_URL}/checkout/failure`,
+            success_url: isMobile
+                ? `${process.env.MOBILE_CLIENT_BASE_URL}?Success`
+                : `${process.env.CLIENT_BASE_URL}/checkout/success`,
+            cancel_url: isMobile
+                ? `${process.env.MOBILE_CLIENT_BASE_URL}?Failure`
+                : `${process.env.CLIENT_BASE_URL}/checkout/failure`,
             customer: customer.id,
             metadata: {
                 cartId: cart.id,

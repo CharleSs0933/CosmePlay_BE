@@ -73,6 +73,19 @@ model Product {
   Review          Review[]
   CartLineItem    CartLineItem[]
   OrderItem       OrderItem[]
+  Batch           Batch[]
+}
+
+model Batch {
+  id            String    @id @default(uuid())
+  product_id    String
+  quantity      Int
+  current_stock Int
+  expired_at    DateTime?
+  created_at    DateTime  @default(now())
+  discount      Float?
+
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
 model ProductCategory {
