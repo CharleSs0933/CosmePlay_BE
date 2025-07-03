@@ -6,6 +6,7 @@ import {
   validateEventData,
 } from "../services/event.service";
 import { ValidationError } from "../packages/error-handler";
+import { QuestionOption } from "@prisma/client";
 
 export const getAllEvents = async (
   req: Request,
@@ -321,6 +322,151 @@ export const deleteEventReward = async (
     await prisma.eventReward.delete({ where: { id: rewardId } });
 
     res.status(200).json({ success: true, message: "Reward deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addEventQuestion = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  const { content, options, image_url } = req.body;
+
+  try {
+    const event = await prisma.event.findUnique({ where: { id } });
+    if (!event) {
+      return next(new ValidationError("Event not found!"));
+    }
+
+    if (!content || !options) {
+      return next(new ValidationError("Invalid question data!"));
+    }
+
+    if (options.length < 2) {
+      return next(new ValidationError("At least two options are required!"));
+    }
+
+    // Check if the options contain only one correct answer
+    const correctOptions = options.filter(
+      (option: QuestionOption) => option.is_correct
+    );
+
+    if (correctOptions.length !== 1) {
+      return next(
+        new ValidationError("Exactly one option must be marked as correct!")
+      );
+    }
+
+    const question = await prisma.question.create({
+      data: {
+        content,
+        image_url,
+        event_id: id,
+        questionOptions: {
+          createMany: {
+            data: options.map((option: QuestionOption) => ({
+              content: option.content,
+              is_correct: option.is_correct || false,
+            })),
+          },
+        },
+      },
+      include: {
+        questionOptions: {
+          select: {
+            content: true,
+            is_correct: true,
+          },
+        },
+      },
+    });
+
+    res.status(201).json({ success: true, question });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateEventQuestion = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id, questionId } = req.params;
+    const { content, options, image_url } = req.body;
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return next(new ValidationError("Event not found!"));
+    }
+
+    if (options.length < 2) {
+      return next(new ValidationError("At least two options are required!"));
+    }
+
+    // Check if the options contain only one correct answer
+    const correctOptions = options.filter(
+      (option: QuestionOption) => option.is_correct
+    );
+
+    if (correctOptions.length !== 1) {
+      return next(
+        new ValidationError("Exactly one option must be marked as correct!")
+      );
+    }
+
+    const question = await prisma.question.update({
+      where: { id: questionId },
+      data: {
+        content,
+        image_url,
+        questionOptions: {
+          deleteMany: {},
+          createMany: {
+            data: options.map((option: QuestionOption) => ({
+              content: option.content,
+              is_correct: option.is_correct || false,
+            })),
+          },
+        },
+      },
+    });
+
+    res.status(200).json({ success: true, question });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteEventQuestion = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id, questionId } = req.params;
+
+    const event = await prisma.event.findUnique({ where: { id } });
+
+    if (!event) {
+      return next(new ValidationError("Event not found!"));
+    }
+
+    const question = await prisma.question.findUnique({
+      where: { id: questionId, event_id: id },
+    });
+
+    if (!question) {
+      return next(new ValidationError("Question not found!"));
+    }
+
+    await prisma.question.delete({ where: { id: questionId } });
+
+    res.status(200).json({ success: true, message: "Question deleted!" });
   } catch (error) {
     next(error);
   }

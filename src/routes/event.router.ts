@@ -6,9 +6,11 @@ import {
 } from "../packages/middleware/isAuthenticated";
 import {
   addEvent,
+  addEventQuestion,
   addEventReward,
   calculateEventReward,
   deleteEvent,
+  deleteEventQuestion,
   deleteEventReward,
   get20QuestionsByEvent,
   getAllEvents,
@@ -17,6 +19,7 @@ import {
   getEventReward,
   playEvent,
   updateEvent,
+  updateEventQuestion,
   updateEventReward,
 } from "../controller/event.controller";
 
@@ -68,6 +71,26 @@ router.delete(
   allowedRoles(["admin", "staff"]),
   deleteEventReward
 );
+
+router.post(
+  "/:id/questions/add",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  addEventQuestion
+);
+router.put(
+  "/:id/questions/update/:questionId",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  updateEventQuestion
+);
+router.delete(
+  "/:id/questions/:questionId",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  deleteEventQuestion
+);
+
 router.post("/play", isAuthenticated, playEvent);
 router.post("/:id/calculate-reward", isAuthenticated, calculateEventReward);
 
