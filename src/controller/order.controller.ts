@@ -88,7 +88,7 @@ export const createCheckoutSession = async (
         },
       ],
       success_url: isMobile
-        ? `${process.env.MOBILE_CLIENT_BASE_URL}?Success`
+        ? `${process.env.MOBILE_CLIENT_BASE_URL}?path=/Success`
         : `${process.env.CLIENT_BASE_URL}/checkout/success`,
       cancel_url: isMobile
         ? `${process.env.MOBILE_CLIENT_BASE_URL}?path=/Failure`
