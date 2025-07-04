@@ -77,7 +77,9 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                         name: item.product.title,
                         images: item.product.image_url ? [item.product.image_url] : [],
                     },
-                    unit_amount: item.product.price,
+                    unit_amount: item.product.sale_price
+                        ? item.product.sale_price
+                        : item.product.price,
                 },
                 quantity: item.quantity,
             })),
