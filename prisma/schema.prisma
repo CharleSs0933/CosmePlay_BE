@@ -214,16 +214,22 @@ enum OrderStatus {
 }
 
 model Event {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
   description String?
   start_time  DateTime
   end_time    DateTime
-  is_active   Boolean  @default(true)
-  created_at  DateTime @default(now())
+  type        EventType @default(QUIZ)
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now())
 
   questions   Question[]
   eventReward EventReward[]
+}
+
+enum EventType {
+  QUIZ
+  DROP
 }
 
 model Question {
@@ -251,11 +257,13 @@ enum RewardType {
 }
 
 model EventReward {
-  id             String     @id @default(uuid())
-  event_id       String
-  min_correct    Int        @unique
-  discount_value Float
-  type           RewardType @default(PERCENT)
+  id               String     @id @default(uuid())
+  event_id         String
+  min_correct      Int
+  max_correct      Int
+  voucher_quantity Int        @default(1)
+  discount_value   Float
+  type             RewardType @default(PERCENT)
 
   vouchers Voucher[]
   event    Event     @relation(fields: [event_id], references: [id], onDelete: Cascade)

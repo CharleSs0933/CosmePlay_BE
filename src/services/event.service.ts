@@ -6,10 +6,21 @@ import stripe from "../libs/stripe";
 import Stripe from "stripe";
 
 export const validateEventData = (data: any) => {
-  const { title, description, start_time, end_time, is_active } = data;
+  const { title, description, start_time, end_time, is_active, type } = data;
 
-  if (!title || !description || !start_time || !end_time || !is_active) {
+  if (
+    !title ||
+    !description ||
+    !start_time ||
+    !end_time ||
+    !is_active ||
+    !type
+  ) {
     throw new ValidationError("Missing required fields!");
+  }
+
+  if (type !== "QUIZ" && type !== "DROP") {
+    throw new ValidationError("Invalid event type!");
   }
 };
 
@@ -40,11 +51,20 @@ export const calculateReward = async (
   next: NextFunction
 ) => {
   try {
-    const eventReward = await prisma.eventReward.findUnique({
-      where: { event_id: eventId, min_correct: correctAnswers },
+    const eventReward = await prisma.eventReward.findFirst({
+      where: {
+        event_id: eventId,
+        min_correct: { lte: correctAnswers },
+        max_correct: { gte: correctAnswers },
+      },
     });
 
     if (!eventReward) {
+      return null; // Không có phần thưởng phù hợp
+    }
+
+    // Nếu số lượng voucher không còn
+    if (eventReward.voucher_quantity <= 0) {
       return null;
     }
 
@@ -64,6 +84,7 @@ export const calculateReward = async (
       couponData.currency = "vnd";
     }
 
+    // Tạo coupon trên Stripe
     await stripe.coupons.create(couponData);
 
     return eventReward;

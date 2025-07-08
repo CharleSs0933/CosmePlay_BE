@@ -18,9 +18,17 @@ const redis_1 = __importDefault(require("../libs/redis"));
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const stripe_1 = __importDefault(require("../libs/stripe"));
 const validateEventData = (data) => {
-    const { title, description, start_time, end_time, is_active } = data;
-    if (!title || !description || !start_time || !end_time || !is_active) {
+    const { title, description, start_time, end_time, is_active, type } = data;
+    if (!title ||
+        !description ||
+        !start_time ||
+        !end_time ||
+        !is_active ||
+        !type) {
         throw new error_handler_1.ValidationError("Missing required fields!");
+    }
+    if (type !== "QUIZ" && type !== "DROP") {
+        throw new error_handler_1.ValidationError("Invalid event type!");
     }
 };
 exports.validateEventData = validateEventData;
@@ -38,10 +46,18 @@ const checkPlayedRestrictions = (email, next) => __awaiter(void 0, void 0, void 
 exports.checkPlayedRestrictions = checkPlayedRestrictions;
 const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const eventReward = yield prisma_1.default.eventReward.findUnique({
-            where: { event_id: eventId, min_correct: correctAnswers },
+        const eventReward = yield prisma_1.default.eventReward.findFirst({
+            where: {
+                event_id: eventId,
+                min_correct: { lte: correctAnswers },
+                max_correct: { gte: correctAnswers },
+            },
         });
         if (!eventReward) {
+            return null; // Không có phần thưởng phù hợp
+        }
+        // Nếu số lượng voucher không còn
+        if (eventReward.voucher_quantity <= 0) {
             return null;
         }
         const couponData = {
@@ -59,6 +75,7 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
             couponData.amount_off = eventReward.discount_value;
             couponData.currency = "vnd";
         }
+        // Tạo coupon trên Stripe
         yield stripe_1.default.coupons.create(couponData);
         return eventReward;
     }

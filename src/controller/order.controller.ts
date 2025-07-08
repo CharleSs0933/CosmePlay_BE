@@ -271,16 +271,30 @@ export const stripeWebhooks = async (
           return next(new ValidationError("Missing metadata!"));
         }
 
-        await prisma.voucher.create({
-          data: {
-            user_id: userId,
-            discount_value: coupon.percent_off
-              ? coupon.percent_off!
-              : coupon.amount_off!,
-            type: coupon.percent_off ? "PERCENT" : "AMOUNT",
-            stripe_coupon_id: coupon.id,
-            event_reward_id: eventRewardId,
-          },
+        await prisma.$transaction(async (tx) => {
+          await tx.voucher.create({
+            data: {
+              user_id: userId,
+              discount_value: coupon.percent_off
+                ? coupon.percent_off!
+                : coupon.amount_off!,
+              type: coupon.percent_off ? "PERCENT" : "AMOUNT",
+              stripe_coupon_id: coupon.id,
+              event_reward_id: eventRewardId,
+            },
+          });
+
+          // Trừ số lượng voucher sau khi tạo thành công
+          await tx.eventReward.update({
+            where: {
+              id: eventRewardId,
+            },
+            data: {
+              voucher_quantity: {
+                decrement: 1,
+              },
+            },
+          });
         });
 
         break;

@@ -238,17 +238,30 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 if (!userId || !eventId || !eventRewardId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
-                yield prisma_1.default.voucher.create({
-                    data: {
-                        user_id: userId,
-                        discount_value: coupon.percent_off
-                            ? coupon.percent_off
-                            : coupon.amount_off,
-                        type: coupon.percent_off ? "PERCENT" : "AMOUNT",
-                        stripe_coupon_id: coupon.id,
-                        event_reward_id: eventRewardId,
-                    },
-                });
+                yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+                    yield tx.voucher.create({
+                        data: {
+                            user_id: userId,
+                            discount_value: coupon.percent_off
+                                ? coupon.percent_off
+                                : coupon.amount_off,
+                            type: coupon.percent_off ? "PERCENT" : "AMOUNT",
+                            stripe_coupon_id: coupon.id,
+                            event_reward_id: eventRewardId,
+                        },
+                    });
+                    // Trừ số lượng voucher sau khi tạo thành công
+                    yield tx.eventReward.update({
+                        where: {
+                            id: eventRewardId,
+                        },
+                        data: {
+                            voucher_quantity: {
+                                decrement: 1,
+                            },
+                        },
+                    });
+                }));
                 break;
             }
             default: {

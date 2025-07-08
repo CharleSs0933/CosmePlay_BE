@@ -148,28 +148,50 @@ exports.getEventReward = getEventReward;
 const addEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { min_correct, discount_value, type } = req.body;
-        if (!min_correct ||
-            !discount_value ||
+        let { min_correct, max_correct, voucher_quantity, discount_value, type } = req.body;
+        // Parse values
+        min_correct = parseInt(min_correct);
+        max_correct = parseInt(max_correct);
+        voucher_quantity = parseInt(voucher_quantity);
+        discount_value = parseFloat(discount_value);
+        // Validate inputs
+        if (isNaN(min_correct) ||
+            isNaN(max_correct) ||
+            isNaN(voucher_quantity) ||
+            isNaN(discount_value) ||
             !type ||
             (type !== "AMOUNT" && type !== "PERCENT")) {
-            return next(new error_handler_1.ValidationError("Missing required fields!"));
+            return next(new error_handler_1.ValidationError("Missing or invalid required fields!"));
+        }
+        if (min_correct > max_correct) {
+            return next(new error_handler_1.ValidationError("min_correct must be <= max_correct!"));
         }
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
-        const existingReward = yield prisma_1.default.eventReward.findMany({
-            where: { event_id: id, min_correct },
+        // Check for overlapping reward ranges in the same event
+        const overlappingRewards = yield prisma_1.default.eventReward.findFirst({
+            where: {
+                event_id: id,
+                NOT: {
+                    OR: [
+                        { max_correct: { lt: min_correct } }, // completely before
+                        { min_correct: { gt: max_correct } }, // completely after
+                    ],
+                },
+            },
         });
-        if (existingReward.length > 0) {
-            return next(new error_handler_1.ValidationError("Reward with this min_correct already exists!"));
+        if (overlappingRewards) {
+            return next(new error_handler_1.ValidationError("Another reward overlaps with the given correct range!"));
         }
         const eventReward = yield prisma_1.default.eventReward.create({
             data: {
-                discount_value: parseFloat(discount_value),
                 event_id: id,
-                min_correct: parseInt(min_correct),
+                min_correct,
+                max_correct,
+                voucher_quantity,
+                discount_value,
                 type,
             },
         });
@@ -183,9 +205,21 @@ exports.addEventReward = addEventReward;
 const updateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id, rewardId } = req.params;
-        const { min_correct, discount_value, type } = req.body;
+        let { min_correct, max_correct, voucher_quantity, discount_value, type } = req.body;
+        // Parse values if provided
+        const parsedMinCorrect = min_correct !== undefined ? parseInt(min_correct) : undefined;
+        const parsedMaxCorrect = max_correct !== undefined ? parseInt(max_correct) : undefined;
+        const parsedVoucherQuantity = voucher_quantity !== undefined ? parseInt(voucher_quantity) : undefined;
+        const parsedDiscountValue = discount_value !== undefined ? parseFloat(discount_value) : undefined;
+        // Validate type
         if (type && type !== "AMOUNT" && type !== "PERCENT") {
             return next(new error_handler_1.ValidationError("Invalid type!"));
+        }
+        // Validate min <= max
+        if (parsedMinCorrect !== undefined &&
+            parsedMaxCorrect !== undefined &&
+            parsedMinCorrect > parsedMaxCorrect) {
+            return next(new error_handler_1.ValidationError("min_correct must be less than or equal to max_correct."));
         }
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
@@ -197,20 +231,38 @@ const updateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         if (!eventReward) {
             return next(new error_handler_1.ValidationError("Reward not found!"));
         }
-        if (eventReward.min_correct !== min_correct) {
-            const existingReward = yield prisma_1.default.eventReward.findMany({
-                where: { event_id: id, min_correct },
+        // Only check for overlapping if either min or max is being changed
+        const isMinChanged = parsedMinCorrect !== undefined &&
+            parsedMinCorrect !== eventReward.min_correct;
+        const isMaxChanged = parsedMaxCorrect !== undefined &&
+            parsedMaxCorrect !== eventReward.max_correct;
+        if (isMinChanged || isMaxChanged) {
+            const newMin = parsedMinCorrect !== null && parsedMinCorrect !== void 0 ? parsedMinCorrect : eventReward.min_correct;
+            const newMax = parsedMaxCorrect !== null && parsedMaxCorrect !== void 0 ? parsedMaxCorrect : eventReward.max_correct;
+            const overlappingReward = yield prisma_1.default.eventReward.findFirst({
+                where: {
+                    event_id: id,
+                    id: { not: rewardId },
+                    NOT: {
+                        OR: [
+                            { max_correct: { lt: newMin } }, // hoàn toàn trước
+                            { min_correct: { gt: newMax } }, // hoàn toàn sau
+                        ],
+                    },
+                },
             });
-            if (existingReward.length > 0) {
-                return next(new error_handler_1.ValidationError("Reward with this min_correct already exists!"));
+            if (overlappingReward) {
+                return next(new error_handler_1.ValidationError("Another reward overlaps with the given correct range!"));
             }
         }
         const updatedEventReward = yield prisma_1.default.eventReward.update({
             where: { id: rewardId },
             data: {
-                discount_value: discount_value ? parseFloat(discount_value) : undefined,
-                min_correct: min_correct ? parseInt(min_correct) : undefined,
-                type: type ? type : undefined,
+                min_correct: parsedMinCorrect,
+                max_correct: parsedMaxCorrect,
+                voucher_quantity: parsedVoucherQuantity,
+                discount_value: parsedDiscountValue,
+                type: type !== null && type !== void 0 ? type : undefined,
             },
         });
         res.status(200).json({ success: true, eventReward: updatedEventReward });
