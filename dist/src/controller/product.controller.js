@@ -301,13 +301,13 @@ const deleteProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 exports.deleteProductMeta = deleteProductMeta;
 const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { product_id } = req.params;
+        const { id } = req.params;
         const { quantity } = req.body;
-        if (!product_id || !quantity) {
+        if (!id || !quantity) {
             return next(new error_handler_1.ValidationError("Missing required fields!"));
         }
         const product = yield prisma_1.default.product.findUnique({
-            where: { id: product_id },
+            where: { id },
         });
         if (!product) {
             return next(new error_handler_1.ValidationError("Product not found!"));
@@ -315,14 +315,14 @@ const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             yield tx.batch.create({
                 data: {
-                    product_id,
+                    product_id: id,
                     quantity: parseInt(quantity),
                     current_stock: parseInt(quantity),
                     expired_at: new Date(new Date().setMonth(new Date().getMonth() + 1)),
                 },
             });
             yield tx.product.update({
-                where: { id: product_id },
+                where: { id },
                 data: {
                     total_stock: {
                         increment: parseInt(quantity),
@@ -341,9 +341,9 @@ const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
 exports.addProductBatch = addProductBatch;
 const getProductBatches = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { product_id } = req.params;
+        const { id } = req.params;
         const batches = yield prisma_1.default.batch.findMany({
-            where: { product_id },
+            where: { product_id: id },
             orderBy: { expired_at: "asc" },
         });
         if (batches.length === 0) {

@@ -379,15 +379,15 @@ export const addProductBatch = async (
   next: NextFunction
 ) => {
   try {
-    const { product_id } = req.params;
+    const { id } = req.params;
     const { quantity } = req.body;
 
-    if (!product_id || !quantity) {
+    if (!id || !quantity) {
       return next(new ValidationError("Missing required fields!"));
     }
 
     const product = await prisma.product.findUnique({
-      where: { id: product_id },
+      where: { id },
     });
 
     if (!product) {
@@ -397,7 +397,7 @@ export const addProductBatch = async (
     await prisma.$transaction(async (tx) => {
       await tx.batch.create({
         data: {
-          product_id,
+          product_id: id,
           quantity: parseInt(quantity),
           current_stock: parseInt(quantity),
           expired_at: new Date(new Date().setMonth(new Date().getMonth() + 1)),
@@ -405,7 +405,7 @@ export const addProductBatch = async (
       });
 
       await tx.product.update({
-        where: { id: product_id },
+        where: { id },
         data: {
           total_stock: {
             increment: parseInt(quantity),
@@ -428,10 +428,10 @@ export const getProductBatches = async (
   next: NextFunction
 ) => {
   try {
-    const { product_id } = req.params;
+    const { id } = req.params;
 
     const batches = await prisma.batch.findMany({
-      where: { product_id },
+      where: { product_id: id },
       orderBy: { expired_at: "asc" },
     });
 
