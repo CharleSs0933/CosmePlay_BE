@@ -301,7 +301,8 @@ const deleteProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 exports.deleteProductMeta = deleteProductMeta;
 const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { product_id, quantity } = req.body;
+        const { product_id } = req.params;
+        const { quantity } = req.body;
         if (!product_id || !quantity) {
             return next(new error_handler_1.ValidationError("Missing required fields!"));
         }

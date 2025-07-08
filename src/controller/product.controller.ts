@@ -379,7 +379,8 @@ export const addProductBatch = async (
   next: NextFunction
 ) => {
   try {
-    const { product_id, quantity } = req.body;
+    const { product_id } = req.params;
+    const { quantity } = req.body;
 
     if (!product_id || !quantity) {
       return next(new ValidationError("Missing required fields!"));
