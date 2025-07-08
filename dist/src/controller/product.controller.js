@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteProductMeta = exports.updateProductMeta = exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.getProductBatches = exports.addProductBatch = exports.deleteProductMeta = exports.updateProductMeta = exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -114,14 +114,13 @@ exports.getProductMeta = getProductMeta;
 const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         (0, product_service_1.validateProductData)(req.body);
-        const { title, description, price, sale_price, image_url, total_stock, product_category_id, product_brand_id, product_skinType_id, } = req.body;
+        const { title, description, price, sale_price, image_url, product_category_id, product_brand_id, product_skinType_id, } = req.body;
         const product = yield prisma_1.default.product.create({
             data: {
                 title,
                 description,
                 price,
                 sale_price,
-                total_stock,
                 image_url,
                 product_category_id,
                 product_brand_id,
@@ -160,7 +159,7 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         }
         const updatedProduct = yield prisma_1.default.product.update({
             where: { id },
-            data: Object.assign(Object.assign({}, updateData), { price: parseInt(updateData.price) || undefined, sale_price: parseInt(updateData.sale_price) || undefined, total_stock: parseInt(updateData.total_stock) || undefined }),
+            data: Object.assign(Object.assign({}, updateData), { price: parseInt(updateData.price) || undefined, sale_price: parseInt(updateData.sale_price) || undefined }),
         });
         res.status(200).json({ success: true, product: updatedProduct });
     }
@@ -300,3 +299,59 @@ const deleteProductMeta = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.deleteProductMeta = deleteProductMeta;
+const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { product_id, quantity } = req.body;
+        if (!product_id || !quantity) {
+            return next(new error_handler_1.ValidationError("Missing required fields!"));
+        }
+        const product = yield prisma_1.default.product.findUnique({
+            where: { id: product_id },
+        });
+        if (!product) {
+            return next(new error_handler_1.ValidationError("Product not found!"));
+        }
+        yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+            yield tx.batch.create({
+                data: {
+                    product_id,
+                    quantity: parseInt(quantity),
+                    current_stock: parseInt(quantity),
+                    expired_at: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                },
+            });
+            yield tx.product.update({
+                where: { id: product_id },
+                data: {
+                    total_stock: {
+                        increment: parseInt(quantity),
+                    },
+                },
+            });
+        }));
+        res
+            .status(201)
+            .json({ success: true, message: "Batch added successfully!" });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.addProductBatch = addProductBatch;
+const getProductBatches = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { product_id } = req.params;
+        const batches = yield prisma_1.default.batch.findMany({
+            where: { product_id },
+            orderBy: { expired_at: "asc" },
+        });
+        if (batches.length === 0) {
+            return next(new error_handler_1.ValidationError("No batches found for this product!"));
+        }
+        res.status(200).json({ success: true, batches });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getProductBatches = getProductBatches;

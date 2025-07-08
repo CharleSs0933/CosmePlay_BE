@@ -161,17 +161,17 @@ export const stripeWebhooks = async (
       case `checkout.session.completed`: {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        const cardId = session.metadata?.cartId;
+        const cartId = session.metadata?.cartId;
         const userId = session.metadata?.userId;
         const addressId = session.metadata?.addressId;
 
-        if (!cardId || !userId || !addressId) {
+        if (!cartId || !userId || !addressId) {
           return next(new ValidationError("Missing metadata!"));
         }
 
         const cart = await prisma.cart.findUnique({
           where: {
-            id: cardId,
+            id: cartId,
           },
           include: {
             cartItems: {
@@ -187,7 +187,7 @@ export const stripeWebhooks = async (
         }
 
         await prisma.$transaction(async (tx) => {
-          // Create order
+          // 1. Create Order
           await tx.order.create({
             data: {
               user_id: userId,
@@ -211,32 +211,62 @@ export const stripeWebhooks = async (
             },
           });
 
-          // Decrement stock
-          await tx.product.updateMany({
-            where: {
-              id: {
-                in: cart.cartItems.map((item) => item.product.id),
-              },
-            },
-            data: {
-              total_stock: {
-                decrement: cart.cartItems.reduce(
-                  (total, item) => total + item.quantity,
-                  0
-                ),
-              },
-            },
-          });
+          // 2. Decrement batch stock (FIFO)
+          for (const item of cart.cartItems) {
+            const productId = item.product.id;
+            let quantityToDeduct = item.quantity;
+            const twoWeeksFromNow = new Date();
+            twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
 
-          // Delete cart
+            const batches = await tx.batch.findMany({
+              where: {
+                product_id: productId,
+                current_stock: { gt: 0 },
+                expired_at: {
+                  gt: twoWeeksFromNow,
+                },
+              },
+              orderBy: { expired_at: "asc" },
+            });
+
+            for (const batch of batches) {
+              if (quantityToDeduct <= 0) break;
+
+              const deduct = Math.min(quantityToDeduct, batch.current_stock);
+
+              await tx.batch.update({
+                where: { id: batch.id },
+                data: {
+                  current_stock: { decrement: deduct },
+                },
+              });
+
+              quantityToDeduct -= deduct;
+            }
+
+            if (quantityToDeduct > 0) {
+              throw new Error(
+                `Not enough stock in batches for product ${productId}`
+              );
+            }
+
+            // 3. Update total stock (optional)
+            await tx.product.update({
+              where: { id: productId },
+              data: {
+                total_stock: { decrement: item.quantity },
+              },
+            });
+          }
+
+          // 4. Delete cart
           await tx.cart.delete({
             where: {
-              id: cardId,
+              id: cartId,
               user_id: userId,
             },
           });
         });
-
         if (session.discounts && session.discounts.length > 0) {
           const discount = session.discounts[0];
 
@@ -271,7 +301,32 @@ export const stripeWebhooks = async (
           return next(new ValidationError("Missing metadata!"));
         }
 
+        // Tính ngày hiện tại + 14 ngày
+        const today = new Date();
+        const twoWeeksLater = new Date();
+        twoWeeksLater.setDate(today.getDate() + 14);
+
+        // Truy vấn các sản phẩm có lô hàng sắp hết hạn (trong vòng 14 ngày)
+        const expiringBatches = await prisma.batch.findMany({
+          where: {
+            expired_at: {
+              lte: twoWeeksLater,
+            },
+            current_stock: {
+              gt: 0,
+            },
+          },
+          select: {
+            product_id: true,
+          },
+          distinct: ["product_id"], // Đảm bảo không bị trùng
+        });
+
+        const expiringProductIds = expiringBatches.map((b) => b.product_id);
+
+        // Bắt đầu transaction
         await prisma.$transaction(async (tx) => {
+          // Tạo voucher kèm danh sách product_id áp dụng
           await tx.voucher.create({
             data: {
               user_id: userId,
@@ -281,10 +336,11 @@ export const stripeWebhooks = async (
               type: coupon.percent_off ? "PERCENT" : "AMOUNT",
               stripe_coupon_id: coupon.id,
               event_reward_id: eventRewardId,
+              products_id: expiringProductIds, // 💥 Gán danh sách sản phẩm áp dụng
             },
           });
 
-          // Trừ số lượng voucher sau khi tạo thành công
+          // Giảm số lượng voucher đã phân phát
           await tx.eventReward.update({
             where: {
               id: eventRewardId,

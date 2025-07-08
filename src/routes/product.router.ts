@@ -2,11 +2,13 @@ import express from "express";
 
 import {
   addProduct,
+  addProductBatch,
   addProductMeta,
   deleteProduct,
   deleteProductMeta,
   getAllProducts,
   getProduct,
+  getProductBatches,
   getProductMeta,
   updateProduct,
   updateProductMeta,
@@ -54,5 +56,19 @@ router.delete(
   deleteProduct
 );
 router.get("/:id", getProduct);
+
+router.get(
+  "/:id/batches",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  getProductBatches
+);
+
+router.post(
+  "/:id/batches",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  addProductBatch
+);
 
 export default router;

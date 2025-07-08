@@ -16,4 +16,6 @@ router.delete("/meta/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticate
 router.put("/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), product_controller_1.updateProduct);
 router.delete("/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), product_controller_1.deleteProduct);
 router.get("/:id", product_controller_1.getProduct);
+router.get("/:id/batches", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), product_controller_1.getProductBatches);
+router.post("/:id/batches", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), product_controller_1.addProductBatch);
 exports.default = router;

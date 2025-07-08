@@ -146,15 +146,15 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         switch (event.type) {
             case `checkout.session.completed`: {
                 const session = event.data.object;
-                const cardId = (_a = session.metadata) === null || _a === void 0 ? void 0 : _a.cartId;
+                const cartId = (_a = session.metadata) === null || _a === void 0 ? void 0 : _a.cartId;
                 const userId = (_b = session.metadata) === null || _b === void 0 ? void 0 : _b.userId;
                 const addressId = (_c = session.metadata) === null || _c === void 0 ? void 0 : _c.addressId;
-                if (!cardId || !userId || !addressId) {
+                if (!cartId || !userId || !addressId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
                 const cart = yield prisma_1.default.cart.findUnique({
                     where: {
-                        id: cardId,
+                        id: cartId,
                     },
                     include: {
                         cartItems: {
@@ -168,7 +168,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     return next(new error_handler_1.ValidationError("Cart not found!"));
                 }
                 yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-                    // Create order
+                    // 1. Create Order
                     yield tx.order.create({
                         data: {
                             user_id: userId,
@@ -191,23 +191,49 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             },
                         },
                     });
-                    // Decrement stock
-                    yield tx.product.updateMany({
-                        where: {
-                            id: {
-                                in: cart.cartItems.map((item) => item.product.id),
+                    // 2. Decrement batch stock (FIFO)
+                    for (const item of cart.cartItems) {
+                        const productId = item.product.id;
+                        let quantityToDeduct = item.quantity;
+                        const twoWeeksFromNow = new Date();
+                        twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
+                        const batches = yield tx.batch.findMany({
+                            where: {
+                                product_id: productId,
+                                current_stock: { gt: 0 },
+                                expired_at: {
+                                    gt: twoWeeksFromNow,
+                                },
                             },
-                        },
-                        data: {
-                            total_stock: {
-                                decrement: cart.cartItems.reduce((total, item) => total + item.quantity, 0),
+                            orderBy: { expired_at: "asc" },
+                        });
+                        for (const batch of batches) {
+                            if (quantityToDeduct <= 0)
+                                break;
+                            const deduct = Math.min(quantityToDeduct, batch.current_stock);
+                            yield tx.batch.update({
+                                where: { id: batch.id },
+                                data: {
+                                    current_stock: { decrement: deduct },
+                                },
+                            });
+                            quantityToDeduct -= deduct;
+                        }
+                        if (quantityToDeduct > 0) {
+                            throw new Error(`Not enough stock in batches for product ${productId}`);
+                        }
+                        // 3. Update total stock (optional)
+                        yield tx.product.update({
+                            where: { id: productId },
+                            data: {
+                                total_stock: { decrement: item.quantity },
                             },
-                        },
-                    });
-                    // Delete cart
+                        });
+                    }
+                    // 4. Delete cart
                     yield tx.cart.delete({
                         where: {
-                            id: cardId,
+                            id: cartId,
                             user_id: userId,
                         },
                     });
@@ -238,7 +264,29 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 if (!userId || !eventId || !eventRewardId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
+                // Tính ngày hiện tại + 14 ngày
+                const today = new Date();
+                const twoWeeksLater = new Date();
+                twoWeeksLater.setDate(today.getDate() + 14);
+                // Truy vấn các sản phẩm có lô hàng sắp hết hạn (trong vòng 14 ngày)
+                const expiringBatches = yield prisma_1.default.batch.findMany({
+                    where: {
+                        expired_at: {
+                            lte: twoWeeksLater,
+                        },
+                        current_stock: {
+                            gt: 0,
+                        },
+                    },
+                    select: {
+                        product_id: true,
+                    },
+                    distinct: ["product_id"], // Đảm bảo không bị trùng
+                });
+                const expiringProductIds = expiringBatches.map((b) => b.product_id);
+                // Bắt đầu transaction
                 yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+                    // Tạo voucher kèm danh sách product_id áp dụng
                     yield tx.voucher.create({
                         data: {
                             user_id: userId,
@@ -248,9 +296,10 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             type: coupon.percent_off ? "PERCENT" : "AMOUNT",
                             stripe_coupon_id: coupon.id,
                             event_reward_id: eventRewardId,
+                            products_id: expiringProductIds, // 💥 Gán danh sách sản phẩm áp dụng
                         },
                     });
-                    // Trừ số lượng voucher sau khi tạo thành công
+                    // Giảm số lượng voucher đã phân phát
                     yield tx.eventReward.update({
                         where: {
                             id: eventRewardId,

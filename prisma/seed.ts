@@ -36,6 +36,7 @@ async function main() {
     "eventReward.json",
     "question.json",
     "questionOption.json",
+    "batch.json",
   ];
 
   const deleteFileNames = [...orderedFileNames].reverse();

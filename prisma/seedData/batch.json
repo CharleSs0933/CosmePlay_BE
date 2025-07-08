@@ -1,0 +1,72 @@
+[
+  {
+    "id": "1",
+    "product_id": "1",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "2",
+    "product_id": "2",
+    "quantity": 100,
+    "current_stock": 100,
+    "exprited_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "3",
+    "product_id": "3",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "4",
+    "product_id": "4",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "5",
+    "product_id": "5",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "6",
+    "product_id": "6",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "7",
+    "product_id": "7",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "8",
+    "product_id": "8",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "9",
+    "product_id": "9",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  },
+  {
+    "id": "10",
+    "product_id": "10",
+    "quantity": 100,
+    "current_stock": 100,
+    "expired_at": "2025-08-01T00:00:00Z"
+  }
+]

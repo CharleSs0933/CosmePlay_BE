@@ -77,13 +77,12 @@ model Product {
 }
 
 model Batch {
-  id            String    @id @default(uuid())
+  id            String   @id @default(uuid())
   product_id    String
   quantity      Int
   current_stock Int
-  expired_at    DateTime?
-  created_at    DateTime  @default(now())
-  discount      Float?
+  expired_at    DateTime
+  created_at    DateTime @default(now())
 
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
@@ -275,6 +274,7 @@ model Voucher {
   event_reward_id  String?
   stripe_coupon_id String     @unique
   discount_value   Float
+  products_id      String[]
   type             RewardType @default(PERCENT)
   redeemed         Boolean    @default(false)
   redeemed_at      DateTime?

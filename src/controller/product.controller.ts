@@ -139,7 +139,6 @@ export const addProduct = async (
       price,
       sale_price,
       image_url,
-      total_stock,
       product_category_id,
       product_brand_id,
       product_skinType_id,
@@ -151,7 +150,6 @@ export const addProduct = async (
         description,
         price,
         sale_price,
-        total_stock,
         image_url,
         product_category_id,
         product_brand_id,
@@ -208,7 +206,6 @@ export const updateProduct = async (
         ...updateData,
         price: parseInt(updateData.price) || undefined,
         sale_price: parseInt(updateData.sale_price) || undefined,
-        total_stock: parseInt(updateData.total_stock) || undefined,
       },
     });
 
@@ -371,6 +368,77 @@ export const deleteProductMeta = async (
     });
 
     res.status(200).json({ success: true, message: "Product meta deleted!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addProductBatch = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { product_id, quantity } = req.body;
+
+    if (!product_id || !quantity) {
+      return next(new ValidationError("Missing required fields!"));
+    }
+
+    const product = await prisma.product.findUnique({
+      where: { id: product_id },
+    });
+
+    if (!product) {
+      return next(new ValidationError("Product not found!"));
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.batch.create({
+        data: {
+          product_id,
+          quantity: parseInt(quantity),
+          current_stock: parseInt(quantity),
+          expired_at: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        },
+      });
+
+      await tx.product.update({
+        where: { id: product_id },
+        data: {
+          total_stock: {
+            increment: parseInt(quantity),
+          },
+        },
+      });
+    });
+
+    res
+      .status(201)
+      .json({ success: true, message: "Batch added successfully!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductBatches = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { product_id } = req.params;
+
+    const batches = await prisma.batch.findMany({
+      where: { product_id },
+      orderBy: { expired_at: "asc" },
+    });
+
+    if (batches.length === 0) {
+      return next(new ValidationError("No batches found for this product!"));
+    }
+
+    res.status(200).json({ success: true, batches });
   } catch (error) {
     next(error);
   }
