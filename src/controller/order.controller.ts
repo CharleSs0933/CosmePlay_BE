@@ -193,35 +193,21 @@ export const stripeWebhooks = async (
         );
 
         // Duyệt từng item, truy vấn product từ DB bằng stripe_product_id
-        const orderItemsData = await Promise.all(
-          lineItems.data.map(async (item) => {
-            const stripeProductId = item.price!.product as string;
+        const orderItemsData = lineItems.data.map((item) => {
+          const stripeProduct = item.price!.product as Stripe.Product;
 
-            const product = await prisma.product.findUnique({
-              where: {
-                stripe_product_id: stripeProductId,
-              },
-            });
+          const quantity = item.quantity ?? 1;
+          const total = (item.amount_total ?? 0) / 100;
+          const unitPrice = total / quantity;
 
-            if (!product) {
-              throw new Error(
-                `Product not found in DB for Stripe product ID: ${stripeProductId}`
-              );
-            }
-
-            const quantity = item.quantity ?? 1;
-            const total = (item.amount_total ?? 0) / 100;
-            const unitPrice = total / quantity;
-
-            return {
-              product_id: product.id,
-              quantity,
-              title: product.title,
-              price: unitPrice,
-              image_url: product.image_url,
-            };
-          })
-        );
+          return {
+            product_id: stripeProduct.metadata.local_product_id as string,
+            quantity,
+            title: stripeProduct.name,
+            price: unitPrice,
+            image_url: stripeProduct.images[0],
+          };
+        });
 
         await prisma.$transaction(async (tx) => {
           // 1. Create Order

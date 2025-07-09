@@ -160,28 +160,20 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     expand: ["data.price.product"],
                 });
                 // Duyệt từng item, truy vấn product từ DB bằng stripe_product_id
-                const orderItemsData = yield Promise.all(lineItems.data.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+                const orderItemsData = lineItems.data.map((item) => {
                     var _a, _b;
-                    const stripeProductId = item.price.product;
-                    const product = yield prisma_1.default.product.findUnique({
-                        where: {
-                            stripe_product_id: stripeProductId,
-                        },
-                    });
-                    if (!product) {
-                        throw new Error(`Product not found in DB for Stripe product ID: ${stripeProductId}`);
-                    }
+                    const stripeProduct = item.price.product;
                     const quantity = (_a = item.quantity) !== null && _a !== void 0 ? _a : 1;
                     const total = ((_b = item.amount_total) !== null && _b !== void 0 ? _b : 0) / 100;
                     const unitPrice = total / quantity;
                     return {
-                        product_id: product.id,
+                        product_id: stripeProduct.metadata.local_product_id,
                         quantity,
-                        title: product.title,
+                        title: stripeProduct.name,
                         price: unitPrice,
-                        image_url: product.image_url,
+                        image_url: stripeProduct.images[0],
                     };
-                })));
+                });
                 yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
                     // 1. Create Order
                     yield tx.order.create({
