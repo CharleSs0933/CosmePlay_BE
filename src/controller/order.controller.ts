@@ -204,7 +204,7 @@ export const stripeWebhooks = async (
             product_id: stripeProduct.metadata.local_product_id as string,
             quantity,
             title: stripeProduct.name,
-            price: unitPrice,
+            price: unitPrice * 100,
             image_url: stripeProduct.images[0],
           };
         });

@@ -170,7 +170,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         product_id: stripeProduct.metadata.local_product_id,
                         quantity,
                         title: stripeProduct.name,
-                        price: unitPrice,
+                        price: unitPrice * 100,
                         image_url: stripeProduct.images[0],
                     };
                 });
