@@ -6,6 +6,7 @@ import {
   validateProductData,
   validateProductMetaData,
 } from "../services/product.service";
+import stripe from "../libs/stripe";
 
 export const getAllProducts = async (
   req: Request,
@@ -131,6 +132,7 @@ export const addProduct = async (
   next: NextFunction
 ) => {
   try {
+    // Validate input
     validateProductData(req.body);
 
     const {
@@ -144,6 +146,7 @@ export const addProduct = async (
       product_skinType_id,
     } = req.body;
 
+    // Step 1: Tạo product trong DB
     const product = await prisma.product.create({
       data: {
         title,
@@ -157,7 +160,33 @@ export const addProduct = async (
       },
     });
 
-    res.status(201).json({ success: true, product });
+    // Step 2: Tạo product trong Stripe
+    const stripeProduct = await stripe.products.create({
+      name: product.title,
+      images: product.image_url ? [product.image_url] : [],
+      metadata: {
+        local_product_id: product.id,
+      },
+    });
+
+    // Step 3: Tạo price trong Stripe
+    const stripePrice = await stripe.prices.create({
+      unit_amount: product.sale_price || product.price, // dùng sale_price nếu có
+      currency: "VND",
+      product: stripeProduct.id,
+    });
+
+    // Step 4: Cập nhật product với stripe ids
+    const updatedProduct = await prisma.product.update({
+      where: { id: product.id },
+      data: {
+        stripe_product_id: stripeProduct.id,
+        stripe_price_id: stripePrice.id,
+      },
+    });
+
+    // Step 5: Trả về sản phẩm đã cập nhật
+    res.status(201).json({ success: true, product: updatedProduct });
   } catch (error) {
     next(error);
   }
@@ -177,9 +206,25 @@ export const deleteProduct = async (
       return next(new ValidationError("Product not found!"));
     }
 
+    // Xóa sản phẩm trên Stripe nếu có liên kết
+    if (product.stripe_product_id) {
+      try {
+        await stripe.products.update(product.stripe_product_id, {
+          active: false, // Stripe không hỗ trợ xóa vĩnh viễn, chỉ ngừng sử dụng
+        });
+      } catch (stripeErr) {
+        console.warn(
+          `⚠️ Stripe product not found or already inactive: ${product.stripe_product_id}`
+        );
+      }
+    }
+
+    // Xóa khỏi database
     await prisma.product.delete({ where: { id } });
 
-    res.status(200).json({ success: true, message: "Product deleted!" });
+    res
+      .status(200)
+      .json({ success: true, message: "Product deleted successfully!" });
   } catch (error) {
     next(error);
   }
@@ -200,12 +245,58 @@ export const updateProduct = async (
       return next(new ValidationError("Product not found!"));
     }
 
+    // Parse và gán giá mới nếu có
+    const parsedPrice = updateData.price
+      ? parseInt(updateData.price)
+      : undefined;
+    const parsedSalePrice = updateData.sale_price
+      ? parseInt(updateData.sale_price)
+      : undefined;
+
+    // Cập nhật thông tin sản phẩm trong Stripe nếu title hoặc image thay đổi
+    if (product.stripe_product_id) {
+      const titleChanged =
+        updateData.title && updateData.title !== product.title;
+      const imageChanged =
+        updateData.image_url && updateData.image_url !== product.image_url;
+
+      if (titleChanged || imageChanged) {
+        await stripe.products.update(product.stripe_product_id, {
+          name: updateData.title || product.title,
+          images: updateData.image_url
+            ? [updateData.image_url]
+            : product.image_url
+            ? [product.image_url]
+            : [],
+        });
+      }
+    }
+
+    // Nếu giá thay đổi thì tạo price mới
+    const priceChanged =
+      (parsedPrice && parsedPrice !== product.price) ||
+      (parsedSalePrice && parsedSalePrice !== product.sale_price);
+
+    let newStripePriceId = product.stripe_price_id;
+
+    if (priceChanged && product.stripe_product_id) {
+      const newStripePrice = await stripe.prices.create({
+        unit_amount: parsedSalePrice || parsedPrice || product.price,
+        currency: "VND",
+        product: product.stripe_product_id,
+      });
+
+      newStripePriceId = newStripePrice.id;
+    }
+
+    // Cập nhật DB
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
         ...updateData,
-        price: parseInt(updateData.price) || undefined,
-        sale_price: parseInt(updateData.sale_price) || undefined,
+        price: parsedPrice,
+        sale_price: parsedSalePrice,
+        stripe_price_id: newStripePriceId,
       },
     });
 
