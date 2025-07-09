@@ -20,6 +20,7 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
     try {
         const user = req.user;
         const { shippingCost = 0, addressId, couponId, isMobile } = req.body;
+        // 1. Lấy giỏ hàng
         const cart = yield prisma_1.default.cart.findUnique({
             where: {
                 user_id: user.id,
@@ -35,6 +36,7 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
         if (!cart || cart.cartItems.length === 0) {
             return next(new error_handler_1.ValidationError("Cart is empty!"));
         }
+        // 2. Kiểm tra địa chỉ giao hàng
         const address = yield prisma_1.default.address.findUnique({
             where: {
                 id: addressId,
@@ -44,6 +46,8 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
         if (!address) {
             return next(new error_handler_1.ValidationError("Address not found!"));
         }
+        // 3. Kiểm tra hợp lệ mã giảm giá
+        let validCoupon = undefined;
         if (couponId) {
             const coupon = yield prisma_1.default.voucher.findUnique({
                 where: {
@@ -53,57 +57,40 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
             if (!coupon) {
                 return next(new error_handler_1.ValidationError("Coupon not found!"));
             }
+            validCoupon = couponId;
         }
-        let customer;
-        const doesCustomerExist = yield stripe_1.default.customers.list({
-            email: user.email || `${user.name}@email.com`,
+        // 4. Kiểm tra hoặc tạo customer trong Stripe
+        const customerList = yield stripe_1.default.customers.list({
+            email: user.email || `${user.username}@email.com`,
+            limit: 1,
         });
-        if (doesCustomerExist.data.length > 0) {
-            customer = doesCustomerExist.data[0];
-        }
-        else {
-            const newCustomer = yield stripe_1.default.customers.create({
+        let customer = customerList.data[0];
+        if (!customer) {
+            customer = yield stripe_1.default.customers.create({
                 name: user.username,
                 email: user.email || `${user.username}@email.com`,
             });
-            customer = newCustomer;
         }
-        const session = yield stripe_1.default.checkout.sessions.create({
-            mode: "payment",
-            line_items: cart.cartItems.map((item) => ({
-                // price_data: {
-                //   currency: "VND",
-                //   product_data: {
-                //     name: item.product.title,
-                //     images: item.product.image_url ? [item.product.image_url] : [],
-                //   },
-                //   unit_amount: item.product.sale_price
-                //     ? item.product.sale_price
-                //     : item.product.price,
-                // },
-                // quantity: item.quantity,
+        // 5. Tạo phiên thanh toán
+        const session = yield stripe_1.default.checkout.sessions.create(Object.assign(Object.assign({ mode: "payment", line_items: cart.cartItems.map((item) => ({
                 price: item.product.stripe_price_id,
                 quantity: item.quantity,
-            })),
+            })) }, (validCoupon && {
             discounts: [
                 {
-                    coupon: couponId ? couponId : undefined,
+                    coupon: validCoupon,
                 },
             ],
-            success_url: isMobile
+        })), { success_url: isMobile
                 ? `${process.env.MOBILE_CLIENT_BASE_URL}?path=/Success`
-                : `${process.env.CLIENT_BASE_URL}/checkout/success`,
-            cancel_url: isMobile
+                : `${process.env.CLIENT_BASE_URL}/checkout/success`, cancel_url: isMobile
                 ? `${process.env.MOBILE_CLIENT_BASE_URL}?path=/Failure`
-                : `${process.env.CLIENT_BASE_URL}/checkout/failure`,
-            customer: customer.id,
-            metadata: {
+                : `${process.env.CLIENT_BASE_URL}/checkout/failure`, customer: customer.id, metadata: {
                 cartId: cart.id,
                 userId: user.id,
                 addressId,
-                couponId,
-            },
-            shipping_options: [
+                couponId: validCoupon || "",
+            }, shipping_options: [
                 {
                     shipping_rate_data: {
                         type: "fixed_amount",
@@ -124,8 +111,7 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                         },
                     },
                 },
-            ],
-        });
+            ] }));
         if (!session.url) {
             return next(new error_handler_1.ValidationError("Failed to create checkout session!"));
         }
@@ -154,6 +140,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 if (!cartId || !userId || !addressId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
+                console.log(session.line_items);
                 const cart = yield prisma_1.default.cart.findUnique({
                     where: {
                         id: cartId,
@@ -186,7 +173,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                                         product_id: item.product.id,
                                         quantity: item.quantity,
                                         title: item.product.title,
-                                        price: item.product.price,
+                                        price: item.product.sale_price || item.product.price,
                                         image_url: item.product.image_url,
                                     })),
                                 },

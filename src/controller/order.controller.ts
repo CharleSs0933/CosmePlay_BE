@@ -13,6 +13,7 @@ export const createCheckoutSession = async (
     const user = req.user;
     const { shippingCost = 0, addressId, couponId, isMobile } = req.body;
 
+    // 1. Lấy giỏ hàng
     const cart = await prisma.cart.findUnique({
       where: {
         user_id: user.id,
@@ -30,6 +31,7 @@ export const createCheckoutSession = async (
       return next(new ValidationError("Cart is empty!"));
     }
 
+    // 2. Kiểm tra địa chỉ giao hàng
     const address = await prisma.address.findUnique({
       where: {
         id: addressId,
@@ -41,6 +43,8 @@ export const createCheckoutSession = async (
       return next(new ValidationError("Address not found!"));
     }
 
+    // 3. Kiểm tra hợp lệ mã giảm giá
+    let validCoupon: string | undefined = undefined;
     if (couponId) {
       const coupon = await prisma.voucher.findUnique({
         where: {
@@ -51,46 +55,38 @@ export const createCheckoutSession = async (
       if (!coupon) {
         return next(new ValidationError("Coupon not found!"));
       }
+
+      validCoupon = couponId;
     }
 
-    let customer;
-    const doesCustomerExist = await stripe.customers.list({
-      email: user.email || `${user.name}@email.com`,
+    // 4. Kiểm tra hoặc tạo customer trong Stripe
+    const customerList = await stripe.customers.list({
+      email: user.email || `${user.username}@email.com`,
+      limit: 1,
     });
 
-    if (doesCustomerExist.data.length > 0) {
-      customer = doesCustomerExist.data[0];
-    } else {
-      const newCustomer = await stripe.customers.create({
+    let customer = customerList.data[0];
+    if (!customer) {
+      customer = await stripe.customers.create({
         name: user.username,
         email: user.email || `${user.username}@email.com`,
       });
-
-      customer = newCustomer;
     }
 
+    // 5. Tạo phiên thanh toán
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: cart.cartItems.map((item) => ({
-        // price_data: {
-        //   currency: "VND",
-        //   product_data: {
-        //     name: item.product.title,
-        //     images: item.product.image_url ? [item.product.image_url] : [],
-        //   },
-        //   unit_amount: item.product.sale_price
-        //     ? item.product.sale_price
-        //     : item.product.price,
-        // },
-        // quantity: item.quantity,
         price: item.product.stripe_price_id!,
         quantity: item.quantity,
       })),
-      discounts: [
-        {
-          coupon: couponId ? couponId : undefined,
-        },
-      ],
+      ...(validCoupon && {
+        discounts: [
+          {
+            coupon: validCoupon,
+          },
+        ],
+      }),
       success_url: isMobile
         ? `${process.env.MOBILE_CLIENT_BASE_URL}?path=/Success`
         : `${process.env.CLIENT_BASE_URL}/checkout/success`,
@@ -102,7 +98,7 @@ export const createCheckoutSession = async (
         cartId: cart.id,
         userId: user.id,
         addressId,
-        couponId,
+        couponId: validCoupon || "",
       },
       shipping_options: [
         {
@@ -171,6 +167,8 @@ export const stripeWebhooks = async (
           return next(new ValidationError("Missing metadata!"));
         }
 
+        console.log(session.line_items);
+
         const cart = await prisma.cart.findUnique({
           where: {
             id: cartId,
@@ -205,7 +203,7 @@ export const stripeWebhooks = async (
                     product_id: item.product.id,
                     quantity: item.quantity,
                     title: item.product.title,
-                    price: item.product.price,
+                    price: item.product.sale_price || item.product.price,
                     image_url: item.product.image_url,
                   })),
                 },
