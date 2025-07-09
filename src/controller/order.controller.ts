@@ -215,15 +215,15 @@ export const stripeWebhooks = async (
           for (const item of cart.cartItems) {
             const productId = item.product.id;
             let quantityToDeduct = item.quantity;
-            const twoWeeksFromNow = new Date();
-            twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
+            // const twoWeeksFromNow = new Date();
+            // twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
 
             const batches = await tx.batch.findMany({
               where: {
                 product_id: productId,
                 current_stock: { gt: 0 },
                 expired_at: {
-                  gt: twoWeeksFromNow,
+                  gt: new Date(),
                 },
               },
               orderBy: { expired_at: "asc" },
