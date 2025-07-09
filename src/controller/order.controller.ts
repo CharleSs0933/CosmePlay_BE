@@ -167,8 +167,6 @@ export const stripeWebhooks = async (
           return next(new ValidationError("Missing metadata!"));
         }
 
-        console.log(session.line_items);
-
         const cart = await prisma.cart.findUnique({
           where: {
             id: cartId,
@@ -186,6 +184,45 @@ export const stripeWebhooks = async (
           return next(new ValidationError("Cart not found!"));
         }
 
+        // Lấy danh sách sản phẩm từ session
+        const lineItems = await stripe.checkout.sessions.listLineItems(
+          session.id,
+          {
+            expand: ["data.price.product"],
+          }
+        );
+
+        // Duyệt từng item, truy vấn product từ DB bằng stripe_product_id
+        const orderItemsData = await Promise.all(
+          lineItems.data.map(async (item) => {
+            const stripeProductId = item.price!.product as string;
+
+            const product = await prisma.product.findUnique({
+              where: {
+                stripe_product_id: stripeProductId,
+              },
+            });
+
+            if (!product) {
+              throw new Error(
+                `Product not found in DB for Stripe product ID: ${stripeProductId}`
+              );
+            }
+
+            const quantity = item.quantity ?? 1;
+            const total = (item.amount_total ?? 0) / 100;
+            const unitPrice = total / quantity;
+
+            return {
+              product_id: product.id,
+              quantity,
+              title: product.title,
+              price: unitPrice,
+              image_url: product.image_url,
+            };
+          })
+        );
+
         await prisma.$transaction(async (tx) => {
           // 1. Create Order
           await tx.order.create({
@@ -199,13 +236,15 @@ export const stripeWebhooks = async (
               status: "PROCESSING",
               orderItems: {
                 createMany: {
-                  data: cart.cartItems.map((item) => ({
-                    product_id: item.product.id,
-                    quantity: item.quantity,
-                    title: item.product.title,
-                    price: item.product.sale_price || item.product.price,
-                    image_url: item.product.image_url,
-                  })),
+                  data:
+                    // cart.cartItems.map((item) => ({
+                    //   product_id: item.product.id,
+                    //   quantity: item.quantity,
+                    //   title: item.product.title,
+                    //   price: item.product.sale_price || item.product.price,
+                    //   image_url: item.product.image_url,
+                    // })),
+                    orderItemsData,
                 },
               },
             },
@@ -215,8 +254,6 @@ export const stripeWebhooks = async (
           for (const item of cart.cartItems) {
             const productId = item.product.id;
             let quantityToDeduct = item.quantity;
-            // const twoWeeksFromNow = new Date();
-            // twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
 
             const batches = await tx.batch.findMany({
               where: {

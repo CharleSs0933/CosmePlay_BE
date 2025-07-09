@@ -140,7 +140,6 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 if (!cartId || !userId || !addressId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
-                console.log(session.line_items);
                 const cart = yield prisma_1.default.cart.findUnique({
                     where: {
                         id: cartId,
@@ -156,6 +155,33 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 if (!cart) {
                     return next(new error_handler_1.ValidationError("Cart not found!"));
                 }
+                // Lấy danh sách sản phẩm từ session
+                const lineItems = yield stripe_1.default.checkout.sessions.listLineItems(session.id, {
+                    expand: ["data.price.product"],
+                });
+                // Duyệt từng item, truy vấn product từ DB bằng stripe_product_id
+                const orderItemsData = yield Promise.all(lineItems.data.map((item) => __awaiter(void 0, void 0, void 0, function* () {
+                    var _a, _b;
+                    const stripeProductId = item.price.product;
+                    const product = yield prisma_1.default.product.findUnique({
+                        where: {
+                            stripe_product_id: stripeProductId,
+                        },
+                    });
+                    if (!product) {
+                        throw new Error(`Product not found in DB for Stripe product ID: ${stripeProductId}`);
+                    }
+                    const quantity = (_a = item.quantity) !== null && _a !== void 0 ? _a : 1;
+                    const total = ((_b = item.amount_total) !== null && _b !== void 0 ? _b : 0) / 100;
+                    const unitPrice = total / quantity;
+                    return {
+                        product_id: product.id,
+                        quantity,
+                        title: product.title,
+                        price: unitPrice,
+                        image_url: product.image_url,
+                    };
+                })));
                 yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
                     // 1. Create Order
                     yield tx.order.create({
@@ -169,13 +195,15 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             status: "PROCESSING",
                             orderItems: {
                                 createMany: {
-                                    data: cart.cartItems.map((item) => ({
-                                        product_id: item.product.id,
-                                        quantity: item.quantity,
-                                        title: item.product.title,
-                                        price: item.product.sale_price || item.product.price,
-                                        image_url: item.product.image_url,
-                                    })),
+                                    data: 
+                                    // cart.cartItems.map((item) => ({
+                                    //   product_id: item.product.id,
+                                    //   quantity: item.quantity,
+                                    //   title: item.product.title,
+                                    //   price: item.product.sale_price || item.product.price,
+                                    //   image_url: item.product.image_url,
+                                    // })),
+                                    orderItemsData,
                                 },
                             },
                         },
@@ -184,8 +212,6 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     for (const item of cart.cartItems) {
                         const productId = item.product.id;
                         let quantityToDeduct = item.quantity;
-                        // const twoWeeksFromNow = new Date();
-                        // twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
                         const batches = yield tx.batch.findMany({
                             where: {
                                 product_id: productId,
