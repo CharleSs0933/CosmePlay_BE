@@ -64,6 +64,8 @@ model Product {
   product_category_id String
   product_brand_id    String
   product_skinType_id String
+  stripe_product_id   String?  @unique
+  stripe_price_id     String?
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 
@@ -74,6 +76,7 @@ model Product {
   CartLineItem    CartLineItem[]
   OrderItem       OrderItem[]
   Batch           Batch[]
+  VoucherProduct  VoucherProduct[]
 }
 
 model Batch {
@@ -274,12 +277,23 @@ model Voucher {
   event_reward_id  String?
   stripe_coupon_id String     @unique
   discount_value   Float
-  products_id      String[]
   type             RewardType @default(PERCENT)
   redeemed         Boolean    @default(false)
   redeemed_at      DateTime?
   created_at       DateTime   @default(now())
 
-  user        User         @relation(fields: [user_id], references: [id])
-  eventReward EventReward? @relation(fields: [event_reward_id], references: [id], onDelete: SetNull)
+  user            User             @relation(fields: [user_id], references: [id])
+  eventReward     EventReward?     @relation(fields: [event_reward_id], references: [id], onDelete: SetNull)
+  voucherProducts VoucherProduct[]
+}
+
+model VoucherProduct {
+  id         String @id @default(uuid())
+  voucher_id String
+  product_id String
+
+  voucher Voucher @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([voucher_id, product_id]) // Ensures a voucher can have a product only once
 }

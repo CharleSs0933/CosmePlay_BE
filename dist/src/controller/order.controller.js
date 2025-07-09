@@ -71,16 +71,18 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
         const session = yield stripe_1.default.checkout.sessions.create({
             mode: "payment",
             line_items: cart.cartItems.map((item) => ({
-                price_data: {
-                    currency: "VND",
-                    product_data: {
-                        name: item.product.title,
-                        images: item.product.image_url ? [item.product.image_url] : [],
-                    },
-                    unit_amount: item.product.sale_price
-                        ? item.product.sale_price
-                        : item.product.price,
-                },
+                // price_data: {
+                //   currency: "VND",
+                //   product_data: {
+                //     name: item.product.title,
+                //     images: item.product.image_url ? [item.product.image_url] : [],
+                //   },
+                //   unit_amount: item.product.sale_price
+                //     ? item.product.sale_price
+                //     : item.product.price,
+                // },
+                // quantity: item.quantity,
+                price: item.product.stripe_price_id,
                 quantity: item.quantity,
             })),
             discounts: [
@@ -296,7 +298,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             type: coupon.percent_off ? "PERCENT" : "AMOUNT",
                             stripe_coupon_id: coupon.id,
                             event_reward_id: eventRewardId,
-                            products_id: expiringProductIds, // 💥 Gán danh sách sản phẩm áp dụng
+                            // products_id: expiringProductIds, // 💥 Gán danh sách sản phẩm áp dụng
                         },
                     });
                     // Giảm số lượng voucher đã phân phát
