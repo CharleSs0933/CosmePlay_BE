@@ -55,9 +55,9 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
             },
         });
         if (!eventReward)
-            return null; // Không có phần thưởng phù hợp
+            return null;
         if (eventReward.voucher_quantity <= 0)
-            return null; // Hết voucher
+            return null;
         // 2. Lấy các sản phẩm sắp hết hạn trong 14 ngày tới
         const today = new Date();
         const twoWeeksLater = new Date();
@@ -71,7 +71,6 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
             distinct: ["product_id"],
         });
         const expiringProductIds = expiringBatches.map((b) => b.product_id);
-        // 3. Lấy stripe_product_id từ các sản phẩm
         const expiringProducts = yield prisma_1.default.product.findMany({
             where: {
                 id: { in: expiringProductIds },
@@ -80,9 +79,7 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
             select: { stripe_product_id: true },
         });
         const stripeProductIds = expiringProducts.map((p) => p.stripe_product_id);
-        if (stripeProductIds.length === 0)
-            return null; // Không có sản phẩm hợp lệ trên Stripe
-        // 4. Tạo dữ liệu Coupon trên Stripe
+        // 3. Tạo dữ liệu Coupon trên Stripe
         const couponData = {
             max_redemptions: 1,
             metadata: {
@@ -90,10 +87,14 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
                 eventId,
                 eventRewardId: eventReward.id,
             },
-            applies_to: {
-                products: stripeProductIds,
-            },
         };
+        // ✅ Nếu có sản phẩm hợp lệ, chỉ áp dụng cho các sản phẩm đó
+        if (stripeProductIds.length > 0) {
+            couponData.applies_to = {
+                products: stripeProductIds,
+            };
+        }
+        // 4. Thêm loại giảm giá vào coupon
         if (eventReward.type === "PERCENT") {
             couponData.percent_off = eventReward.discount_value;
         }

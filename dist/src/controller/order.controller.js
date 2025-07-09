@@ -284,20 +284,15 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
                     // Tạo voucher kèm danh sách product_id áp dụng
                     yield tx.voucher.create({
-                        data: {
-                            user_id: userId,
-                            discount_value: coupon.percent_off
+                        data: Object.assign({ user_id: userId, discount_value: coupon.percent_off
                                 ? coupon.percent_off
-                                : coupon.amount_off,
-                            type: coupon.percent_off ? "PERCENT" : "AMOUNT",
-                            stripe_coupon_id: coupon.id,
-                            event_reward_id: eventRewardId,
+                                : coupon.amount_off, type: coupon.percent_off ? "PERCENT" : "AMOUNT", stripe_coupon_id: coupon.id, event_reward_id: eventRewardId }, (expiringProductIds.length > 0 && {
                             voucherProducts: {
                                 create: expiringProductIds.map((productId) => ({
                                     product_id: productId,
                                 })),
                             },
-                        },
+                        })),
                     });
                     // Giảm số lượng voucher đã phân phát
                     yield tx.eventReward.update({

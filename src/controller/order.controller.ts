@@ -332,11 +332,14 @@ export const stripeWebhooks = async (
               type: coupon.percent_off ? "PERCENT" : "AMOUNT",
               stripe_coupon_id: coupon.id,
               event_reward_id: eventRewardId,
-              voucherProducts: {
-                create: expiringProductIds.map((productId) => ({
-                  product_id: productId,
-                })),
-              },
+              // ✅ Nếu có sản phẩm sắp hết hạn, thêm danh sách product_id áp dụng
+              ...(expiringProductIds.length > 0 && {
+                voucherProducts: {
+                  create: expiringProductIds.map((productId) => ({
+                    product_id: productId,
+                  })),
+                },
+              }),
             },
           });
 
