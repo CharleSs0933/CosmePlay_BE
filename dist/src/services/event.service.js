@@ -60,12 +60,36 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
         if (eventReward.voucher_quantity <= 0) {
             return null;
         }
+        const today = new Date();
+        const twoWeeksLater = new Date();
+        twoWeeksLater.setDate(today.getDate() + 14);
+        // Truy vấn các sản phẩm có lô hàng sắp hết hạn (trong vòng 14 ngày)
+        const expiringBatches = yield prisma_1.default.batch.findMany({
+            where: {
+                expired_at: {
+                    lte: twoWeeksLater,
+                },
+                current_stock: {
+                    gt: 0,
+                },
+            },
+            select: {
+                product_id: true,
+            },
+            distinct: ["product_id"], // Đảm bảo không bị trùng
+        });
+        const expiringProductIds = expiringBatches.map((b) => b.product_id);
         const couponData = {
             max_redemptions: 1,
             metadata: {
                 userId: user.id,
                 eventId,
                 eventRewardId: eventReward.id,
+            },
+            applies_to: {
+                products: [
+                    ...expiringProductIds, // Chỉ áp dụng cho các sản phẩm sắp hết hạn
+                ],
             },
         };
         if (eventReward.type === "PERCENT") {

@@ -11,7 +11,7 @@
     "product_id": "2",
     "quantity": 100,
     "current_stock": 100,
-    "exprited_at": "2025-08-01T00:00:00Z"
+    "expired_at": "2025-07-15T00:00:00Z"
   },
   {
     "id": "3",
