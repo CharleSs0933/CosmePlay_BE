@@ -273,17 +273,11 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 // Truy vấn các sản phẩm có lô hàng sắp hết hạn (trong vòng 14 ngày)
                 const expiringBatches = yield prisma_1.default.batch.findMany({
                     where: {
-                        expired_at: {
-                            lte: twoWeeksLater,
-                        },
-                        current_stock: {
-                            gt: 0,
-                        },
+                        expired_at: { lte: twoWeeksLater },
+                        current_stock: { gt: 0 },
                     },
-                    select: {
-                        product_id: true,
-                    },
-                    distinct: ["product_id"], // Đảm bảo không bị trùng
+                    select: { product_id: true },
+                    distinct: ["product_id"],
                 });
                 const expiringProductIds = expiringBatches.map((b) => b.product_id);
                 // Bắt đầu transaction
@@ -298,7 +292,11 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             type: coupon.percent_off ? "PERCENT" : "AMOUNT",
                             stripe_coupon_id: coupon.id,
                             event_reward_id: eventRewardId,
-                            // products_id: expiringProductIds, // 💥 Gán danh sách sản phẩm áp dụng
+                            voucherProducts: {
+                                create: expiringProductIds.map((productId) => ({
+                                    product_id: productId,
+                                })),
+                            },
                         },
                     });
                     // Giảm số lượng voucher đã phân phát

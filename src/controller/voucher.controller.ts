@@ -23,7 +23,15 @@ export const getAllVouchers = async (
   next: NextFunction
 ) => {
   try {
-    const vouchers = await prisma.voucher.findMany({});
+    const vouchers = await prisma.voucher.findMany({
+      include: {
+        voucherProducts: {
+          select: {
+            product: true,
+          },
+        },
+      },
+    });
 
     res.status(200).json({ success: true, vouchers });
   } catch (error) {

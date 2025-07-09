@@ -29,7 +29,15 @@ const getVouchersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, 
 exports.getVouchersByUser = getVouchersByUser;
 const getAllVouchers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const vouchers = yield prisma_1.default.voucher.findMany({});
+        const vouchers = yield prisma_1.default.voucher.findMany({
+            include: {
+                voucherProducts: {
+                    select: {
+                        product: true,
+                    },
+                },
+            },
+        });
         res.status(200).json({ success: true, vouchers });
     }
     catch (error) {
