@@ -6,6 +6,7 @@ import {
   addProductMeta,
   deleteProduct,
   deleteProductMeta,
+  getAllBatches,
   getAllProducts,
   getProduct,
   getProductBatches,
@@ -43,19 +44,12 @@ router.delete(
   deleteProductMeta
 );
 
-router.put(
-  "/:id",
+router.get(
+  "/batches",
   isAuthenticated,
   allowedRoles(["admin", "staff"]),
-  updateProduct
+  getAllBatches
 );
-router.delete(
-  "/:id",
-  isAuthenticated,
-  allowedRoles(["admin", "staff"]),
-  deleteProduct
-);
-router.get("/:id", getProduct);
 
 router.get(
   "/:id/batches",
@@ -70,5 +64,19 @@ router.post(
   allowedRoles(["admin", "staff"]),
   addProductBatch
 );
+
+router.put(
+  "/:id",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  updateProduct
+);
+router.delete(
+  "/:id",
+  isAuthenticated,
+  allowedRoles(["admin", "staff"]),
+  deleteProduct
+);
+router.get("/:id", getProduct);
 
 export default router;

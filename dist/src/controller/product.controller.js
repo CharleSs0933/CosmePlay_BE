@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProductBatches = exports.addProductBatch = exports.deleteProductMeta = exports.updateProductMeta = exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
+exports.getAllBatches = exports.getProductBatches = exports.addProductBatch = exports.deleteProductMeta = exports.updateProductMeta = exports.addProductMeta = exports.updateProduct = exports.deleteProduct = exports.addProduct = exports.getProductMeta = exports.getProduct = exports.getAllProducts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const product_service_1 = require("../services/product.service");
@@ -431,3 +431,35 @@ const getProductBatches = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.getProductBatches = getProductBatches;
+const getAllBatches = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { page = 1, limit = 10 } = req.query;
+        const pageNumber = parseInt(page, 10);
+        const pageSize = parseInt(limit, 10) || 10;
+        const filters = (0, product_service_1.buildBatchFilter)(req);
+        const batches = yield prisma_1.default.batch.findMany({
+            where: filters,
+            include: {
+                product: true,
+            },
+            skip: (pageNumber - 1) * pageSize,
+            take: pageSize,
+            orderBy: { expired_at: "asc" },
+        });
+        const total = yield prisma_1.default.batch.count({ where: filters });
+        res.status(200).json({
+            success: true,
+            batches,
+            pagination: {
+                total,
+                page: pageNumber,
+                pageSize,
+                totalPages: Math.ceil(total / pageSize),
+            },
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getAllBatches = getAllBatches;

@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { Request } from "express";
 import { ValidationError } from "../packages/error-handler";
+import { startOfMonth, endOfMonth } from "date-fns";
 
 export const buildProductFilter = (req: Request): Prisma.ProductWhereInput => {
   const { category, brand, skinType, title, sale } = req.query;
@@ -60,4 +61,45 @@ export const validateProductMetaData = (data: any) => {
   if (type !== "category" && type !== "brand" && type !== "skinType") {
     throw new ValidationError("Invalid type!");
   }
+};
+
+export const buildBatchFilter = (req: Request): Prisma.BatchWhereInput => {
+  const { search, isExpired, month } = req.query;
+
+  if (month && typeof month === "string") {
+    const [year, monthStr] = month.split("-");
+    const monthInt = parseInt(monthStr) - 1;
+    const startDate = startOfMonth(new Date(parseInt(year), monthInt));
+    const endDate = endOfMonth(new Date(parseInt(year), monthInt));
+
+    return {
+      product: {
+        title: search
+          ? { contains: search as string, mode: "insensitive" }
+          : undefined,
+      },
+      expired_at: isExpired
+        ? isExpired === "true"
+          ? { lte: new Date() }
+          : undefined
+        : undefined,
+      created_at: {
+        gte: startDate,
+        lte: endDate,
+      },
+    };
+  }
+
+  return {
+    product: {
+      title: search
+        ? { contains: search as string, mode: "insensitive" }
+        : undefined,
+    },
+    expired_at: isExpired
+      ? isExpired === "true"
+        ? { lte: new Date() }
+        : undefined
+      : undefined,
+  };
 };

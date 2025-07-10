@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateProductMetaData = exports.validateProductData = exports.buildProductFilter = void 0;
+exports.buildBatchFilter = exports.validateProductMetaData = exports.validateProductData = exports.buildProductFilter = void 0;
 const error_handler_1 = require("../packages/error-handler");
+const date_fns_1 = require("date-fns");
 const buildProductFilter = (req) => {
     const { category, brand, skinType, title, sale } = req.query;
     return {
@@ -49,3 +50,41 @@ const validateProductMetaData = (data) => {
     }
 };
 exports.validateProductMetaData = validateProductMetaData;
+const buildBatchFilter = (req) => {
+    const { search, isExpired, month } = req.query;
+    if (month && typeof month === "string") {
+        const [year, monthStr] = month.split("-");
+        const monthInt = parseInt(monthStr) - 1;
+        const startDate = (0, date_fns_1.startOfMonth)(new Date(parseInt(year), monthInt));
+        const endDate = (0, date_fns_1.endOfMonth)(new Date(parseInt(year), monthInt));
+        return {
+            product: {
+                title: search
+                    ? { contains: search, mode: "insensitive" }
+                    : undefined,
+            },
+            expired_at: isExpired
+                ? isExpired === "true"
+                    ? { lte: new Date() }
+                    : undefined
+                : undefined,
+            created_at: {
+                gte: startDate,
+                lte: endDate,
+            },
+        };
+    }
+    return {
+        product: {
+            title: search
+                ? { contains: search, mode: "insensitive" }
+                : undefined,
+        },
+        expired_at: isExpired
+            ? isExpired === "true"
+                ? { lte: new Date() }
+                : undefined
+            : undefined,
+    };
+};
+exports.buildBatchFilter = buildBatchFilter;

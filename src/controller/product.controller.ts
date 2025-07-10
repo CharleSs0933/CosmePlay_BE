@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 import { ValidationError } from "../packages/error-handler";
 import {
+  buildBatchFilter,
   buildProductFilter,
   validateProductData,
   validateProductMetaData,
@@ -531,6 +532,46 @@ export const getProductBatches = async (
     }
 
     res.status(200).json({ success: true, batches });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllBatches = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const pageNumber = parseInt(page as string, 10);
+    const pageSize = parseInt(limit as string, 10) || 10;
+
+    const filters = buildBatchFilter(req);
+
+    const batches = await prisma.batch.findMany({
+      where: filters,
+      include: {
+        product: true,
+      },
+      skip: (pageNumber - 1) * pageSize,
+      take: pageSize,
+      orderBy: { expired_at: "asc" },
+    });
+
+    const total = await prisma.batch.count({ where: filters });
+
+    res.status(200).json({
+      success: true,
+      batches,
+      pagination: {
+        total,
+        page: pageNumber,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    });
   } catch (error) {
     next(error);
   }
