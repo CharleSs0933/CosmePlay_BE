@@ -36,7 +36,7 @@ export const addToCart = async (
         data: { user_id: user.id },
       });
     }
-
+    
     const cartItem = await prisma.cartLineItem.findFirst({
       where: { product_id: productId, cart_id: cart.id },
     });

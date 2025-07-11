@@ -19,6 +19,13 @@ const getVouchersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         const user = req.user;
         const vouchers = yield prisma_1.default.voucher.findMany({
             where: { user_id: user.id, redeemed: false },
+            include: {
+                voucherProducts: {
+                    select: {
+                        product: true,
+                    },
+                },
+            },
         });
         res.status(200).json({ success: true, vouchers });
     }

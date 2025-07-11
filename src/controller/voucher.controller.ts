@@ -10,6 +10,13 @@ export const getVouchersByUser = async (
     const user = req.user;
     const vouchers = await prisma.voucher.findMany({
       where: { user_id: user.id, redeemed: false },
+      include: {
+        voucherProducts: {
+          select: {
+            product: true,
+          },
+        },
+      },
     });
     res.status(200).json({ success: true, vouchers });
   } catch (error) {
