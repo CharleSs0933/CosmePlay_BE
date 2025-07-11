@@ -66,6 +66,10 @@ export const validateProductMetaData = (data: any) => {
 export const buildBatchFilter = (req: Request): Prisma.BatchWhereInput => {
   const { search, isExpired, month } = req.query;
 
+  const today = new Date();
+  const twoWeeksLater = new Date();
+  twoWeeksLater.setDate(today.getDate() + 14);
+
   if (month && typeof month === "string") {
     const [year, monthStr] = month.split("-");
     const monthInt = parseInt(monthStr) - 1;
@@ -80,7 +84,7 @@ export const buildBatchFilter = (req: Request): Prisma.BatchWhereInput => {
       },
       expired_at: isExpired
         ? isExpired === "true"
-          ? { lte: new Date() }
+          ? { lte: twoWeeksLater }
           : undefined
         : undefined,
       created_at: {
@@ -98,7 +102,7 @@ export const buildBatchFilter = (req: Request): Prisma.BatchWhereInput => {
     },
     expired_at: isExpired
       ? isExpired === "true"
-        ? { lte: new Date() }
+        ? { lte: twoWeeksLater }
         : undefined
       : undefined,
   };

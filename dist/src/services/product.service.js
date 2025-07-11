@@ -52,6 +52,9 @@ const validateProductMetaData = (data) => {
 exports.validateProductMetaData = validateProductMetaData;
 const buildBatchFilter = (req) => {
     const { search, isExpired, month } = req.query;
+    const today = new Date();
+    const twoWeeksLater = new Date();
+    twoWeeksLater.setDate(today.getDate() + 14);
     if (month && typeof month === "string") {
         const [year, monthStr] = month.split("-");
         const monthInt = parseInt(monthStr) - 1;
@@ -65,7 +68,7 @@ const buildBatchFilter = (req) => {
             },
             expired_at: isExpired
                 ? isExpired === "true"
-                    ? { lte: new Date() }
+                    ? { lte: twoWeeksLater }
                     : undefined
                 : undefined,
             created_at: {
@@ -82,7 +85,7 @@ const buildBatchFilter = (req) => {
         },
         expired_at: isExpired
             ? isExpired === "true"
-                ? { lte: new Date() }
+                ? { lte: twoWeeksLater }
                 : undefined
             : undefined,
     };
