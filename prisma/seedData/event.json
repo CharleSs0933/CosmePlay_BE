@@ -7,5 +7,15 @@
     "end_time": "2025-06-15T23:59:00Z",
     "type": "QUIZ",
     "is_active": true
+  },
+  {
+    "id": "2",
+    "title": "Beauty Drop",
+    "description": "Catch as many beauty items as you can to earn points! Avoid harmful ingredients to keep your score high. A fun and fast-paced game for skincare lovers!",
+    "start_time": "2025-07-11T00:00:00.000Z",
+    "end_time": "2025-07-20T23:59:59.000Z",
+    "type": "DROP",
+    "is_active": true,
+    "created_at": "2025-07-11T15:00:00.000Z"
   }
 ]

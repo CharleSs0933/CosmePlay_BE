@@ -164,7 +164,6 @@ model Order {
   address    Address     @relation(fields: [address_id], references: [id])
   voucher    Voucher?
   orderItems OrderItem[]
-  voucherId  String?
 }
 
 model OrderItem {

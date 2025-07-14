@@ -43,5 +43,50 @@
     "discount_value": 25.0,
     "voucher_quantity": 100,
     "type": "PERCENT"
+  },
+  {
+    "id": "7",
+    "event_id": "2",
+    "min_correct": 700,
+    "max_correct": 900,
+    "voucher_quantity": 100,
+    "discount_value": 50000,
+    "type": "AMOUNT"
+  },
+  {
+    "id": "8",
+    "event_id": "2",
+    "min_correct": 901,
+    "max_correct": 1200,
+    "voucher_quantity": 100,
+    "discount_value": 10,
+    "type": "PERCENT"
+  },
+  {
+    "id": "9",
+    "event_id": "2",
+    "min_correct": 1201,
+    "max_correct": 1500,
+    "voucher_quantity": 100,
+    "discount_value": 15,
+    "type": "PERCENT"
+  },
+  {
+    "id": "10",
+    "event_id": "2",
+    "min_correct": 1501,
+    "max_correct": 1800,
+    "voucher_quantity": 100,
+    "discount_value": 20,
+    "type": "PERCENT"
+  },
+  {
+    "id": "11",
+    "event_id": "2",
+    "min_correct": 1801,
+    "max_correct": 9999,
+    "voucher_quantity": 100,
+    "discount_value": 25,
+    "type": "PERCENT"
   }
 ]
