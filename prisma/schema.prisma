@@ -162,7 +162,9 @@ model Order {
 
   user       User        @relation(fields: [user_id], references: [id])
   address    Address     @relation(fields: [address_id], references: [id])
+  voucher    Voucher?
   orderItems OrderItem[]
+  voucherId  String?
 }
 
 model OrderItem {
@@ -276,6 +278,7 @@ model Voucher {
   user_id          String
   event_reward_id  String?
   stripe_coupon_id String     @unique
+  order_id         String?    @unique
   discount_value   Float
   duration         Int        @default(48)
   type             RewardType @default(PERCENT)
@@ -286,6 +289,7 @@ model Voucher {
   user            User             @relation(fields: [user_id], references: [id])
   eventReward     EventReward?     @relation(fields: [event_reward_id], references: [id], onDelete: SetNull)
   voucherProducts VoucherProduct[]
+  Order           Order?           @relation(fields: [order_id], references: [id])
 }
 
 model VoucherProduct {

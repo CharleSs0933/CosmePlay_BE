@@ -174,9 +174,9 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         image_url: stripeProduct.images[0],
                     };
                 });
-                yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+                const { order } = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
                     // 1. Create Order
-                    yield tx.order.create({
+                    const order = yield tx.order.create({
                         data: {
                             user_id: userId,
                             checkout_session_id: session.id,
@@ -244,6 +244,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             user_id: userId,
                         },
                     });
+                    return { order };
                 }));
                 if (session.discounts && session.discounts.length > 0) {
                     const discount = session.discounts[0];
@@ -257,6 +258,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             data: {
                                 redeemed: true,
                                 redeemed_at: new Date(),
+                                order_id: order.id,
                             },
                         });
                     }
@@ -339,6 +341,7 @@ const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                         name: true,
                     },
                 },
+                voucher: true,
             },
         });
         res.status(200).json({ success: true, orders });
@@ -362,6 +365,7 @@ const getOrderDetail = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         name: true,
                     },
                 },
+                voucher: true,
             },
         });
         if (!order) {

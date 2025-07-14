@@ -209,9 +209,9 @@ export const stripeWebhooks = async (
           };
         });
 
-        await prisma.$transaction(async (tx) => {
+        const { order } = await prisma.$transaction(async (tx) => {
           // 1. Create Order
-          await tx.order.create({
+          const order = await tx.order.create({
             data: {
               user_id: userId,
               checkout_session_id: session.id,
@@ -289,7 +289,10 @@ export const stripeWebhooks = async (
               user_id: userId,
             },
           });
+
+          return { order };
         });
+
         if (session.discounts && session.discounts.length > 0) {
           const discount = session.discounts[0];
 
@@ -305,6 +308,7 @@ export const stripeWebhooks = async (
               data: {
                 redeemed: true,
                 redeemed_at: new Date(),
+                order_id: order.id,
               },
             });
           }
@@ -411,6 +415,7 @@ export const getOrdersByUser = async (
             name: true,
           },
         },
+        voucher: true,
       },
     });
 
@@ -439,6 +444,7 @@ export const getOrderDetail = async (
             name: true,
           },
         },
+        voucher: true,
       },
     });
 
