@@ -59,6 +59,7 @@ model Product {
   price               Float
   sale_price          Float?
   image_url           String?
+  images              String[]
   rating              Float    @default(0)
   total_stock         Int      @default(0)
   product_category_id String

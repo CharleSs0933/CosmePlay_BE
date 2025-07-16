@@ -116,7 +116,7 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     try {
         // Validate input
         (0, product_service_1.validateProductData)(req.body);
-        const { title, description, price, sale_price, image_url, product_category_id, product_brand_id, product_skinType_id, } = req.body;
+        const { title, description, price, sale_price, image_url, images, product_category_id, product_brand_id, product_skinType_id, } = req.body;
         // Step 1: Tạo product trong DB
         const product = yield prisma_1.default.product.create({
             data: {
@@ -125,6 +125,7 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 price,
                 sale_price,
                 image_url,
+                images,
                 product_category_id,
                 product_brand_id,
                 product_skinType_id,
