@@ -3,6 +3,7 @@ import prisma from "../libs/prisma";
 import { ValidationError } from "../packages/error-handler";
 import stripe from "../libs/stripe";
 import Stripe from "stripe";
+import { checkBatchStock } from "../services/order.service";
 
 export const createCheckoutSession = async (
   req: any,
@@ -13,16 +14,12 @@ export const createCheckoutSession = async (
     const user = req.user;
     const { shippingCost = 0, addressId, couponId, isMobile } = req.body;
 
-    // 1. Lấy giỏ hàng
+    // 1. Lấy giỏ hàng kèm sản phẩm
     const cart = await prisma.cart.findUnique({
-      where: {
-        user_id: user.id,
-      },
+      where: { user_id: user.id },
       include: {
         cartItems: {
-          include: {
-            product: true,
-          },
+          include: { product: true },
         },
       },
     });
@@ -31,7 +28,7 @@ export const createCheckoutSession = async (
       return next(new ValidationError("Cart is empty!"));
     }
 
-    // 2. Kiểm tra địa chỉ giao hàng
+    // 2. Kiểm tra địa chỉ giao hàng hợp lệ
     const address = await prisma.address.findUnique({
       where: {
         id: addressId,
@@ -43,12 +40,18 @@ export const createCheckoutSession = async (
       return next(new ValidationError("Address not found!"));
     }
 
-    // 3. Kiểm tra hợp lệ mã giảm giá
-    let validCoupon: string | undefined = undefined;
+    await checkBatchStock(cart);
+
+    // 3. Kiểm tra mã giảm giá (nếu có)
+    let validCoupon: string | undefined;
+
     if (couponId) {
       const coupon = await prisma.voucher.findUnique({
-        where: {
-          stripe_coupon_id: couponId,
+        where: { stripe_coupon_id: couponId },
+        select: {
+          voucherProducts: {
+            select: { product_id: true },
+          },
         },
       });
 
@@ -56,10 +59,21 @@ export const createCheckoutSession = async (
         return next(new ValidationError("Coupon not found!"));
       }
 
+      const invalid = coupon.voucherProducts.some(
+        (voucherItem) =>
+          !cart.cartItems.some(
+            (cartItem) => cartItem.product.id === voucherItem.product_id
+          )
+      );
+
+      if (invalid) {
+        return next(new ValidationError("Coupon not valid for your cart!"));
+      }
+
       validCoupon = couponId;
     }
 
-    // 4. Kiểm tra hoặc tạo customer trong Stripe
+    // 4. Kiểm tra hoặc tạo Stripe customer
     const customerList = await stripe.customers.list({
       email: user.email || `${user.username}@email.com`,
       limit: 1,
@@ -73,20 +87,20 @@ export const createCheckoutSession = async (
       });
     }
 
-    // 5. Tạo phiên thanh toán
+    // 5. Tạo phiên thanh toán Stripe
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: cart.cartItems.map((item) => ({
         price: item.product.stripe_price_id!,
         quantity: item.quantity,
       })),
-      ...(validCoupon && {
-        discounts: [
-          {
-            coupon: validCoupon,
-          },
-        ],
-      }),
+      discounts: validCoupon
+        ? [
+            {
+              coupon: validCoupon,
+            },
+          ]
+        : undefined,
       success_url: isMobile
         ? `${process.env.MOBILE_CLIENT_BASE_URL}?path=/Success`
         : `${process.env.CLIENT_BASE_URL}/checkout/success`,
@@ -98,7 +112,7 @@ export const createCheckoutSession = async (
         cartId: cart.id,
         userId: user.id,
         addressId,
-        couponId: validCoupon || "",
+        couponId: validCoupon ?? "",
       },
       shipping_options: [
         {
@@ -111,14 +125,8 @@ export const createCheckoutSession = async (
             display_name:
               shippingCost === 0 ? "Free Shipping" : "Standard Shipping",
             delivery_estimate: {
-              minimum: {
-                unit: "business_day",
-                value: 5,
-              },
-              maximum: {
-                unit: "business_day",
-                value: 7,
-              },
+              minimum: { unit: "business_day", value: 5 },
+              maximum: { unit: "business_day", value: 7 },
             },
           },
         },
@@ -159,23 +167,17 @@ export const stripeWebhooks = async (
       case `checkout.session.completed`: {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        const cartId = session.metadata?.cartId;
-        const userId = session.metadata?.userId;
-        const addressId = session.metadata?.addressId;
-
+        const { cartId, userId, addressId } = session.metadata ?? {};
         if (!cartId || !userId || !addressId) {
           return next(new ValidationError("Missing metadata!"));
         }
 
+        // Lấy giỏ hàng và các sản phẩm liên quan
         const cart = await prisma.cart.findUnique({
-          where: {
-            id: cartId,
-          },
+          where: { id: cartId },
           include: {
             cartItems: {
-              include: {
-                product: true,
-              },
+              include: { product: true },
             },
           },
         });
@@ -184,7 +186,7 @@ export const stripeWebhooks = async (
           return next(new ValidationError("Cart not found!"));
         }
 
-        // Lấy danh sách sản phẩm từ session
+        // Lấy thông tin sản phẩm từ Stripe session
         const lineItems = await stripe.checkout.sessions.listLineItems(
           session.id,
           {
@@ -192,10 +194,9 @@ export const stripeWebhooks = async (
           }
         );
 
-        // Duyệt từng item, truy vấn product từ DB bằng stripe_product_id
+        // Map thành dữ liệu order item để lưu vào DB
         const orderItemsData = lineItems.data.map((item) => {
           const stripeProduct = item.price!.product as Stripe.Product;
-
           const quantity = item.quantity ?? 1;
           const total = (item.amount_total ?? 0) / 100;
           const unitPrice = total / quantity;
@@ -204,13 +205,14 @@ export const stripeWebhooks = async (
             product_id: stripeProduct.metadata.local_product_id as string,
             quantity,
             title: stripeProduct.name,
-            price: unitPrice * 100,
+            price: unitPrice * 100, // Lưu dưới dạng integer
             image_url: stripeProduct.images[0],
           };
         });
 
+        // Tạo order + cập nhật tồn kho + xoá cart trong 1 transaction
         const { order } = await prisma.$transaction(async (tx) => {
-          // 1. Create Order
+          // 1. Tạo đơn hàng
           const order = await tx.order.create({
             data: {
               user_id: userId,
@@ -221,22 +223,12 @@ export const stripeWebhooks = async (
               payment_method: session.payment_method_types[0],
               status: "PROCESSING",
               orderItems: {
-                createMany: {
-                  data:
-                    // cart.cartItems.map((item) => ({
-                    //   product_id: item.product.id,
-                    //   quantity: item.quantity,
-                    //   title: item.product.title,
-                    //   price: item.product.sale_price || item.product.price,
-                    //   image_url: item.product.image_url,
-                    // })),
-                    orderItemsData,
-                },
+                createMany: { data: orderItemsData },
               },
             },
           });
 
-          // 2. Decrement batch stock (FIFO)
+          // 2. Trừ tồn kho theo lô (FIFO)
           for (const item of cart.cartItems) {
             const productId = item.product.id;
             let quantityToDeduct = item.quantity;
@@ -245,9 +237,7 @@ export const stripeWebhooks = async (
               where: {
                 product_id: productId,
                 current_stock: { gt: 0 },
-                expired_at: {
-                  gt: new Date(),
-                },
+                expired_at: { gt: new Date() },
               },
               orderBy: { expired_at: "asc" },
             });
@@ -268,12 +258,12 @@ export const stripeWebhooks = async (
             }
 
             if (quantityToDeduct > 0) {
-              throw new Error(
-                `Not enough stock in batches for product ${productId}`
+              throw new ValidationError(
+                `Not enough stock for product ${productId}`
               );
             }
 
-            // 3. Update total stock (optional)
+            // 3. Cập nhật tổng tồn kho của sản phẩm
             await tx.product.update({
               where: { id: productId },
               data: {
@@ -282,7 +272,7 @@ export const stripeWebhooks = async (
             });
           }
 
-          // 4. Delete cart
+          // 4. Xoá giỏ hàng sau khi hoàn tất order
           await tx.cart.delete({
             where: {
               id: cartId,
@@ -293,18 +283,15 @@ export const stripeWebhooks = async (
           return { order };
         });
 
-        if (session.discounts && session.discounts.length > 0) {
+        // 5. Đánh dấu voucher là đã sử dụng (nếu có)
+        if (session.discounts?.length) {
           const discount = session.discounts[0];
-
-          // Kiểm tra chắc chắn coupon là string
           const couponId =
             typeof discount.coupon === "string" ? discount.coupon : null;
 
           if (couponId) {
             await prisma.voucher.update({
-              where: {
-                stripe_coupon_id: couponId,
-              },
+              where: { stripe_coupon_id: couponId },
               data: {
                 redeemed: true,
                 redeemed_at: new Date(),
