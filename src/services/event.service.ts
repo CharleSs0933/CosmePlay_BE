@@ -79,15 +79,41 @@ export const calculateReward = async (
 
     const expiringProductIds = expiringBatches.map((b) => b.product_id);
 
-    const expiringProducts = await prisma.product.findMany({
+    // Lấy toàn bộ sản phẩm hợp lệ có stripe_product_id
+    const validProducts = await prisma.product.findMany({
       where: {
-        id: { in: expiringProductIds },
         stripe_product_id: { not: null },
       },
-      select: { stripe_product_id: true },
+      select: { id: true, stripe_product_id: true },
     });
 
-    const stripeProductIds = expiringProducts.map((p) => p.stripe_product_id!);
+    // Hàm trộn ngẫu nhiên
+    function shuffle<T>(array: T[]): T[] {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    // Tách danh sách sản phẩm sắp hết hạn và còn lại
+    const expiringValidProducts = validProducts.filter((p) =>
+      expiringProductIds.includes(p.id)
+    );
+    const otherValidProducts = validProducts.filter(
+      (p) => !expiringProductIds.includes(p.id)
+    );
+
+    // Lấy sản phẩm ngẫu nhiên theo đúng yêu cầu
+    let selectedProducts: typeof validProducts = [];
+
+    if (expiringValidProducts.length >= 5) {
+      selectedProducts = shuffle(expiringValidProducts).slice(0, 5);
+    } else {
+      const remaining = 5 - expiringValidProducts.length;
+      selectedProducts = [
+        ...expiringValidProducts,
+        ...shuffle(otherValidProducts).slice(0, remaining),
+      ];
+    }
+
+    const stripeProductIds = selectedProducts.map((p) => p.stripe_product_id!);
 
     // 3. Tạo dữ liệu Coupon trên Stripe
     const couponData: Stripe.CouponCreateParams = {
