@@ -27,7 +27,21 @@ const validateEventData = (data) => {
         !type) {
         throw new error_handler_1.ValidationError("Missing required fields!");
     }
-    if (type !== "QUIZ" && type !== "DROP") {
+    //Check type is valid
+    const validTypes = [
+        "QUIZ",
+        "DROP",
+        "HUNT",
+        "PUZZLE",
+        "REFLEX",
+        "ARCADE",
+        "BINGO",
+        "DESIGN",
+        "MEMORY",
+        "SPIN",
+        "RACE",
+    ];
+    if (!validTypes.includes(type)) {
         throw new error_handler_1.ValidationError("Invalid event type!");
     }
 };

@@ -4,6 +4,7 @@ import redis from "../libs/redis";
 import prisma from "../libs/prisma";
 import stripe from "../libs/stripe";
 import Stripe from "stripe";
+import { EventType } from "@prisma/client";
 
 export const validateEventData = (data: any) => {
   const { title, description, start_time, end_time, is_active, type } = data;
@@ -19,7 +20,21 @@ export const validateEventData = (data: any) => {
     throw new ValidationError("Missing required fields!");
   }
 
-  if (type !== "QUIZ" && type !== "DROP") {
+  //Check type is valid
+  const validTypes: EventType[] = [
+    "QUIZ",
+    "DROP",
+    "HUNT",
+    "PUZZLE",
+    "REFLEX",
+    "ARCADE",
+    "BINGO",
+    "DESIGN",
+    "MEMORY",
+    "SPIN",
+    "RACE",
+  ];
+  if (!validTypes.includes(type)) {
     throw new ValidationError("Invalid event type!");
   }
 };

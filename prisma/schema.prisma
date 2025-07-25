@@ -221,6 +221,7 @@ model Event {
   id          String    @id @default(uuid())
   title       String
   description String?
+  image_url   String?
   start_time  DateTime
   end_time    DateTime
   type        EventType @default(QUIZ)
@@ -234,6 +235,15 @@ model Event {
 enum EventType {
   QUIZ
   DROP
+  HUNT
+  PUZZLE
+  REFLEX
+  ARCADE
+  RACE
+  BINGO
+  SPIN
+  DESIGN
+  MEMORY
 }
 
 model Question {
