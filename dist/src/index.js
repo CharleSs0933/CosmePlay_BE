@@ -35,7 +35,11 @@ app.use((0, morgan_1.default)("common"));
 app.use(body_parser_1.default.json());
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)({
-    origin: [`${process.env.CLIENT_BASE_URL}`, "http://localhost:8081"],
+    origin: [
+        `${process.env.CLIENT_BASE_URL}`,
+        "http://localhost:8081",
+        "https://wdp-fpt-summer2025.vercel.app",
+    ],
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: [
         "Content-Type",
