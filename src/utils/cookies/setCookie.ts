@@ -10,5 +10,10 @@ export const setCookie = (res: Response, name: string, value: string) => {
 };
 
 export const clearCookie = (res: Response, name: string) => {
-  res.clearCookie(name);
+  res.clearCookie(name, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
 };

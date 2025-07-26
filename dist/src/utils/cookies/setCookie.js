@@ -11,6 +11,11 @@ const setCookie = (res, name, value) => {
 };
 exports.setCookie = setCookie;
 const clearCookie = (res, name) => {
-    res.clearCookie(name);
+    res.clearCookie(name, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "/",
+    });
 };
 exports.clearCookie = clearCookie;
