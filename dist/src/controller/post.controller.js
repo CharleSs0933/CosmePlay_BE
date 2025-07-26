@@ -12,8 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPost = void 0;
+exports.getPost = exports.getAllPosts = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
+const getAllPosts = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const posts = yield prisma_1.default.post.findMany({
+            include: {
+                postSteps: true,
+            },
+        });
+        res.status(200).json({ success: true, posts });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.getAllPosts = getAllPosts;
 const getPost = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { category } = req.params;

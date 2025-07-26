@@ -1,6 +1,24 @@
 import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 
+export const getAllPosts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const posts = await prisma.post.findMany({
+      include: {
+        postSteps: true,
+      },
+    });
+
+    res.status(200).json({ success: true, posts });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getPost = async (
   req: Request,
   res: Response,
