@@ -78,14 +78,14 @@ export const calculateReward = async (
     if (!eventReward) return null;
     if (eventReward.voucher_quantity <= 0) return null;
 
-    // 2. Lấy các sản phẩm sắp hết hạn trong 14 ngày tới
+    // 2. Lấy các sản phẩm sắp hết hạn trong 9 tháng tới
     const today = new Date();
-    const twoWeeksLater = new Date();
-    twoWeeksLater.setDate(today.getDate() + 14);
+    const nineMonthsLater = new Date();
+    nineMonthsLater.setMonth(today.getMonth() + 9);
 
     const expiringBatches = await prisma.batch.findMany({
       where: {
-        expired_at: { lte: twoWeeksLater },
+        expired_at: { lte: nineMonthsLater },
         current_stock: { gt: 0 },
       },
       select: { product_id: true },

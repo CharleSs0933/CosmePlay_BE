@@ -67,8 +67,8 @@ export const buildBatchFilter = (req: Request): Prisma.BatchWhereInput => {
   const { search, isExpired, month } = req.query;
 
   const today = new Date();
-  const twoWeeksLater = new Date();
-  twoWeeksLater.setDate(today.getDate() + 14);
+  const nineMonthsLater = new Date();
+  nineMonthsLater.setMonth(today.getMonth() + 9);
 
   if (month && typeof month === "string") {
     const [year, monthStr] = month.split("-");
@@ -84,7 +84,7 @@ export const buildBatchFilter = (req: Request): Prisma.BatchWhereInput => {
       },
       expired_at: isExpired
         ? isExpired === "true"
-          ? { lte: twoWeeksLater }
+          ? { lte: nineMonthsLater }
           : undefined
         : undefined,
       created_at: {
@@ -102,7 +102,7 @@ export const buildBatchFilter = (req: Request): Prisma.BatchWhereInput => {
     },
     expired_at: isExpired
       ? isExpired === "true"
-        ? { lte: twoWeeksLater }
+        ? { lte: nineMonthsLater }
         : undefined
       : undefined,
   };
