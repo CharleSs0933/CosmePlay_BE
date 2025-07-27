@@ -260,26 +260,15 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 const userId = (_c = coupon.metadata) === null || _c === void 0 ? void 0 : _c.userId;
                 const eventId = (_d = coupon.metadata) === null || _d === void 0 ? void 0 : _d.eventId;
                 const eventRewardId = (_e = coupon.metadata) === null || _e === void 0 ? void 0 : _e.eventRewardId;
+                // Kiểm tra thông tin bắt buộc
                 if (!userId || !eventId || !eventRewardId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
-                // Tính ngày hiện tại + 14 ngày
-                // const today = new Date();
-                // const nineMonthsLater = new Date();
-                // nineMonthsLater.setMonth(today.getMonth() + 9);
-                // // Truy vấn các sản phẩm có lô hàng sắp hết hạn (trong vòng 14 ngày)
-                // const expiringBatches = await prisma.batch.findMany({
-                //   where: {
-                //     expired_at: { lte: nineMonthsLater },
-                //     current_stock: { gt: 0 },
-                //   },
-                //   select: { product_id: true },
-                //   distinct: ["product_id"],
-                // });
-                // const expiringProductIds = expiringBatches.map((b) => b.product_id);
+                // Tính ngày hiện tại + 9 tháng
                 const today = new Date();
                 const nineMonthsLater = new Date();
                 nineMonthsLater.setMonth(today.getMonth() + 9);
+                // Truy vấn danh sách sản phẩm có lô sắp hết hạn (trong vòng 9 tháng)
                 const expiringBatches = yield prisma_1.default.batch.findMany({
                     where: {
                         expired_at: { lte: nineMonthsLater },
@@ -296,15 +285,15 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     },
                     select: { id: true, stripe_product_id: true },
                 });
+                // Tách sản phẩm thành 2 nhóm: sắp hết hạn và còn lại
+                const expiringValidProducts = validProducts.filter((p) => expiringProductIds.includes(p.id));
+                const otherValidProducts = validProducts.filter((p) => !expiringProductIds.includes(p.id));
                 // Hàm trộn ngẫu nhiên
                 function shuffle(array) {
                     return array.sort(() => Math.random() - 0.5);
                 }
-                // Tách danh sách sản phẩm sắp hết hạn và còn lại
-                const expiringValidProducts = validProducts.filter((p) => expiringProductIds.includes(p.id));
-                const otherValidProducts = validProducts.filter((p) => !expiringProductIds.includes(p.id));
-                // Lấy sản phẩm ngẫu nhiên theo đúng yêu cầu
-                let selectedProducts = [];
+                // Lấy tối đa 5 sản phẩm ưu tiên từ nhóm sắp hết hạn
+                let selectedProducts;
                 if (expiringValidProducts.length >= 5) {
                     selectedProducts = shuffle(expiringValidProducts).slice(0, 5);
                 }
@@ -315,10 +304,11 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         ...shuffle(otherValidProducts).slice(0, remaining),
                     ];
                 }
+                // Lấy danh sách Stripe Product ID của các sản phẩm đã chọn
                 const productIds = selectedProducts.map((p) => p.stripe_product_id);
-                // Bắt đầu transaction
+                // Bắt đầu transaction để tạo voucher và cập nhật eventReward
                 yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-                    // Tạo voucher kèm danh sách product_id áp dụng
+                    // Tạo voucher
                     yield tx.voucher.create({
                         data: Object.assign({ user_id: userId, discount_value: coupon.percent_off
                                 ? coupon.percent_off
@@ -330,7 +320,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             },
                         })),
                     });
-                    // Giảm số lượng voucher đã phân phát
+                    // Giảm số lượng voucher đã phát cho phần thưởng sự kiện
                     yield tx.eventReward.update({
                         where: {
                             id: eventRewardId,

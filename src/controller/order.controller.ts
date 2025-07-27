@@ -311,30 +311,17 @@ export const stripeWebhooks = async (
         const eventId = coupon.metadata?.eventId;
         const eventRewardId = coupon.metadata?.eventRewardId;
 
+        // Kiểm tra thông tin bắt buộc
         if (!userId || !eventId || !eventRewardId) {
           return next(new ValidationError("Missing metadata!"));
         }
 
-        // Tính ngày hiện tại + 14 ngày
-        // const today = new Date();
-        // const nineMonthsLater = new Date();
-        // nineMonthsLater.setMonth(today.getMonth() + 9);
-
-        // // Truy vấn các sản phẩm có lô hàng sắp hết hạn (trong vòng 14 ngày)
-        // const expiringBatches = await prisma.batch.findMany({
-        //   where: {
-        //     expired_at: { lte: nineMonthsLater },
-        //     current_stock: { gt: 0 },
-        //   },
-        //   select: { product_id: true },
-        //   distinct: ["product_id"],
-        // });
-
-        // const expiringProductIds = expiringBatches.map((b) => b.product_id);
+        // Tính ngày hiện tại + 9 tháng
         const today = new Date();
         const nineMonthsLater = new Date();
         nineMonthsLater.setMonth(today.getMonth() + 9);
 
+        // Truy vấn danh sách sản phẩm có lô sắp hết hạn (trong vòng 9 tháng)
         const expiringBatches = await prisma.batch.findMany({
           where: {
             expired_at: { lte: nineMonthsLater },
@@ -343,7 +330,6 @@ export const stripeWebhooks = async (
           select: { product_id: true },
           distinct: ["product_id"],
         });
-
         const expiringProductIds = expiringBatches.map((b) => b.product_id);
 
         // Lấy toàn bộ sản phẩm hợp lệ có stripe_product_id
@@ -354,12 +340,7 @@ export const stripeWebhooks = async (
           select: { id: true, stripe_product_id: true },
         });
 
-        // Hàm trộn ngẫu nhiên
-        function shuffle<T>(array: T[]): T[] {
-          return array.sort(() => Math.random() - 0.5);
-        }
-
-        // Tách danh sách sản phẩm sắp hết hạn và còn lại
+        // Tách sản phẩm thành 2 nhóm: sắp hết hạn và còn lại
         const expiringValidProducts = validProducts.filter((p) =>
           expiringProductIds.includes(p.id)
         );
@@ -367,9 +348,13 @@ export const stripeWebhooks = async (
           (p) => !expiringProductIds.includes(p.id)
         );
 
-        // Lấy sản phẩm ngẫu nhiên theo đúng yêu cầu
-        let selectedProducts: typeof validProducts = [];
+        // Hàm trộn ngẫu nhiên
+        function shuffle<T>(array: T[]): T[] {
+          return array.sort(() => Math.random() - 0.5);
+        }
 
+        // Lấy tối đa 5 sản phẩm ưu tiên từ nhóm sắp hết hạn
+        let selectedProducts: typeof validProducts;
         if (expiringValidProducts.length >= 5) {
           selectedProducts = shuffle(expiringValidProducts).slice(0, 5);
         } else {
@@ -380,21 +365,21 @@ export const stripeWebhooks = async (
           ];
         }
 
+        // Lấy danh sách Stripe Product ID của các sản phẩm đã chọn
         const productIds = selectedProducts.map((p) => p.stripe_product_id!);
 
-        // Bắt đầu transaction
+        // Bắt đầu transaction để tạo voucher và cập nhật eventReward
         await prisma.$transaction(async (tx) => {
-          // Tạo voucher kèm danh sách product_id áp dụng
+          // Tạo voucher
           await tx.voucher.create({
             data: {
               user_id: userId,
               discount_value: coupon.percent_off
-                ? coupon.percent_off!
+                ? coupon.percent_off
                 : coupon.amount_off!,
               type: coupon.percent_off ? "PERCENT" : "AMOUNT",
               stripe_coupon_id: coupon.id,
               event_reward_id: eventRewardId,
-              // ✅ Nếu có sản phẩm sắp hết hạn, thêm danh sách product_id áp dụng
               ...(productIds.length > 0 && {
                 voucherProducts: {
                   create: productIds.map((productId) => ({
@@ -405,7 +390,7 @@ export const stripeWebhooks = async (
             },
           });
 
-          // Giảm số lượng voucher đã phân phát
+          // Giảm số lượng voucher đã phát cho phần thưởng sự kiện
           await tx.eventReward.update({
             where: {
               id: eventRewardId,
