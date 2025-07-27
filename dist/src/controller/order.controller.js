@@ -305,7 +305,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     ];
                 }
                 // Lấy danh sách Stripe Product ID của các sản phẩm đã chọn
-                const productIds = selectedProducts.map((p) => p.stripe_product_id);
+                const productIds = selectedProducts.map((p) => p.id);
                 // Bắt đầu transaction để tạo voucher và cập nhật eventReward
                 yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
                     // Tạo voucher

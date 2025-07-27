@@ -366,7 +366,7 @@ export const stripeWebhooks = async (
         }
 
         // Lấy danh sách Stripe Product ID của các sản phẩm đã chọn
-        const productIds = selectedProducts.map((p) => p.stripe_product_id!);
+        const productIds = selectedProducts.map((p) => p.id);
 
         // Bắt đầu transaction để tạo voucher và cập nhật eventReward
         await prisma.$transaction(async (tx) => {
