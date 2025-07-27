@@ -468,12 +468,13 @@ export const deleteProductMeta = async (
 };
 
 export const addProductBatch = async (
-  req: Request,
+  req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
+    const user = req.user;
     const { quantity } = req.body;
 
     if (!id || !quantity) {
@@ -494,7 +495,10 @@ export const addProductBatch = async (
           product_id: id,
           quantity: parseInt(quantity),
           current_stock: parseInt(quantity),
-          expired_at: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+          user_id: user.id,
+          expired_at: new Date(
+            new Date().setFullYear(new Date().getFullYear() + 2)
+          ),
         },
       });
 

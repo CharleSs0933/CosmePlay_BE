@@ -378,6 +378,7 @@ exports.deleteProductMeta = deleteProductMeta;
 const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
+        const user = req.user;
         const { quantity } = req.body;
         if (!id || !quantity) {
             return next(new error_handler_1.ValidationError("Missing required fields!"));
@@ -394,7 +395,8 @@ const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                     product_id: id,
                     quantity: parseInt(quantity),
                     current_stock: parseInt(quantity),
-                    expired_at: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                    user_id: user.id,
+                    expired_at: new Date(new Date().setFullYear(new Date().getFullYear() + 2)),
                 },
             });
             yield tx.product.update({

@@ -34,6 +34,7 @@ model User {
   Order   Order[]
   Post    Post[]
   Voucher Voucher[]
+  Batch   Batch[]
 }
 
 model Address {
@@ -83,11 +84,13 @@ model Product {
 model Batch {
   id            String   @id @default(uuid())
   product_id    String
+  user_id       String?
   quantity      Int
   current_stock Int
   expired_at    DateTime
   created_at    DateTime @default(now())
 
+  user    User?   @relation(fields: [user_id], references: [id])
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 }
 
