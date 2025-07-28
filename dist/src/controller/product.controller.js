@@ -379,7 +379,7 @@ const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
     try {
         const { id } = req.params;
         const user = req.user;
-        const { quantity } = req.body;
+        const { quantity, supplier_id } = req.body;
         if (!id || !quantity) {
             return next(new error_handler_1.ValidationError("Missing required fields!"));
         }
@@ -389,6 +389,14 @@ const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         if (!product) {
             return next(new error_handler_1.ValidationError("Product not found!"));
         }
+        if (supplier_id) {
+            const supplier = yield prisma_1.default.supplier.findUnique({
+                where: { id: supplier_id },
+            });
+            if (!supplier) {
+                return next(new error_handler_1.ValidationError("Supplier not found!"));
+            }
+        }
         yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             yield tx.batch.create({
                 data: {
@@ -396,6 +404,7 @@ const addProductBatch = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                     quantity: parseInt(quantity),
                     current_stock: parseInt(quantity),
                     user_id: user.id,
+                    supplier_id,
                     expired_at: new Date(new Date().setFullYear(new Date().getFullYear() + 2)),
                 },
             });
@@ -423,6 +432,17 @@ const getProductBatches = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         const batches = yield prisma_1.default.batch.findMany({
             where: { product_id: id },
             orderBy: { expired_at: "asc" },
+            include: {
+                supplier: true,
+                product: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
         });
         if (batches.length === 0) {
             return next(new error_handler_1.ValidationError("No batches found for this product!"));
@@ -444,6 +464,14 @@ const getAllBatches = (req, res, next) => __awaiter(void 0, void 0, void 0, func
             where: filters,
             include: {
                 product: true,
+                supplier: true,
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
             },
             skip: (pageNumber - 1) * pageSize,
             take: pageSize,

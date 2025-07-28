@@ -475,7 +475,7 @@ export const addProductBatch = async (
   try {
     const { id } = req.params;
     const user = req.user;
-    const { quantity } = req.body;
+    const { quantity, supplier_id } = req.body;
 
     if (!id || !quantity) {
       return next(new ValidationError("Missing required fields!"));
@@ -489,6 +489,16 @@ export const addProductBatch = async (
       return next(new ValidationError("Product not found!"));
     }
 
+    if (supplier_id) {
+      const supplier = await prisma.supplier.findUnique({
+        where: { id: supplier_id },
+      });
+
+      if (!supplier) {
+        return next(new ValidationError("Supplier not found!"));
+      }
+    }
+
     await prisma.$transaction(async (tx) => {
       await tx.batch.create({
         data: {
@@ -496,6 +506,7 @@ export const addProductBatch = async (
           quantity: parseInt(quantity),
           current_stock: parseInt(quantity),
           user_id: user.id,
+          supplier_id,
           expired_at: new Date(
             new Date().setFullYear(new Date().getFullYear() + 2)
           ),
@@ -531,6 +542,17 @@ export const getProductBatches = async (
     const batches = await prisma.batch.findMany({
       where: { product_id: id },
       orderBy: { expired_at: "asc" },
+      include: {
+        supplier: true,
+        product: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
 
     if (batches.length === 0) {
@@ -560,6 +582,14 @@ export const getAllBatches = async (
       where: filters,
       include: {
         product: true,
+        supplier: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
       },
       skip: (pageNumber - 1) * pageSize,
       take: pageSize,
