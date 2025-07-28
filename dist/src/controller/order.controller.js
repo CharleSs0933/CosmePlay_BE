@@ -58,8 +58,9 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
             if (!coupon) {
                 return next(new error_handler_1.ValidationError("Coupon not found!"));
             }
-            const invalid = coupon.voucherProducts.some((voucherItem) => !cart.cartItems.some((cartItem) => cartItem.product.id === voucherItem.product_id));
-            if (invalid) {
+            const cartProductIds = new Set(cart.cartItems.map((item) => item.product.id));
+            const hasInvalidProduct = coupon.voucherProducts.some((voucherItem) => !cartProductIds.has(voucherItem.product_id));
+            if (hasInvalidProduct) {
                 return next(new error_handler_1.ValidationError("Coupon not valid for your cart!"));
             }
             validCoupon = couponId;

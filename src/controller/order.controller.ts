@@ -59,14 +59,15 @@ export const createCheckoutSession = async (
         return next(new ValidationError("Coupon not found!"));
       }
 
-      const invalid = coupon.voucherProducts.some(
-        (voucherItem) =>
-          !cart.cartItems.some(
-            (cartItem) => cartItem.product.id === voucherItem.product_id
-          )
+      const cartProductIds = new Set(
+        cart.cartItems.map((item) => item.product.id)
       );
 
-      if (invalid) {
+      const hasInvalidProduct = coupon.voucherProducts.some(
+        (voucherItem) => !cartProductIds.has(voucherItem.product_id)
+      );
+
+      if (hasInvalidProduct) {
         return next(new ValidationError("Coupon not valid for your cart!"));
       }
 

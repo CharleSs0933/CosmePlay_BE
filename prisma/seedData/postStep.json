@@ -2,271 +2,361 @@
   {
     "id": "9c3f3665-0cbd-417b-862d-e0651eb5d715",
     "title": "Moisturizers Step 1",
-    "description": "Step 1 for moisturizers.",
-    "details": "Detailed instruction for moisturizers step 1.",
-    "image_url": "https://example.com/images/1_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply a hydrating moisturizer to clean skin.",
+    "details": "Gently massage a pea-sized amount of moisturizer onto your face and neck in upward motions.",
+    "image_url": "https://example.com/images/moisturizers_step1.jpg",
+    "tips": [
+      "Apply after cleansing for best absorption.",
+      "Use morning and night for optimal hydration."
+    ],
     "post_id": "358f895b-c138-4d6d-81f4-d63946abb44f"
   },
   {
     "id": "6f98c778-e60c-4524-8e3d-3dc6c0e433ed",
     "title": "Moisturizers Step 2",
-    "description": "Step 2 for moisturizers.",
-    "details": "Detailed instruction for moisturizers step 2.",
-    "image_url": "https://example.com/images/1_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Lock in moisture with a thicker cream.",
+    "details": "Apply a lightweight cream or lotion to seal in the initial layer of hydration.",
+    "image_url": "https://example.com/images/moisturizers_step2.jpg",
+    "tips": [
+      "Choose a cream suited for your skin type.",
+      "Avoid over-application to prevent clogged pores."
+    ],
     "post_id": "358f895b-c138-4d6d-81f4-d63946abb44f"
   },
   {
     "id": "dd1e4b56-482e-46f2-809c-d46bbeaebdbc",
     "title": "Moisturizers Step 3",
-    "description": "Step 3 for moisturizers.",
-    "details": "Detailed instruction for moisturizers step 3.",
-    "image_url": "https://example.com/images/1_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Protect with a moisturizer containing SPF.",
+    "details": "Finish with a broad-spectrum SPF moisturizer during the day to shield skin from UV rays.",
+    "image_url": "https://example.com/images/moisturizers_step3.jpg",
+    "tips": [
+      "Reapply SPF every 2 hours if exposed to sunlight.",
+      "Use a non-comedogenic product for oily skin."
+    ],
     "post_id": "358f895b-c138-4d6d-81f4-d63946abb44f"
   },
   {
     "id": "fd75b66c-08e1-4a68-8c9c-a56a557759cc",
     "title": "Cleansers Step 1",
-    "description": "Step 1 for cleansers.",
-    "details": "Detailed instruction for cleansers step 1.",
-    "image_url": "https://example.com/images/2_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Cleanse face with a gentle cleanser.",
+    "details": "Use a small amount of cleanser, lather with water, and massage gently onto wet skin.",
+    "image_url": "https://example.com/images/cleansers_step1.jpg",
+    "tips": [
+      "Use lukewarm water to avoid irritation.",
+      "Cleanse twice daily for best results."
+    ],
     "post_id": "7ab67dc7-5a18-44b1-b5ab-03cac968508f"
   },
   {
     "id": "92e76768-42c9-4c92-a8d7-68d484539287",
     "title": "Cleansers Step 2",
-    "description": "Step 2 for cleansers.",
-    "details": "Detailed instruction for cleansers step 2.",
-    "image_url": "https://example.com/images/2_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Rinse thoroughly and pat dry.",
+    "details": "Rinse off all cleanser residue with lukewarm water and gently pat skin dry with a clean towel.",
+    "image_url": "https://example.com/images/cleansers_step2.jpg",
+    "tips": [
+      "Avoid hot water to prevent dryness.",
+      "Use a soft towel to avoid irritation."
+    ],
     "post_id": "7ab67dc7-5a18-44b1-b5ab-03cac968508f"
   },
   {
     "id": "391c2ea9-09cf-4f9a-ae39-cf70120ffddc",
     "title": "Cleansers Step 3",
-    "description": "Step 3 for cleansers.",
-    "details": "Detailed instruction for cleansers step 3.",
-    "image_url": "https://example.com/images/2_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Follow with a toner or moisturizer.",
+    "details": "After cleansing, apply a toner or moisturizer to restore skin’s balance and hydration.",
+    "image_url": "https://example.com/images/cleansers_step3.jpg",
+    "tips": [
+      "Choose a toner suited to your skin type.",
+      "Avoid over-cleansing to maintain natural oils."
+    ],
     "post_id": "7ab67dc7-5a18-44b1-b5ab-03cac968508f"
   },
   {
-    "id": "1fab02de-e8da-4db1-b7c9-f9ea856fe2a4",
+    "id": "1fab02de-e8da-4db1-b7c9-n9ea856fe2a4",
     "title": "Serums Step 1",
-    "description": "Step 1 for serums.",
-    "details": "Detailed instruction for serums step 1.",
-    "image_url": "https://example.com/images/3_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply a lightweight serum to clean skin.",
+    "details": "Dispense 2-3 drops of serum and gently pat onto face, focusing on problem areas.",
+    "image_url": "https://example.com/images/serums_step1.jpg",
+    "tips": [
+      "Use after cleansing but before moisturizing.",
+      "Allow serum to absorb fully before next step."
+    ],
     "post_id": "50a8eaaf-303f-4117-b85c-5fcce7a4ae13"
   },
   {
     "id": "d88b5da2-fa4a-429f-90ad-9404bf6d1be5",
     "title": "Serums Step 2",
-    "description": "Step 2 for serums.",
-    "details": "Detailed instruction for serums step 2.",
-    "image_url": "https://example.com/images/3_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Target specific concerns with a second serum.",
+    "details": "Apply a second serum if targeting multiple concerns, such as hydration or brightening.",
+    "image_url": "https://example.com/images/serums_step2.jpg",
+    "tips": [
+      "Layer serums from thinnest to thickest.",
+      "Wait 1-2 minutes between applications."
+    ],
     "post_id": "50a8eaaf-303f-4117-b85c-5fcce7a4ae13"
   },
   {
     "id": "5dc99cbe-0336-4f89-b725-7a922d9707d7",
     "title": "Serums Step 3",
-    "description": "Step 3 for serums.",
-    "details": "Detailed instruction for serums step 3.",
-    "image_url": "https://example.com/images/3_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Seal with a moisturizer.",
+    "details": "Lock in serums with a moisturizer to enhance their efficacy and hydrate skin.",
+    "image_url": "https://example.com/images/serums_step3.jpg",
+    "tips": [
+      "Use a heavier cream at night.",
+      "Ensure full absorption for best results."
+    ],
     "post_id": "50a8eaaf-303f-4117-b85c-5fcce7a4ae13"
   },
   {
     "id": "1412824d-9660-4b9d-9bb8-c7666384ce34",
     "title": "Toners Step 1",
-    "description": "Step 1 for toners.",
-    "details": "Detailed instruction for toners step 1.",
-    "image_url": "https://example.com/images/4_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply toner to clean skin.",
+    "details": "Soak a cotton pad with toner and gently swipe across face, avoiding the eye area.",
+    "image_url": "https://example.com/images/toners_step1.jpg",
+    "tips": [
+      "Use after cleansing to remove residue.",
+      "Choose alcohol-free toners for sensitive skin."
+    ],
     "post_id": "5aeea437-3f40-42ef-b515-0c9997583946"
   },
   {
     "id": "76e2086f-e951-4584-b3cd-275a5c99559e",
     "title": "Toners Step 2",
-    "description": "Step 2 for toners.",
-    "details": "Detailed instruction for toners step 2.",
-    "image_url": "https://example.com/images/4_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Pat toner into skin for better absorption.",
+    "details": "Use clean fingertips to gently pat remaining toner into skin for deeper penetration.",
+    "image_url": "https://example.com/images/toners_step2.jpg",
+    "tips": [
+      "Focus on areas prone to dryness.",
+      "Avoid over-soaking the cotton pad."
+    ],
     "post_id": "5aeea437-3f40-42ef-b515-0c9997583946"
   },
   {
     "id": "d7a2455c-2121-4e60-aa1e-8c172b090216",
     "title": "Toners Step 3",
-    "description": "Step 3 for toners.",
-    "details": "Detailed instruction for toners step 3.",
-    "image_url": "https://example.com/images/4_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Follow with serum or moisturizer.",
+    "details": "Proceed with a serum or moisturizer to lock in the toner’s benefits and hydrate skin.",
+    "image_url": "https://example.com/images/toners_step3.jpg",
+    "tips": [
+      "Use a hydrating serum for added benefits.",
+      "Apply within 1 minute to trap moisture."
+    ],
     "post_id": "5aeea437-3f40-42ef-b515-0c9997583946"
   },
   {
     "id": "0048b27f-df17-46a3-879e-1318b382ae38",
     "title": "Sunscreens Step 1",
-    "description": "Step 1 for sunscreens.",
-    "details": "Detailed instruction for sunscreens step 1.",
-    "image_url": "https://example.com/images/5_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply sunscreen as the last skincare step.",
+    "details": "Use a quarter-sized amount of broad-spectrum SPF 30+ and apply evenly to face and neck.",
+    "image_url": "https://example.com/images/sunscreens_step1.jpg",
+    "tips": [
+      "Apply 15 minutes before sun exposure.",
+      "Use daily, even on cloudy days."
+    ],
     "post_id": "ae99a559-76f9-4932-abe3-7eb367acda23"
   },
   {
     "id": "68250ebd-0c38-484e-81e6-340abfd194f0",
     "title": "Sunscreens Step 2",
-    "description": "Step 2 for sunscreens.",
-    "details": "Detailed instruction for sunscreens step 2.",
-    "image_url": "https://example.com/images/5_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Reapply sunscreen every 2 hours.",
+    "details": "Reapply sunscreen throughout the day, especially after swimming or sweating.",
+    "image_url": "https://example.com/images/sunscreens_step2.jpg",
+    "tips": [
+      "Carry a travel-sized sunscreen for convenience.",
+      "Use a powder SPF for touch-ups over makeup."
+    ],
     "post_id": "ae99a559-76f9-4932-abe3-7eb367acda23"
   },
   {
     "id": "e64627c3-656b-4ad7-aee1-a835fa995eb4",
     "title": "Sunscreens Step 3",
-    "description": "Step 3 for sunscreens.",
-    "details": "Detailed instruction for sunscreens step 3.",
-    "image_url": "https://example.com/images/5_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Combine with a moisturizer for added hydration.",
+    "details": "Opt for a sunscreen-moisturizer hybrid for convenience and enhanced skin hydration.",
+    "image_url": "https://example.com/images/sunscreens_step3.jpg",
+    "tips": [
+      "Choose a non-greasy formula for oily skin.",
+      "Ensure SPF coverage is not diluted."
+    ],
     "post_id": "ae99a559-76f9-4932-abe3-7eb367acda23"
   },
   {
     "id": "9eea0b45-91b8-479c-a223-325effb36089",
     "title": "Face Masks Step 1",
-    "description": "Step 1 for face masks.",
-    "details": "Detailed instruction for face masks step 1.",
-    "image_url": "https://example.com/images/6_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply a face mask to clean skin.",
+    "details": "Spread an even layer of the mask over your face, avoiding eyes and mouth.",
+    "image_url": "https://example.com/images/face_masks_step1.jpg",
+    "tips": [
+      "Use 1-2 times per week for best results.",
+      "Choose a mask based on your skin’s needs."
+    ],
     "post_id": "09d14f4a-2cae-4190-be72-fc13b8afcf3f"
   },
   {
     "id": "50291792-c5be-46d0-ab75-9d7db6d10495",
     "title": "Face Masks Step 2",
-    "description": "Step 2 for face masks.",
-    "details": "Detailed instruction for face masks step 2.",
-    "image_url": "https://example.com/images/6_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Leave mask on for recommended time.",
+    "details": "Follow the mask’s instructions, typically 10-20 minutes, then rinse or peel off.",
+    "image_url": "https://example.com/images/face_masks_step2.jpg",
+    "tips": [
+      "Relax while the mask works.",
+      "Avoid leaving on longer than recommended."
+    ],
     "post_id": "09d14f4a-2cae-4190-be72-fc13b8afcf3f"
   },
   {
     "id": "ca164aca-ce5c-4a86-b2c4-347eafbf47ec",
     "title": "Face Masks Step 3",
-    "description": "Step 3 for face masks.",
-    "details": "Detailed instruction for face masks step 3.",
-    "image_url": "https://example.com/images/6_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Follow with toner or moisturizer.",
+    "details": "After removing the mask, apply toner or moisturizer to lock in benefits.",
+    "image_url": "https://example.com/images/face_masks_step3.jpg",
+    "tips": [
+      "Use a hydrating toner for extra moisture.",
+      "Apply a night cream for overnight repair."
+    ],
     "post_id": "09d14f4a-2cae-4190-be72-fc13b8afcf3f"
   },
   {
     "id": "16a880bc-ab4a-413f-8617-650ad0812ebb",
     "title": "Eye Creams Step 1",
-    "description": "Step 1 for eye creams.",
-    "details": "Detailed instruction for eye creams step 1.",
-    "image_url": "https://example.com/images/7_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply a small amount of eye cream.",
+    "details": "Use a rice-grain-sized amount and gently dab around the eye area with your ring finger.",
+    "image_url": "https://example.com/images/eye_creams_step1.jpg",
+    "tips": [
+      "Use your ring finger for minimal pressure.",
+      "Apply after serums but before moisturizer."
+    ],
     "post_id": "addf91f1-30a5-47f1-9ebd-21ad65db7110"
   },
   {
     "id": "788e400a-d02e-4485-9f34-7181e2fed17c",
     "title": "Eye Creams Step 2",
-    "description": "Step 2 for eye creams.",
-    "details": "Detailed instruction for eye creams step 2.",
-    "image_url": "https://example.com/images/7_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Focus on puffiness and dark circles.",
+    "details": "Gently massage the cream into the under-eye area to reduce puffiness and dark circles.",
+    "image_url": "https://example.com/images/eye_creams_step2.jpg",
+    "tips": [
+      "Store eye cream in the fridge for cooling effect.",
+      "Use twice daily for best results."
+    ],
     "post_id": "addf91f1-30a5-47f1-9ebd-21ad65db7110"
   },
   {
     "id": "6a326ddf-6304-42a8-b899-60e787b0527b",
     "title": "Eye Creams Step 3",
-    "description": "Step 3 for eye creams.",
-    "details": "Detailed instruction for eye creams step 3.",
-    "image_url": "https://example.com/images/7_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Seal with a lightweight moisturizer.",
+    "details": "Apply a lightweight moisturizer over the eye area to lock in the cream’s benefits.",
+    "image_url": "https://example.com/images/eye_creams_step3.jpg",
+    "tips": [
+      "Avoid heavy creams around eyes.",
+      "Use sunscreen during the day for protection."
+    ],
     "post_id": "addf91f1-30a5-47f1-9ebd-21ad65db7110"
   },
   {
     "id": "db679b88-977f-463a-bb3a-36fce18f1ea3",
     "title": "Lip Care Step 1",
-    "description": "Step 1 for lip care.",
-    "details": "Detailed instruction for lip care step 1.",
-    "image_url": "https://example.com/images/8_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Exfoliate lips gently.",
+    "details": "Use a lip scrub or soft toothbrush to gently exfoliate dead skin from lips.",
+    "image_url": "https://example.com/images/lip_care_step1.jpg",
+    "tips": [
+      "Exfoliate 1-2 times per week.",
+      "Follow with a hydrating lip balm."
+    ],
     "post_id": "764a5f39-b7e1-4077-90e8-acdd79d1d133"
   },
   {
     "id": "86a264af-2eed-4a5b-9830-e1ad5da3a488",
     "title": "Lip Care Step 2",
-    "description": "Step 2 for lip care.",
-    "details": "Detailed instruction for lip care step 2.",
-    "image_url": "https://example.com/images/8_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Apply a hydrating lip balm.",
+    "details": "Use a nourishing lip balm with ingredients like shea butter or beeswax to hydrate lips.",
+    "image_url": "https://example.com/images/lip_care_step2.jpg",
+    "tips": [
+      "Reapply throughout the day as needed.",
+      "Choose a balm with SPF for daytime."
+    ],
     "post_id": "764a5f39-b7e1-4077-90e8-acdd79d1d133"
   },
   {
     "id": "8788a1de-1ecc-445a-9718-9af92459aa59",
     "title": "Lip Care Step 3",
-    "description": "Step 3 for lip care.",
-    "details": "Detailed instruction for lip care step 3.",
-    "image_url": "https://example.com/images/8_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Use an overnight lip mask.",
+    "details": "Apply a thick layer of lip mask before bed to repair and hydrate lips overnight.",
+    "image_url": "https://example.com/images/lip_care_step3.jpg",
+    "tips": [
+      "Use 2-3 times per week for intense hydration.",
+      "Remove excess mask in the morning."
+    ],
     "post_id": "764a5f39-b7e1-4077-90e8-acdd79d1d133"
   },
   {
     "id": "ccb63b10-631a-42cc-903a-8293bd3a868b",
     "title": "Exfoliators Step 1",
-    "description": "Step 1 for exfoliators.",
-    "details": "Detailed instruction for exfoliators step 1.",
-    "image_url": "https://example.com/images/9_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply exfoliator to clean, damp skin.",
+    "details": "Use a small amount of exfoliator and gently massage in circular motions for 30 seconds.",
+    "image_url": "https://example.com/images/exfoliators_step1.jpg",
+    "tips": [
+      "Exfoliate 1-3 times per week based on skin sensitivity.",
+      "Avoid over-scrubbing to prevent irritation."
+    ],
     "post_id": "1b1559c1-9cfc-4ad8-908d-37f1a8258e0f"
   },
   {
     "id": "9b56d638-b916-4102-b3b2-3eedfec620c4",
     "title": "Exfoliators Step 2",
-    "description": "Step 2 for exfoliators.",
-    "details": "Detailed instruction for exfoliators step 2.",
-    "image_url": "https://example.com/images/9_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Rinse thoroughly with lukewarm water.",
+    "details": "Rinse off all exfoliator residue and pat skin dry with a clean towel.",
+    "image_url": "https://example.com/images/exfoliators_step2.jpg",
+    "tips": [
+      "Use a gentle cleanser afterward if needed.",
+      "Follow with a soothing toner."
+    ],
     "post_id": "1b1559c1-9cfc-4ad8-908d-37f1a8258e0f"
   },
   {
     "id": "089551e5-62f6-431e-b0e7-9f670facc239",
     "title": "Exfoliators Step 3",
-    "description": "Step 3 for exfoliators.",
-    "details": "Detailed instruction for exfoliators step 3.",
-    "image_url": "https://example.com/images/9_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Hydrate with a moisturizer.",
+    "details": "Apply a hydrating moisturizer to replenish skin after exfoliation.",
+    "image_url": "https://example.com/images/exfoliators_step3.jpg",
+    "tips": [
+      "Use a calming cream for sensitive skin.",
+      "Apply sunscreen during the day."
+    ],
     "post_id": "1b1559c1-9cfc-4ad8-908d-37f1a8258e0f"
   },
   {
     "id": "a49fe668-0130-4d9f-946f-7f0f83ee9db0",
     "title": "Anti-Aging Step 1",
-    "description": "Step 1 for anti-aging.",
-    "details": "Detailed instruction for anti-aging step 1.",
-    "image_url": "https://example.com/images/10_step1.jpg",
-    "tips": ["Tip 1 for better results.", "Use gentle circular motions."],
+    "description": "Apply an anti-aging serum.",
+    "details": "Use 2-3 drops of a retinol or peptide-based serum and gently pat onto clean skin.",
+    "image_url": "https://example.com/images/anti_aging_step1.jpg",
+    "tips": [
+      "Start with a low retinol concentration.",
+      "Use at night to avoid sun sensitivity."
+    ],
     "post_id": "79b3088d-c5da-485d-9350-bbe8e2522354"
   },
   {
     "id": "e7c3e009-1116-43f2-a82b-e8cb93e92bb6",
     "title": "Anti-Aging Step 2",
-    "description": "Step 2 for anti-aging.",
-    "details": "Detailed instruction for anti-aging step 2.",
-    "image_url": "https://example.com/images/10_step2.jpg",
-    "tips": ["Tip 2 for better results.", "Use gentle circular motions."],
+    "description": "Follow with an anti-aging cream.",
+    "details": "Apply a cream with ingredients like hyaluronic acid or antioxidants to reduce fine lines.",
+    "image_url": "https://example.com/images/anti_aging_step2.jpg",
+    "tips": [
+      "Use a pea-sized amount to avoid irritation.",
+      "Apply evenly to face and neck."
+    ],
     "post_id": "79b3088d-c5da-485d-9350-bbe8e2522354"
   },
   {
     "id": "55cf8507-c74c-46e8-8def-12673c209ceb",
     "title": "Anti-Aging Step 3",
-    "description": "Step 3 for anti-aging.",
-    "details": "Detailed instruction for anti-aging step 3.",
-    "image_url": "https://example.com/images/10_step3.jpg",
-    "tips": ["Tip 3 for better results.", "Use gentle circular motions."],
+    "description": "Protect with SPF during the day.",
+    "details": "Finish with a broad-spectrum SPF 30+ to protect skin from UV damage.",
+    "image_url": "https://example.com/images/anti_aging_step3.jpg",
+    "tips": [
+      "Reapply sunscreen every 2 hours.",
+      "Use a lightweight SPF for daily wear."
+    ],
     "post_id": "79b3088d-c5da-485d-9350-bbe8e2522354"
   }
 ]

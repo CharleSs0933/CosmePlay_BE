@@ -31,13 +31,13 @@ async function main() {
     // "user.json",
     // "address.json",
     // "post.json",
-    // "postStep.json",
+    "postStep.json",
     // "event.json",
     // "eventReward.json",
     // "question.json",
     // "questionOption.json",
     // "batch.json",
-    "supplier.json",
+    // "supplier.json",
   ];
 
   const deleteFileNames = [...orderedFileNames].reverse();
