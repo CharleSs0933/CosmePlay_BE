@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatus = exports.getAllOrders = exports.getOrderDetail = exports.getOrdersByUser = exports.stripeWebhooks = exports.createCheckoutSession = void 0;
+exports.updateOrderStatus = exports.getAllOrders = exports.getOrderDetail = exports.getOrdersByUser = exports.cancelOrder = exports.stripeWebhooks = exports.createCheckoutSession = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const error_handler_1 = require("../packages/error-handler");
 const stripe_1 = __importDefault(require("../libs/stripe"));
@@ -348,6 +348,39 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.stripeWebhooks = stripeWebhooks;
+const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const user = req.user;
+        const order = yield prisma_1.default.order.findUnique({ where: { id } });
+        if (!order) {
+            return next(new error_handler_1.ValidationError("Order not found!"));
+        }
+        if (order.user_id !== user.id) {
+            return next(new error_handler_1.ValidationError("You are not allowed to cancel this order!"));
+        }
+        if (order.status !== "PROCESSING") {
+            return next(new error_handler_1.ValidationError("You can only cancel orders that are processing!"));
+        }
+        const refunds = yield stripe_1.default.refunds.create({
+            payment_intent: order.payment_intent_id,
+            reason: "requested_by_customer",
+        });
+        // Cập nhật trạng thái đơn hàng
+        yield prisma_1.default.order.update({
+            where: { id },
+            data: { status: "CANCELLED" },
+        });
+        res.status(200).json({
+            success: true,
+            message: "Order cancelled successfully! and refunded ",
+        });
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.cancelOrder = cancelOrder;
 const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;

@@ -420,6 +420,53 @@ export const stripeWebhooks = async (
   }
 };
 
+export const cancelOrder = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+
+    const order = await prisma.order.findUnique({ where: { id } });
+
+    if (!order) {
+      return next(new ValidationError("Order not found!"));
+    }
+
+    if (order.user_id !== user.id) {
+      return next(
+        new ValidationError("You are not allowed to cancel this order!")
+      );
+    }
+
+    if (order.status !== "PROCESSING") {
+      return next(
+        new ValidationError("You can only cancel orders that are processing!")
+      );
+    }
+
+    const refunds = await stripe.refunds.create({
+      payment_intent: order.payment_intent_id,
+      reason: "requested_by_customer",
+    });
+
+    // Cập nhật trạng thái đơn hàng
+    await prisma.order.update({
+      where: { id },
+      data: { status: "CANCELLED" },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Order cancelled successfully! and refunded ",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getOrdersByUser = async (
   req: any,
   res: Response,
