@@ -408,7 +408,7 @@ exports.deleteEventQuestion = deleteEventQuestion;
 const playEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        yield (0, event_service_1.checkPlayedRestrictions)(user.email, next);
+        // await checkPlayedRestrictions(user.email, next);
         res.status(200).json({ success: true });
     }
     catch (error) {
