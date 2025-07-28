@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "name": "Công ty TNHH Dược Phẩm Việt Hưng",
+    "contact_person": "Nguyễn Thị Lan",
+    "email": "ytevh.contact@gmail.com",
+    "phone": "0866.106.088",
+    "address": "52 Ngõ 1, Tập thể Trung Đoàn 17, Xã Ngũ Hiệp, Huyện Thanh Trì, TP. Hà Nội",
+    "company_name": "Dược Phẩm Việt Hưng",
+    "note": "Chuyên cung cấp nguyên liệu mỹ phẩm và thuốc nội địa."
+  },
+  {
+    "id": "2",
+    "name": "Công ty Cổ Phần Dược Mỹ Phẩm A&B",
+    "contact_person": "Trần Văn Bình",
+    "email": "contact@abpharma.vn",
+    "phone": "0912345678",
+    "address": "Lô B5, Khu công nghiệp VSIP, Thuận An, Bình Dương",
+    "company_name": "A&B Pharma JSC",
+    "note": "Nhà cung cấp thiết bị y tế và mỹ phẩm nhập khẩu Hàn Quốc."
+  },
+  {
+    "id": "3",
+    "name": "Công ty TNHH Nguyên Liệu Mỹ Phẩm Quốc Tế",
+    "contact_person": "Lê Thị Hương",
+    "email": "info@cosmeticingredients.vn",
+    "phone": "0988123456",
+    "address": "456 Nguyễn Văn Cừ, Long Biên, Hà Nội",
+    "company_name": "Cosmetic Ingredients Co., Ltd",
+    "note": "Cung cấp nguyên liệu thiên nhiên sản xuất mỹ phẩm organic."
+  }
+]
