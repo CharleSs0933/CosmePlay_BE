@@ -59,15 +59,16 @@ export const createCheckoutSession = async (
         return next(new ValidationError("Coupon not found!"));
       }
 
-      const cartProductIds = new Set(
-        cart.cartItems.map((item) => item.product.id)
+      const voucherProductIds = new Set(
+        coupon.voucherProducts.map((vp) => vp.product_id)
       );
 
-      const hasInvalidProduct = coupon.voucherProducts.some(
-        (voucherItem) => !cartProductIds.has(voucherItem.product_id)
+      // Kiểm tra xem có ít nhất 1 sản phẩm trong giỏ hàng thuộc danh sách voucher
+      const hasValidProduct = cart.cartItems.some((item) =>
+        voucherProductIds.has(item.product.id)
       );
 
-      if (hasInvalidProduct) {
+      if (!hasValidProduct) {
         return next(new ValidationError("Coupon not valid for your cart!"));
       }
 
