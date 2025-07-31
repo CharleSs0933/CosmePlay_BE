@@ -118,9 +118,7 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         (0, product_service_1.validateProductData)(req.body);
         const { title, description, price, sale_price, volume, ingredients, volume_type, image_url, images, product_category_id, product_brand_id, product_skinType_id, } = req.body;
         // Tạo product code
-        const productCode = `PROD-${Date.now()}-${Math.random()
-            .toString(36)
-            .substring(2, 9)}`;
+        const productCode = `PROD-${Date.now()}`;
         // Step 1: Tạo product trong DB
         const product = yield prisma_1.default.product.create({
             data: {

@@ -265,10 +265,10 @@ export const stripeWebhooks = async (
               status: "PROCESSING",
 
               // Chi tiết các khoản tiền
-              subtotal: subtotal / 100, // Convert from cents to currency unit
-              discount_amount: discountAmount / 100,
-              shipping_fee: shippingFee / 100,
-              total_amount: totalAmount / 100,
+              subtotal: subtotal,
+              discount_amount: discountAmount,
+              shipping_fee: shippingFee,
+              total_amount: totalAmount,
 
               // Thông tin thanh toán
               checkout_session_id: session.id,
@@ -536,7 +536,17 @@ export const getOrdersByUser = async (
     const orders = await prisma.order.findMany({
       where: { user_id: user.id },
       include: {
-        orderItems: true,
+        orderItems: {
+          select: {
+            title: true,
+            image_url: true,
+            quantity: true,
+            unit_price: true,
+            discount_per_item: true,
+            final_price: true,
+            total_price: true,
+          },
+        },
         address: {
           select: {
             address: true,
@@ -550,27 +560,6 @@ export const getOrdersByUser = async (
           select: {
             email: true,
             name: true,
-          },
-        },
-        voucher: {
-          include: {
-            voucherTemplate: {
-              select: {
-                discount_value: true,
-                type: true,
-                voucherProducts: {
-                  select: {
-                    product: {
-                      select: {
-                        id: true,
-                        title: true,
-                        image_url: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
           },
         },
       },
@@ -593,7 +582,17 @@ export const getOrderDetail = async (
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        orderItems: true,
+        orderItems: {
+          select: {
+            title: true,
+            image_url: true,
+            quantity: true,
+            unit_price: true,
+            discount_per_item: true,
+            final_price: true,
+            total_price: true,
+          },
+        },
         address: true,
         user: {
           select: {
@@ -644,6 +643,17 @@ export const getAllOrders = async (
   try {
     const orders = await prisma.order.findMany({
       include: {
+        orderItems: {
+          select: {
+            title: true,
+            image_url: true,
+            quantity: true,
+            unit_price: true,
+            discount_per_item: true,
+            final_price: true,
+            total_price: true,
+          },
+        },
         user: {
           select: {
             id: true,

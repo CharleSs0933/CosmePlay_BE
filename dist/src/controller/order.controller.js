@@ -227,10 +227,10 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             address_id: addressId,
                             status: "PROCESSING",
                             // Chi tiết các khoản tiền
-                            subtotal: subtotal / 100, // Convert from cents to currency unit
-                            discount_amount: discountAmount / 100,
-                            shipping_fee: shippingFee / 100,
-                            total_amount: totalAmount / 100,
+                            subtotal: subtotal,
+                            discount_amount: discountAmount,
+                            shipping_fee: shippingFee,
+                            total_amount: totalAmount,
                             // Thông tin thanh toán
                             checkout_session_id: session.id,
                             payment_intent_id: session.payment_intent,
@@ -449,7 +449,17 @@ const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
         const orders = yield prisma_1.default.order.findMany({
             where: { user_id: user.id },
             include: {
-                orderItems: true,
+                orderItems: {
+                    select: {
+                        title: true,
+                        image_url: true,
+                        quantity: true,
+                        unit_price: true,
+                        discount_per_item: true,
+                        final_price: true,
+                        total_price: true,
+                    },
+                },
                 address: {
                     select: {
                         address: true,
@@ -463,27 +473,6 @@ const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                     select: {
                         email: true,
                         name: true,
-                    },
-                },
-                voucher: {
-                    include: {
-                        voucherTemplate: {
-                            select: {
-                                discount_value: true,
-                                type: true,
-                                voucherProducts: {
-                                    select: {
-                                        product: {
-                                            select: {
-                                                id: true,
-                                                title: true,
-                                                image_url: true,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
                     },
                 },
             },
@@ -501,7 +490,17 @@ const getOrderDetail = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
         const order = yield prisma_1.default.order.findUnique({
             where: { id },
             include: {
-                orderItems: true,
+                orderItems: {
+                    select: {
+                        title: true,
+                        image_url: true,
+                        quantity: true,
+                        unit_price: true,
+                        discount_per_item: true,
+                        final_price: true,
+                        total_price: true,
+                    },
+                },
                 address: true,
                 user: {
                     select: {
@@ -547,6 +546,17 @@ const getAllOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, funct
     try {
         const orders = yield prisma_1.default.order.findMany({
             include: {
+                orderItems: {
+                    select: {
+                        title: true,
+                        image_url: true,
+                        quantity: true,
+                        unit_price: true,
+                        discount_per_item: true,
+                        final_price: true,
+                        total_price: true,
+                    },
+                },
                 user: {
                     select: {
                         id: true,
