@@ -349,12 +349,14 @@ model VoucherTemplate {
   voucherProducts VoucherProduct[]
   vouchers        Voucher[] // Theo dõi ai dùng
 
+  min_order_amount Float? @default(0) // Số tiền tối thiểu để áp dụng voucher
+
   is_active Boolean @default(true) // Trạng thái hoạt động của voucher template
 
   event_id              String?
   leaderboard_reward_id String?
   event                 Event?             @relation(fields: [event_id], references: [id], onDelete: SetNull)
-  leaderboardReward     LeaderboardReward? @relation(fields: [leaderboard_reward_id], references: [id], onDelete: SetNull)
+  leaderboardReward     LeaderboardReward? @relation(fields: [leaderboard_reward_id], references: [id], onDelete: Cascade)
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt

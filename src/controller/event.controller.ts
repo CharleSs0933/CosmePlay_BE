@@ -258,7 +258,7 @@ export const getRandomQuestions = async (
           select: {
             id: true,
             content: true,
-            // Don't include is_correct for security
+            is_correct: true,
           },
         },
       },
@@ -426,6 +426,8 @@ export const deleteEventQuestion = async (
   }
 };
 
+// ========== REWARD MANAGEMENT APIs ==========
+
 export const playEvent = async (
   req: any,
   res: Response,
@@ -465,6 +467,141 @@ export const calculateEventReward = async (
       message: reward
         ? "Coupon created successfully!"
         : "Not enough correct answers!",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEventLeaderboard = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const user = req.user;
+    const { limit = 50, page = 1 } = req.query;
+    const pageNum = parseInt(page as string);
+    const limitNum = Math.min(parseInt(limit as string), 100);
+    const offset = (pageNum - 1) * limitNum;
+
+    const event = await prisma.event.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        title: true,
+        milestone_score: true,
+        is_active: true,
+      },
+    });
+
+    if (!event) {
+      return next(new ValidationError("Event not found!"));
+    }
+
+    // Get leaderboard rewards
+    const leaderboardRewards = await prisma.leaderboardReward.findMany({
+      where: {
+        event_id: id,
+        is_active: true,
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        rank_from: true,
+        rank_to: true,
+        voucherTemplates: {
+          where: { is_active: true },
+          select: {
+            id: true,
+            discount_value: true,
+            type: true,
+            voucherProducts: {
+              select: {
+                product: {
+                  select: {
+                    id: true,
+                    title: true,
+                    image_url: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { rank_from: "asc" },
+    });
+
+    // Get all scores for ranking
+    const allScores = await prisma.eventScore.findMany({
+      where: { event_id: id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: [
+        { score: "desc" },
+        { completion_time: "asc" },
+        { completed_at: "asc" },
+      ],
+    });
+
+    // Calculate ranks and rewards
+    const leaderboardWithRanks = allScores.map((entry, index) => {
+      const rank = index + 1;
+      const eligibleRewards = leaderboardRewards.filter(
+        (reward) => rank >= reward.rank_from && rank <= reward.rank_to
+      );
+
+      return {
+        rank,
+        user: entry.user,
+        score: entry.score,
+        completion_time: entry.completion_time,
+        completed_at: entry.completed_at,
+        is_eligible_for_reward: eligibleRewards.length > 0,
+        rewards: eligibleRewards,
+      };
+    });
+
+    // Get paginated results
+    const paginatedResults = leaderboardWithRanks.slice(
+      offset,
+      offset + limitNum
+    );
+
+    // Get current user's rank if requested
+    let userRank;
+    if (user && user.role !== "ADMIN") {
+      const userEntry = leaderboardWithRanks.find(
+        (entry) => entry.user.id === user.id
+      );
+      if (userEntry) {
+        userRank = {
+          rank: userEntry.rank,
+          score: userEntry.score,
+          completion_time: userEntry.completion_time,
+        };
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        event,
+        leaderboard: paginatedResults,
+        total_participants: allScores.length,
+        rewards: leaderboardRewards,
+        ...(userRank && { user_rank: userRank }),
+      },
     });
   } catch (error) {
     next(error);
