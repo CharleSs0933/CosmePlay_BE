@@ -1,0 +1,62 @@
+[
+  {
+    "id": "f1a2b3c4-d5e6-4f78-9012-3456789abcde",
+    "event_id": "1",
+    "rank_from": 1,
+    "rank_to": 1,
+    "title": "Glow & Know? Top 1",
+    "description": "Exclusive reward for the top beauty IQ scorer!",
+    "is_active": true,
+    "created_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "g2h3i4j5-k6l7-4m89-n012-pqrstuvwxyz",
+    "event_id": "1",
+    "rank_from": 2,
+    "rank_to": 5,
+    "title": "Glow & Know? Top 2-5",
+    "description": "Reward for top beauty quiz enthusiasts!",
+    "is_active": true,
+    "created_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "h3i4j5k6-l7m8-4n90-o123-abcdefghi",
+    "event_id": "1",
+    "rank_from": 6,
+    "rank_to": 10,
+    "title": "Glow & Know? Top 6-10",
+    "description": "Special reward for top quiz participants!",
+    "is_active": true,
+    "created_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "i4j5k6l7-m8n9-4o01-p234-jklmnopqr",
+    "event_id": "23308dcf-e9d0-45ea-b2d3-6035e086d0f4",
+    "rank_from": 1,
+    "rank_to": 1,
+    "title": "Beauty Drop Top 1",
+    "description": "Ultimate reward for the top beauty collector!",
+    "is_active": true,
+    "created_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "j5k6l7m8-n9o0-4p12-q345-stuvwxyzab",
+    "event_id": "23308dcf-e9d0-45ea-b2d3-6035e086d0f4",
+    "rank_from": 2,
+    "rank_to": 5,
+    "title": "Beauty Drop Top 2-5",
+    "description": "Reward for top beauty drop collectors!",
+    "is_active": true,
+    "created_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "k6l7m8n9-o0p1-4q23-r456-cdefghijk",
+    "event_id": "23308dcf-e9d0-45ea-b2d3-6035e086d0f4",
+    "rank_from": 6,
+    "rank_to": 10,
+    "title": "Beauty Drop Top 6-10",
+    "description": "Special reward for top drop game players!",
+    "is_active": true,
+    "created_at": "2025-07-31T16:56:00.000Z"
+  }
+]

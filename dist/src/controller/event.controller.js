@@ -12,13 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateEventReward = exports.playEvent = exports.deleteEventQuestion = exports.updateEventQuestion = exports.addEventQuestion = exports.get20QuestionsByEvent = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
+exports.calculateEventReward = exports.playEvent = exports.deleteEventQuestion = exports.updateEventQuestion = exports.addEventQuestion = exports.getRandomQuestions = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
 const error_handler_1 = require("../packages/error-handler");
+// ========== EVENT MANAGEMENT APIs ==========
 const getAllEvents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const events = yield prisma_1.default.event.findMany({});
+        const { is_active, type } = req.query;
+        const where = {};
+        if (is_active !== undefined)
+            where.is_active = is_active === "true";
+        if (type)
+            where.type = type;
+        const events = yield prisma_1.default.event.findMany({
+            where,
+        });
         res.status(200).json({ success: true, events });
     }
     catch (error) {
@@ -29,7 +38,46 @@ exports.getAllEvents = getAllEvents;
 const getEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const event = yield prisma_1.default.event.findUnique({ where: { id } });
+        const event = yield prisma_1.default.event.findUnique({
+            where: { id },
+            include: {
+                _count: {
+                    select: {
+                        questions: true,
+                        eventScore: true,
+                    },
+                },
+                leaderboardReward: {
+                    where: { is_active: true },
+                    include: {
+                        voucherTemplates: {
+                            where: { is_active: true },
+                            select: {
+                                id: true,
+                                discount_value: true,
+                                type: true,
+                                user_limit: true,
+                                user_count: true,
+                            },
+                        },
+                    },
+                    orderBy: { rank_from: "asc" },
+                },
+                voucherTemplates: {
+                    where: { is_active: true },
+                    select: {
+                        id: true,
+                        discount_value: true,
+                        type: true,
+                        user_limit: true,
+                        user_count: true,
+                    },
+                },
+            },
+        });
+        if (!event) {
+            return next(new error_handler_1.ValidationError("Event not found!"));
+        }
         res.status(200).json({ success: true, event });
     }
     catch (error) {
@@ -39,8 +87,25 @@ const getEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
 exports.getEvent = getEvent;
 const addEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        (0, event_service_1.validateEventData)(req.body);
-        const event = yield prisma_1.default.event.create({ data: req.body });
+        const { title, description, image_url, start_time, end_time, type, milestone_score = 100, is_active = true, } = req.body;
+        if (!title || !start_time || !end_time) {
+            return next(new error_handler_1.ValidationError("Title, start_time, and end_time are required!"));
+        }
+        if (new Date(start_time) >= new Date(end_time)) {
+            return next(new error_handler_1.ValidationError("End time must be after start time!"));
+        }
+        const event = yield prisma_1.default.event.create({
+            data: {
+                title,
+                description,
+                image_url,
+                start_time: new Date(start_time),
+                end_time: new Date(end_time),
+                type: type || "QUIZ",
+                milestone_score,
+                is_active,
+            },
+        });
         res.status(201).json({ success: true, event });
     }
     catch (error) {
@@ -51,16 +116,21 @@ exports.addEvent = addEvent;
 const updateEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const updatedData = Object.assign({}, req.body);
-        const event = yield prisma_1.default.event.findUnique({
-            where: { id },
-        });
+        const updateData = Object.assign({}, req.body);
+        // Convert date strings to Date objects if provided
+        if (updateData.start_time) {
+            updateData.start_time = new Date(updateData.start_time);
+        }
+        if (updateData.end_time) {
+            updateData.end_time = new Date(updateData.end_time);
+        }
+        const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
-            return next(new Error("Event not found!"));
+            return next(new error_handler_1.ValidationError("Event not found!"));
         }
         const updatedEvent = yield prisma_1.default.event.update({
             where: { id },
-            data: updatedData,
+            data: updateData,
         });
         res.status(200).json({ success: true, event: updatedEvent });
     }
@@ -74,7 +144,7 @@ const deleteEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         const { id } = req.params;
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
-            return next(new Error("Event not found!"));
+            return next(new error_handler_1.ValidationError("Event not found!"));
         }
         yield prisma_1.default.event.delete({ where: { id } });
         res.status(200).json({ success: true, message: "Event deleted!" });
@@ -84,18 +154,20 @@ const deleteEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.deleteEvent = deleteEvent;
+// ========== QUESTION MANAGEMENT APIs ==========
 const getAllQuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
-            return next(new Error("Event not found!"));
+            return next(new error_handler_1.ValidationError("Event not found!"));
         }
         const questions = yield prisma_1.default.question.findMany({
             where: { event_id: id },
             include: {
                 questionOptions: true,
             },
+            orderBy: { id: "asc" },
         });
         res.status(200).json({ success: true, questions });
     }
@@ -104,30 +176,45 @@ const getAllQuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, voi
     }
 });
 exports.getAllQuestionsByEvent = getAllQuestionsByEvent;
-const get20QuestionsByEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+const getRandomQuestions = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
+        const { limit = 20 } = req.query;
+        const questionLimit = Math.min(parseInt(limit), 50); // Max 50 questions
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
-            return next(new Error("Event not found!"));
+            return next(new error_handler_1.ValidationError("Event not found!"));
         }
         const questions = yield prisma_1.default.question.findMany({
             where: { event_id: id },
             include: {
-                questionOptions: true,
+                questionOptions: {
+                    select: {
+                        id: true,
+                        content: true,
+                        // Don't include is_correct for security
+                    },
+                },
             },
         });
-        // Get random 20 questions
+        if (questions.length === 0) {
+            return next(new error_handler_1.ValidationError("No questions found for this event!"));
+        }
+        // Get random questions
         const randomQuestions = questions
             .sort(() => 0.5 - Math.random())
-            .slice(0, 20);
-        res.status(200).json({ success: true, questions: randomQuestions });
+            .slice(0, questionLimit);
+        res.status(200).json({
+            success: true,
+            questions: randomQuestions,
+            total_available: questions.length,
+        });
     }
     catch (error) {
         next(error);
     }
 });
-exports.get20QuestionsByEvent = get20QuestionsByEvent;
+exports.getRandomQuestions = getRandomQuestions;
 const addEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
@@ -137,12 +224,11 @@ const addEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0, f
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
         if (!content || !options) {
-            return next(new error_handler_1.ValidationError("Invalid question data!"));
+            return next(new error_handler_1.ValidationError("Content and options are required!"));
         }
         if (options.length < 2) {
             return next(new error_handler_1.ValidationError("At least two options are required!"));
         }
-        // Check if the options contain only one correct answer
         const correctOptions = options.filter((option) => option.is_correct);
         if (correctOptions.length !== 1) {
             return next(new error_handler_1.ValidationError("Exactly one option must be marked as correct!"));
@@ -162,12 +248,7 @@ const addEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0, f
                 },
             },
             include: {
-                questionOptions: {
-                    select: {
-                        content: true,
-                        is_correct: true,
-                    },
-                },
+                questionOptions: true,
             },
         });
         res.status(201).json({ success: true, question });
@@ -185,19 +266,25 @@ const updateEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
-        if (options.length < 2) {
+        const existingQuestion = yield prisma_1.default.question.findUnique({
+            where: { id: questionId, event_id: id },
+        });
+        if (!existingQuestion) {
+            return next(new error_handler_1.ValidationError("Question not found!"));
+        }
+        if (options && options.length < 2) {
             return next(new error_handler_1.ValidationError("At least two options are required!"));
         }
-        // Check if the options contain only one correct answer
-        const correctOptions = options.filter((option) => option.is_correct);
-        if (correctOptions.length !== 1) {
-            return next(new error_handler_1.ValidationError("Exactly one option must be marked as correct!"));
+        if (options) {
+            const correctOptions = options.filter((option) => option.is_correct);
+            if (correctOptions.length !== 1) {
+                return next(new error_handler_1.ValidationError("Exactly one option must be marked as correct!"));
+            }
         }
         const question = yield prisma_1.default.question.update({
             where: { id: questionId },
-            data: {
-                content,
-                image_url,
+            data: Object.assign({ content,
+                image_url }, (options && {
                 questionOptions: {
                     deleteMany: {},
                     createMany: {
@@ -207,7 +294,7 @@ const updateEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0
                         })),
                     },
                 },
-            },
+            })),
             include: {
                 questionOptions: true,
             },

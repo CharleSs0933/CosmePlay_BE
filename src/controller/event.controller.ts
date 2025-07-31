@@ -3,10 +3,10 @@ import prisma from "../libs/prisma";
 import {
   calculateReward,
   checkPlayedRestrictions,
-  validateEventData,
 } from "../services/event.service";
 import { ValidationError } from "../packages/error-handler";
-import { QuestionOption } from "@prisma/client";
+
+// ========== EVENT MANAGEMENT APIs ==========
 
 export const getAllEvents = async (
   req: Request,
@@ -14,7 +14,16 @@ export const getAllEvents = async (
   next: NextFunction
 ) => {
   try {
-    const events = await prisma.event.findMany({});
+    const { is_active, type } = req.query;
+
+    const where: any = {};
+    if (is_active !== undefined) where.is_active = is_active === "true";
+    if (type) where.type = type;
+
+    const events = await prisma.event.findMany({
+      where,
+    });
+
     res.status(200).json({ success: true, events });
   } catch (error) {
     next(error);
@@ -28,7 +37,49 @@ export const getEvent = async (
 ) => {
   try {
     const { id } = req.params;
-    const event = await prisma.event.findUnique({ where: { id } });
+
+    const event = await prisma.event.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: {
+            questions: true,
+            eventScore: true,
+          },
+        },
+        leaderboardReward: {
+          where: { is_active: true },
+          include: {
+            voucherTemplates: {
+              where: { is_active: true },
+              select: {
+                id: true,
+                discount_value: true,
+                type: true,
+                user_limit: true,
+                user_count: true,
+              },
+            },
+          },
+          orderBy: { rank_from: "asc" },
+        },
+        voucherTemplates: {
+          where: { is_active: true },
+          select: {
+            id: true,
+            discount_value: true,
+            type: true,
+            user_limit: true,
+            user_count: true,
+          },
+        },
+      },
+    });
+
+    if (!event) {
+      return next(new ValidationError("Event not found!"));
+    }
+
     res.status(200).json({ success: true, event });
   } catch (error) {
     next(error);
@@ -41,9 +92,39 @@ export const addEvent = async (
   next: NextFunction
 ) => {
   try {
-    validateEventData(req.body);
+    const {
+      title,
+      description,
+      image_url,
+      start_time,
+      end_time,
+      type,
+      milestone_score = 100,
+      is_active = true,
+    } = req.body;
 
-    const event = await prisma.event.create({ data: req.body });
+    if (!title || !start_time || !end_time) {
+      return next(
+        new ValidationError("Title, start_time, and end_time are required!")
+      );
+    }
+
+    if (new Date(start_time) >= new Date(end_time)) {
+      return next(new ValidationError("End time must be after start time!"));
+    }
+
+    const event = await prisma.event.create({
+      data: {
+        title,
+        description,
+        image_url,
+        start_time: new Date(start_time),
+        end_time: new Date(end_time),
+        type: type || "QUIZ",
+        milestone_score,
+        is_active,
+      },
+    });
 
     res.status(201).json({ success: true, event });
   } catch (error) {
@@ -58,19 +139,24 @@ export const updateEvent = async (
 ) => {
   try {
     const { id } = req.params;
-    const updatedData = { ...req.body };
+    const updateData = { ...req.body };
 
-    const event = await prisma.event.findUnique({
-      where: { id },
-    });
+    // Convert date strings to Date objects if provided
+    if (updateData.start_time) {
+      updateData.start_time = new Date(updateData.start_time);
+    }
+    if (updateData.end_time) {
+      updateData.end_time = new Date(updateData.end_time);
+    }
 
+    const event = await prisma.event.findUnique({ where: { id } });
     if (!event) {
-      return next(new Error("Event not found!"));
+      return next(new ValidationError("Event not found!"));
     }
 
     const updatedEvent = await prisma.event.update({
       where: { id },
-      data: updatedData,
+      data: updateData,
     });
 
     res.status(200).json({ success: true, event: updatedEvent });
@@ -88,18 +174,18 @@ export const deleteEvent = async (
     const { id } = req.params;
 
     const event = await prisma.event.findUnique({ where: { id } });
-
     if (!event) {
-      return next(new Error("Event not found!"));
+      return next(new ValidationError("Event not found!"));
     }
 
     await prisma.event.delete({ where: { id } });
-
     res.status(200).json({ success: true, message: "Event deleted!" });
   } catch (error) {
     next(error);
   }
 };
+
+// ========== QUESTION MANAGEMENT APIs ==========
 
 export const getAllQuestionsByEvent = async (
   req: Request,
@@ -110,9 +196,8 @@ export const getAllQuestionsByEvent = async (
     const { id } = req.params;
 
     const event = await prisma.event.findUnique({ where: { id } });
-
     if (!event) {
-      return next(new Error("Event not found!"));
+      return next(new ValidationError("Event not found!"));
     }
 
     const questions = await prisma.question.findMany({
@@ -120,6 +205,7 @@ export const getAllQuestionsByEvent = async (
       include: {
         questionOptions: true,
       },
+      orderBy: { id: "asc" },
     });
 
     res.status(200).json({ success: true, questions });
@@ -128,33 +214,48 @@ export const getAllQuestionsByEvent = async (
   }
 };
 
-export const get20QuestionsByEvent = async (
+export const getRandomQuestions = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
+    const { limit = 20 } = req.query;
+    const questionLimit = Math.min(parseInt(limit as string), 50); // Max 50 questions
 
     const event = await prisma.event.findUnique({ where: { id } });
-
     if (!event) {
-      return next(new Error("Event not found!"));
+      return next(new ValidationError("Event not found!"));
     }
 
     const questions = await prisma.question.findMany({
       where: { event_id: id },
       include: {
-        questionOptions: true,
+        questionOptions: {
+          select: {
+            id: true,
+            content: true,
+            // Don't include is_correct for security
+          },
+        },
       },
     });
 
-    // Get random 20 questions
+    if (questions.length === 0) {
+      return next(new ValidationError("No questions found for this event!"));
+    }
+
+    // Get random questions
     const randomQuestions = questions
       .sort(() => 0.5 - Math.random())
-      .slice(0, 20);
+      .slice(0, questionLimit);
 
-    res.status(200).json({ success: true, questions: randomQuestions });
+    res.status(200).json({
+      success: true,
+      questions: randomQuestions,
+      total_available: questions.length,
+    });
   } catch (error) {
     next(error);
   }
@@ -170,24 +271,19 @@ export const addEventQuestion = async (
     const { content, options, image_url } = req.body;
 
     const event = await prisma.event.findUnique({ where: { id } });
-
     if (!event) {
       return next(new ValidationError("Event not found!"));
     }
 
     if (!content || !options) {
-      return next(new ValidationError("Invalid question data!"));
+      return next(new ValidationError("Content and options are required!"));
     }
 
     if (options.length < 2) {
       return next(new ValidationError("At least two options are required!"));
     }
 
-    // Check if the options contain only one correct answer
-    const correctOptions = options.filter(
-      (option: QuestionOption) => option.is_correct
-    );
-
+    const correctOptions = options.filter((option: any) => option.is_correct);
     if (correctOptions.length !== 1) {
       return next(
         new ValidationError("Exactly one option must be marked as correct!")
@@ -201,7 +297,7 @@ export const addEventQuestion = async (
         event_id: id,
         questionOptions: {
           createMany: {
-            data: options.map((option: QuestionOption) => ({
+            data: options.map((option: any) => ({
               content: option.content,
               is_correct: option.is_correct || false,
             })),
@@ -209,12 +305,7 @@ export const addEventQuestion = async (
         },
       },
       include: {
-        questionOptions: {
-          select: {
-            content: true,
-            is_correct: true,
-          },
-        },
+        questionOptions: true,
       },
     });
 
@@ -232,25 +323,30 @@ export const updateEventQuestion = async (
   try {
     const { id, questionId } = req.params;
     const { content, options, image_url } = req.body;
-    const event = await prisma.event.findUnique({ where: { id } });
 
+    const event = await prisma.event.findUnique({ where: { id } });
     if (!event) {
       return next(new ValidationError("Event not found!"));
     }
 
-    if (options.length < 2) {
+    const existingQuestion = await prisma.question.findUnique({
+      where: { id: questionId, event_id: id },
+    });
+    if (!existingQuestion) {
+      return next(new ValidationError("Question not found!"));
+    }
+
+    if (options && options.length < 2) {
       return next(new ValidationError("At least two options are required!"));
     }
 
-    // Check if the options contain only one correct answer
-    const correctOptions = options.filter(
-      (option: QuestionOption) => option.is_correct
-    );
-
-    if (correctOptions.length !== 1) {
-      return next(
-        new ValidationError("Exactly one option must be marked as correct!")
-      );
+    if (options) {
+      const correctOptions = options.filter((option: any) => option.is_correct);
+      if (correctOptions.length !== 1) {
+        return next(
+          new ValidationError("Exactly one option must be marked as correct!")
+        );
+      }
     }
 
     const question = await prisma.question.update({
@@ -258,15 +354,17 @@ export const updateEventQuestion = async (
       data: {
         content,
         image_url,
-        questionOptions: {
-          deleteMany: {},
-          createMany: {
-            data: options.map((option: QuestionOption) => ({
-              content: option.content,
-              is_correct: option.is_correct || false,
-            })),
+        ...(options && {
+          questionOptions: {
+            deleteMany: {},
+            createMany: {
+              data: options.map((option: any) => ({
+                content: option.content,
+                is_correct: option.is_correct || false,
+              })),
+            },
           },
-        },
+        }),
       },
       include: {
         questionOptions: true,
@@ -288,7 +386,6 @@ export const deleteEventQuestion = async (
     const { id, questionId } = req.params;
 
     const event = await prisma.event.findUnique({ where: { id } });
-
     if (!event) {
       return next(new ValidationError("Event not found!"));
     }
@@ -296,13 +393,11 @@ export const deleteEventQuestion = async (
     const question = await prisma.question.findUnique({
       where: { id: questionId, event_id: id },
     });
-
     if (!question) {
       return next(new ValidationError("Question not found!"));
     }
 
     await prisma.question.delete({ where: { id: questionId } });
-
     res.status(200).json({ success: true, message: "Question deleted!" });
   } catch (error) {
     next(error);

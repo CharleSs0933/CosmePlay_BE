@@ -1,0 +1,98 @@
+[
+  {
+    "id": "m8n9o0p1-q2r3-4s45-t678-lmnopqrst",
+    "discount_value": 15.0,
+    "type": "PERCENT",
+    "user_limit": 100,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": "1",
+    "leaderboard_reward_id": null,
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "n9o0p1q2-r3s4-4t56-u789-uvwxyzabc",
+    "discount_value": 25.0,
+    "type": "PERCENT",
+    "user_limit": 1,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": null,
+    "leaderboard_reward_id": "f1a2b3c4-d5e6-4f78-9012-3456789abcde",
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "o0p1q2r3-s4t5-4u67-v890-defghijkl",
+    "discount_value": 20.0,
+    "type": "PERCENT",
+    "user_limit": 4,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": null,
+    "leaderboard_reward_id": "g2h3i4j5-k6l7-4m89-n012-pqrstuvwxyz",
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "p1q2r3s4-t5u6-4v78-w901-mnopqrstu",
+    "discount_value": 15.0,
+    "type": "PERCENT",
+    "user_limit": 5,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": null,
+    "leaderboard_reward_id": "h3i4j5k6-l7m8-4n90-o123-abcdefghi",
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "q2r3s4t5-u6v7-4w89-x012-vwxyzabcd",
+    "discount_value": 100000.0,
+    "type": "AMOUNT",
+    "user_limit": 50,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": "23308dcf-e9d0-45ea-b2d3-6035e086d0f4",
+    "leaderboard_reward_id": null,
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "r3s4t5u6-v7w8-4x90-y123-efghijklm",
+    "discount_value": 200000.0,
+    "type": "AMOUNT",
+    "user_limit": 1,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": null,
+    "leaderboard_reward_id": "i4j5k6l7-m8n9-4o01-p234-jklmnopqr",
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "s4t5u6v7-w8x9-4y01-z234-nopqrstuv",
+    "discount_value": 150000.0,
+    "type": "AMOUNT",
+    "user_limit": 4,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": null,
+    "leaderboard_reward_id": "j5k6l7m8-n9o0-4p12-q345-stuvwxyzab",
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  },
+  {
+    "id": "t5u6v7w8-x9y0-4z12-a345-wxyzabcde",
+    "discount_value": 100000.0,
+    "type": "AMOUNT",
+    "user_limit": 5,
+    "user_count": 0,
+    "is_active": true,
+    "event_id": null,
+    "leaderboard_reward_id": "k6l7m8n9-o0p1-4q23-r456-cdefghijk",
+    "created_at": "2025-07-31T16:56:00.000Z",
+    "updated_at": "2025-07-31T16:56:00.000Z"
+  }
+]

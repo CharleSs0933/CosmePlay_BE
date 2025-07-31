@@ -10,10 +10,10 @@ import {
   calculateEventReward,
   deleteEvent,
   deleteEventQuestion,
-  get20QuestionsByEvent,
   getAllEvents,
   getAllQuestionsByEvent,
   getEvent,
+  getRandomQuestions,
   playEvent,
   updateEvent,
   updateEventQuestion,
@@ -47,7 +47,7 @@ router.get(
   allowedRoles(["admin", "staff"]),
   getAllQuestionsByEvent
 );
-router.get("/:id/questions/random", isAuthenticated, get20QuestionsByEvent);
+router.get("/:id/questions/random", isAuthenticated, getRandomQuestions);
 
 router.post(
   "/:id/questions/add",

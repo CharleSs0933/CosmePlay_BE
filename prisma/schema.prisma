@@ -296,7 +296,7 @@ model Event {
   questions         Question[]
   eventScore        EventScore[]
   leaderboardReward LeaderboardReward[]
-  VoucherTemplate   VoucherTemplate[]
+  voucherTemplates  VoucherTemplate[]
 }
 
 enum EventType {
