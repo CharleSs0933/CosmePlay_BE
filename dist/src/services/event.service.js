@@ -115,7 +115,7 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
         couponData.percent_off = selectedVoucherTemplate.discount_value;
     }
     else if (selectedVoucherTemplate.type === "AMOUNT") {
-        couponData.amount_off = selectedVoucherTemplate.discount_value * 100; // Convert to cents
+        couponData.amount_off = selectedVoucherTemplate.discount_value; // Convert to cents
         couponData.currency = "vnd";
     }
     // 5. Tạo Coupon trên Stripe

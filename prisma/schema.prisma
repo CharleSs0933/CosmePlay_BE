@@ -382,8 +382,8 @@ model Voucher {
   user_id  String
   order_id String? @unique // Chỉ cho phép một lần sử dụng voucher cho mỗi đơn hàng
 
-  redeemed    Boolean  @default(false)
-  redeemed_at DateTime @default(now())
+  redeemed    Boolean   @default(false)
+  redeemed_at DateTime?
 
   user            User            @relation(fields: [user_id], references: [id])
   order           Order?          @relation(fields: [order_id], references: [id])
