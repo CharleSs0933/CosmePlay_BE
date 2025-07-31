@@ -33,7 +33,6 @@ export const validateProductData = (data: any) => {
   const {
     title,
     price,
-    total_stock,
     volume,
     ingredients,
     volume_type,
@@ -45,7 +44,6 @@ export const validateProductData = (data: any) => {
   if (
     !title ||
     !price ||
-    !total_stock ||
     !product_category_id ||
     !product_brand_id ||
     !product_skinType_id

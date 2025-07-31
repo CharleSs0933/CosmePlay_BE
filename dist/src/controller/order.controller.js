@@ -195,7 +195,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 // Tạo order number unique
                 const orderNumber = `ORD-${Date.now()}-${Math.random()
                     .toString(36)
-                    .substr(2, 9)}`;
+                    .substring(2, 9)}`;
                 // Chuẩn bị dữ liệu OrderItems với thông tin chi tiết
                 const orderItemsData = cart.cartItems.map((item) => {
                     const unitPrice = item.product.sale_price || item.product.price;

@@ -228,7 +228,7 @@ export const stripeWebhooks = async (
         // Tạo order number unique
         const orderNumber = `ORD-${Date.now()}-${Math.random()
           .toString(36)
-          .substr(2, 9)}`;
+          .substring(2, 9)}`;
 
         // Chuẩn bị dữ liệu OrderItems với thông tin chi tiết
         const orderItemsData = cart.cartItems.map((item) => {

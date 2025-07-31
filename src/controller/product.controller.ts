@@ -152,7 +152,9 @@ export const addProduct = async (
     } = req.body;
 
     // Tạo product code
-    const productCode = `PROD-${Date.now()}`;
+    const productCode = `PROD-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 9)}`;
 
     // Step 1: Tạo product trong DB
     const product = await prisma.product.create({

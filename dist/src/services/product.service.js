@@ -29,10 +29,9 @@ const buildProductFilter = (req) => {
 };
 exports.buildProductFilter = buildProductFilter;
 const validateProductData = (data) => {
-    const { title, price, total_stock, volume, ingredients, volume_type, product_category_id, product_brand_id, product_skinType_id, } = data;
+    const { title, price, volume, ingredients, volume_type, product_category_id, product_brand_id, product_skinType_id, } = data;
     if (!title ||
         !price ||
-        !total_stock ||
         !product_category_id ||
         !product_brand_id ||
         !product_skinType_id) {
