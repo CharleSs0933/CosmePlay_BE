@@ -398,6 +398,23 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 // });
                 break;
             }
+            case `charge.updated`: {
+                const charge = event.data.object;
+                const order = yield prisma_1.default.order.findUnique({
+                    where: { payment_intent_id: charge.payment_intent },
+                });
+                if (!order) {
+                    return next(new error_handler_1.ValidationError("Order not found!"));
+                }
+                // Cập nhật trạng thái thanh toán
+                yield prisma_1.default.order.update({
+                    where: { id: order.id },
+                    data: {
+                        receipt_url: charge.receipt_url || null,
+                    },
+                });
+                break;
+            }
             default: {
                 console.log(`Unhandled event type: ${event.type}`);
                 break;
