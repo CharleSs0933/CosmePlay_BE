@@ -96,7 +96,7 @@ router.delete(
 );
 
 // ========== Game Play Routes ==========
-router.get("/:id/leaderboard", isAuthenticated, getEventLeaderboard);
+router.get("/:id/leaderboard", getEventLeaderboard);
 router.post("/play", isAuthenticated, playEvent);
 router.post("/:id/calculate-reward", isAuthenticated, calculateEventReward);
 

@@ -36,7 +36,7 @@ router.post("/:id/voucher-template", isAdminOrStaff, voucherTemplate_controller_
 router.put(":id/voucher-template/:templateId", isAdminOrStaff, leaderboardReward_controller_1.updateLeaderboardReward);
 router.delete(":id/voucher-template/:templateId", isAdminOrStaff, leaderboardReward_controller_1.deleteLeaderboardReward);
 // ========== Game Play Routes ==========
-router.get("/:id/leaderboard", isAuthenticated_1.isAuthenticated, event_controller_1.getEventLeaderboard);
+router.get("/:id/leaderboard", event_controller_1.getEventLeaderboard);
 router.post("/play", isAuthenticated_1.isAuthenticated, event_controller_1.playEvent);
 router.post("/:id/calculate-reward", isAuthenticated_1.isAuthenticated, event_controller_1.calculateEventReward);
 exports.default = router;
