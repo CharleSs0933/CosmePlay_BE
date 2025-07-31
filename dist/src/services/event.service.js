@@ -72,7 +72,7 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
                             select: {
                                 product: {
                                     select: {
-                                        stripe_price_id: true,
+                                        stripe_product_id: true,
                                     },
                                 },
                             },
@@ -84,6 +84,10 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
+        // Check correct answers and milestone points
+        if (correctAnswers < event.milestone_score) {
+            return next(new error_handler_1.ValidationError("Not enough correct answers!"));
+        }
         // 2. Filter active voucher templates that haven't reached user_limit
         const eligibleVoucherTemplates = event.voucherTemplates.filter((vt) => !vt.user_limit || vt.user_count < vt.user_limit);
         if (eligibleVoucherTemplates.length === 0) {
@@ -93,7 +97,7 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
         const randomIndex = Math.floor(Math.random() * eligibleVoucherTemplates.length);
         const selectedVoucherTemplate = eligibleVoucherTemplates[randomIndex];
         // 4. Get applicable product IDs for the Stripe coupon
-        const stripeProductIds = selectedVoucherTemplate.voucherProducts.map((vp) => vp.product.stripe_price_id);
+        const stripeProductIds = selectedVoucherTemplate.voucherProducts.map((vp) => vp.product.stripe_product_id);
         // 5. Tạo dữ liệu Coupon trên Stripe
         const couponData = {
             max_redemptions: 5,
