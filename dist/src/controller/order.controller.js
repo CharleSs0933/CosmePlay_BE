@@ -176,7 +176,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     const couponId = typeof discount.coupon === "string" ? discount.coupon : null;
                     if (couponId) {
                         voucher = yield prisma_1.default.voucher.findUnique({
-                            where: { id: couponId },
+                            where: { stripe_coupon_id: couponId },
                             include: {
                                 voucherTemplate: true,
                             },
@@ -201,7 +201,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     const unitPrice = item.product.sale_price || item.product.price;
                     const discountPerItem = voucher
                         ? voucher.voucherTemplate.type === "PERCENT"
-                            ? unitPrice * voucher.voucherTemplate.discount_value
+                            ? (unitPrice * voucher.voucherTemplate.discount_value) / 100
                             : voucher.voucherTemplate.discount_value / cart.cartItems.length
                         : 0;
                     const finalPrice = unitPrice - discountPerItem;

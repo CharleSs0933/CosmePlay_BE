@@ -206,7 +206,7 @@ export const stripeWebhooks = async (
 
           if (couponId) {
             voucher = await prisma.voucher.findUnique({
-              where: { id: couponId },
+              where: { stripe_coupon_id: couponId },
               include: {
                 voucherTemplate: true,
               },
@@ -235,7 +235,7 @@ export const stripeWebhooks = async (
           const unitPrice = item.product.sale_price || item.product.price;
           const discountPerItem = voucher
             ? voucher.voucherTemplate.type === "PERCENT"
-              ? unitPrice * voucher.voucherTemplate.discount_value
+              ? (unitPrice * voucher.voucherTemplate.discount_value) / 100
               : voucher.voucherTemplate.discount_value / cart.cartItems.length
             : 0;
 
