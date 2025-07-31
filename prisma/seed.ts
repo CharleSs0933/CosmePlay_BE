@@ -35,6 +35,8 @@ async function main() {
     "event.json",
     "question.json",
     "questionOption.json",
+    "leaderboardReward.json",
+    "voucherTemplate.json",
     "batch.json",
     "supplier.json",
   ];

@@ -1,0 +1,77 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-4g78-h901-234567890abc",
+    "template_id": "m8n9o0p1-q2r3-4s45-t678-lmnopqrst",
+    "product_id": "1"
+  },
+  {
+    "id": "b2c3d4e5-f6g7-4h89-i012-3456789abcd",
+    "template_id": "m8n9o0p1-q2r3-4s45-t678-lmnopqrst",
+    "product_id": "2"
+  },
+  {
+    "id": "c3d4e5f6-g7h8-4i90-j123-456789abcde",
+    "template_id": "m8n9o0p1-q2r3-4s45-t678-lmnopqrst",
+    "product_id": "3"
+  },
+  {
+    "id": "d4e5f6g7-h8i9-4j01-k234-56789abcdef",
+    "template_id": "m8n9o0p1-q2r3-4s45-t678-lmnopqrst",
+    "product_id": "4"
+  },
+  {
+    "id": "e5f6g7h8-i9j0-4k12-l345-6789abcdefg",
+    "template_id": "n9o0p1q2-r3s4-4t56-u789-uvwxyzabc",
+    "product_id": "3"
+  },
+  {
+    "id": "f6g7h8i9-j0k1-4l23-m456-789abcdefgh",
+    "template_id": "n9o0p1q2-r3s4-4t56-u789-uvwxyzabc",
+    "product_id": "7"
+  },
+  {
+    "id": "g7h8i9j0-k1l2-4m34-n567-89abcdefghi",
+    "template_id": "o0p1q2r3-s4t5-4u67-v890-defghijkl",
+    "product_id": "3"
+  },
+  {
+    "id": "h8i9j0k1-l2m3-4n45-o678-9abcdefghij",
+    "template_id": "p1q2r3s4-t5u6-4v78-w901-mnopqrstu",
+    "product_id": "4"
+  },
+  {
+    "id": "i9j0k1l2-m3n4-4o56-p789-abcdefghijk",
+    "template_id": "q2r3s4t5-u6v7-4w89-x012-vwxyzabcd",
+    "product_id": "5"
+  },
+  {
+    "id": "j0k1l2m3-n4o5-4p67-q890-bcdefghijkl",
+    "template_id": "q2r3s4t5-u6v7-4w89-x012-vwxyzabcd",
+    "product_id": "6"
+  },
+  {
+    "id": "k1l2m3n4-o5p6-4q78-r901-cdefghijklm",
+    "template_id": "q2r3s4t5-u6v7-4w89-x012-vwxyzabcd",
+    "product_id": "8"
+  },
+  {
+    "id": "l2m3n4o5-p6q7-4r89-s012-defghijklmn",
+    "template_id": "q2r3s4t5-u6v7-4w89-x012-vwxyzabcd",
+    "product_id": "9"
+  },
+  {
+    "id": "m3n4o5p6-q7r8-4s90-t123-efghijklmno",
+    "template_id": "r3s4t5u6-v7w8-4x90-y123-efghijklm",
+    "product_id": "10"
+  },
+  {
+    "id": "n4o5p6q7-r8s9-4t01-u234-fghijklmnop",
+    "template_id": "s4t5u6v7-w8x9-4y01-z234-nopqrstuv",
+    "product_id": "6"
+  },
+  {
+    "id": "o5p6q7r8-s9t0-4u12-v345-ghijklmnopq",
+    "template_id": "t5u6v7w8-x9y0-4z12-a345-wxyzabcde",
+    "product_id": "8"
+  }
+]
