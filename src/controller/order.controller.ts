@@ -235,7 +235,7 @@ export const stripeWebhooks = async (
           const unitPrice = item.product.sale_price || item.product.price;
           const discountPerItem = voucher
             ? voucher.voucherTemplate.type === "PERCENT"
-              ? (unitPrice * voucher.voucherTemplate.discount_value) / 100
+              ? unitPrice * voucher.voucherTemplate.discount_value
               : voucher.voucherTemplate.discount_value / cart.cartItems.length
             : 0;
 

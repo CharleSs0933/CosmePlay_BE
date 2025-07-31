@@ -201,7 +201,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     const unitPrice = item.product.sale_price || item.product.price;
                     const discountPerItem = voucher
                         ? voucher.voucherTemplate.type === "PERCENT"
-                            ? (unitPrice * voucher.voucherTemplate.discount_value) / 100
+                            ? unitPrice * voucher.voucherTemplate.discount_value
                             : voucher.voucherTemplate.discount_value / cart.cartItems.length
                         : 0;
                     const finalPrice = unitPrice - discountPerItem;
