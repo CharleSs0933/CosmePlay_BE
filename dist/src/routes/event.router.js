@@ -14,10 +14,6 @@ router.post("/add", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.all
 router.delete("/:id", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.deleteEvent);
 router.get("/:id/questions", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.getAllQuestionsByEvent);
 router.get("/:id/questions/random", isAuthenticated_1.isAuthenticated, event_controller_1.get20QuestionsByEvent);
-router.get("/:id/rewards", event_controller_1.getEventReward);
-router.post("/:id/rewards/add", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.addEventReward);
-router.put("/:id/rewards/update/:rewardId", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.updateEventReward);
-router.delete("/:id/rewards/:rewardId", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.deleteEventReward);
 router.post("/:id/questions/add", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.addEventQuestion);
 router.put("/:id/questions/update/:questionId", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.updateEventQuestion);
 router.delete("/:id/questions/:questionId", isAuthenticated_1.isAuthenticated, (0, isAuthenticated_1.allowedRoles)(["admin", "staff"]), event_controller_1.deleteEventQuestion);

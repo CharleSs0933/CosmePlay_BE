@@ -67,16 +67,6 @@ export const calculateReward = async (
 ) => {
   try {
     // 1. Tìm phần thưởng phù hợp
-    const eventReward = await prisma.eventReward.findFirst({
-      where: {
-        event_id: eventId,
-        min_correct: { lte: correctAnswers },
-        max_correct: { gte: correctAnswers },
-      },
-    });
-
-    if (!eventReward) return null;
-    if (eventReward.voucher_quantity <= 0) return null;
 
     // 2. Lấy các sản phẩm sắp hết hạn trong 9 tháng tới
     const today = new Date();
@@ -136,7 +126,7 @@ export const calculateReward = async (
       metadata: {
         userId: user.id,
         eventId,
-        eventRewardId: eventReward.id,
+        // eventRewardId: eventReward.id,
       },
     };
 
@@ -148,17 +138,17 @@ export const calculateReward = async (
     }
 
     // 4. Thêm loại giảm giá vào coupon
-    if (eventReward.type === "PERCENT") {
-      couponData.percent_off = eventReward.discount_value;
-    } else {
-      couponData.amount_off = eventReward.discount_value;
-      couponData.currency = "vnd";
-    }
+    // if (eventReward.type === "PERCENT") {
+    //   couponData.percent_off = eventReward.discount_value;
+    // } else {
+    //   couponData.amount_off = eventReward.discount_value;
+    //   couponData.currency = "vnd";
+    // }
 
     // 5. Tạo Coupon trên Stripe
     await stripe.coupons.create(couponData);
 
-    return eventReward;
+    return null;
   } catch (error) {
     next(error);
   }

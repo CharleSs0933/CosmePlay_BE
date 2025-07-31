@@ -141,6 +141,9 @@ export const addProduct = async (
       description,
       price,
       sale_price,
+      volume,
+      ingredients,
+      volume_type,
       image_url,
       images,
       product_category_id,
@@ -148,15 +151,22 @@ export const addProduct = async (
       product_skinType_id,
     } = req.body;
 
+    // Tạo product code
+    const productCode = `PROD-${Date.now()}`;
+
     // Step 1: Tạo product trong DB
     const product = await prisma.product.create({
       data: {
         title,
         description,
+        product_code: productCode,
         price,
         sale_price,
         image_url,
         images,
+        volume,
+        ingredients,
+        volume_type,
         product_category_id,
         product_brand_id,
         product_skinType_id,
@@ -255,6 +265,9 @@ export const updateProduct = async (
     const parsedSalePrice = updateData.sale_price
       ? parseInt(updateData.sale_price)
       : undefined;
+    const parsedVolume = updateData.volume
+      ? parseInt(updateData.volume)
+      : undefined;
 
     // Cập nhật thông tin sản phẩm trong Stripe nếu title hoặc image thay đổi
     if (product.stripe_product_id) {
@@ -299,6 +312,7 @@ export const updateProduct = async (
         ...updateData,
         price: parsedPrice,
         sale_price: parsedSalePrice,
+        volume: parsedVolume,
         stripe_price_id: newStripePriceId,
       },
     });

@@ -28,13 +28,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Review  Review[]
-  Cart    Cart?
-  Address Address[]
-  Order   Order[]
-  Post    Post[]
-  Voucher Voucher[]
-  Batch   Batch[]
+  Review     Review[]
+  Cart       Cart?
+  Address    Address[]
+  Order      Order[]
+  Post       Post[]
+  Batch      Batch[]
+  Voucher    Voucher[]
+  EventScore EventScore[]
 }
 
 model Address {
@@ -46,6 +47,7 @@ model Address {
   to_district_id String?
   city           String
   pincode        String
+  full_name      String
   phone          String
   notes          String?
 
@@ -54,22 +56,26 @@ model Address {
 }
 
 model Product {
-  id                  String   @id @default(uuid())
+  id                  String      @id @default(uuid())
+  product_code        String      @unique
   title               String
   description         String?
+  volume              Float?
+  ingredients         String?
+  volume_type         VolumeType?
   price               Float
   sale_price          Float?
   image_url           String?
   images              String[]
-  rating              Float    @default(0)
-  total_stock         Int      @default(0)
+  rating              Float       @default(0)
+  total_stock         Int         @default(0)
   product_category_id String
   product_brand_id    String
   product_skinType_id String
-  stripe_product_id   String?  @unique
+  stripe_product_id   String?     @unique
   stripe_price_id     String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
 
   productCategory ProductCategory  @relation(fields: [product_category_id], references: [id])
   productBrand    ProductBrand     @relation(fields: [product_brand_id], references: [id])
@@ -79,6 +85,12 @@ model Product {
   OrderItem       OrderItem[]
   Batch           Batch[]
   VoucherProduct  VoucherProduct[]
+}
+
+enum VolumeType {
+  ML
+  GRAM
+  PIECE
 }
 
 model Batch {
@@ -168,21 +180,43 @@ model CartLineItem {
 }
 
 model Order {
-  id                  String      @id @default(uuid())
-  user_id             String
-  address_id          String
-  status              OrderStatus
-  total_amount        Int
-  checkout_session_id String
-  payment_intent_id   String
-  payment_method      String
-  createdAt           DateTime    @default(now())
-  updatedAt           DateTime    @updatedAt
+  id           String @id @default(uuid())
+  order_number String @unique
+
+  user_id    String
+  address_id String
+  status     OrderStatus
+
+  // Chi tiết các khoản tiền
+  subtotal        Float // Tổng tiền hàng (chưa giảm giá)
+  discount_amount Float @default(0) // Số tiền được giảm
+  shipping_fee    Float @default(0) // Phí vận chuyển
+  total_amount    Float // Tổng tiền cuối cùng
+
+  // Thông tin thanh toán
+  checkout_session_id String?
+  payment_intent_id   String?
+  payment_method      String?
+  payment_status      PaymentStatus
+  receipt_url         String? // URL của biên lai thanh toán
+
+  // Thông tin voucher
+  voucher_id String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user       User        @relation(fields: [user_id], references: [id])
   address    Address     @relation(fields: [address_id], references: [id])
-  voucher    Voucher?
   orderItems OrderItem[]
+  voucher    Voucher?
+
+  @@unique([user_id, order_number]) // Ensures a user can have only one order with a specific order number
+}
+
+enum PaymentStatus {
+  PAID
+  REFUNDED
 }
 
 model OrderItem {
@@ -190,11 +224,21 @@ model OrderItem {
   order_id   String
   product_id String
 
+  // Thông tin sản phẩm tại thời điểm đặt hàng
   title     String
-  price     Float
   image_url String?
   quantity  Int
 
+  // Chi tiết giá cả
+  unit_price        Float // Giá gốc của 1 sản phẩm
+  discount_per_item Float @default(0) // Giảm giá cho từng item
+  final_price       Float // Giá cuối cùng của 1 sản phẩm
+  total_price       Float // Tổng tiền cho quantity sản phẩm này
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
   order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
   product Product @relation(fields: [product_id], references: [id])
 }
@@ -246,8 +290,13 @@ model Event {
   is_active   Boolean   @default(true)
   created_at  DateTime  @default(now())
 
-  questions   Question[]
-  eventReward EventReward[]
+  // Mốc điểm để nhận quà
+  milestone_score Int @default(100) // Điểm cần đạt để nhận quà
+
+  questions         Question[]
+  eventScore        EventScore[]
+  leaderboardReward LeaderboardReward[]
+  VoucherTemplate   VoucherTemplate[]
 }
 
 enum EventType {
@@ -288,45 +337,95 @@ enum RewardType {
   AMOUNT
 }
 
-model EventReward {
-  id               String     @id @default(uuid())
-  event_id         String
-  min_correct      Int
-  max_correct      Int
-  voucher_quantity Int        @default(1)
-  discount_value   Float
-  type             RewardType @default(PERCENT)
+model VoucherTemplate {
+  id String @id @default(uuid())
 
-  vouchers Voucher[]
-  event    Event     @relation(fields: [event_id], references: [id], onDelete: Cascade)
-}
+  discount_value Float
+  type           RewardType @default(PERCENT) // PERCENT | AMOUNT
 
-model Voucher {
-  id               String     @id @default(uuid())
-  user_id          String
-  event_reward_id  String?
-  stripe_coupon_id String     @unique
-  order_id         String?    @unique
-  discount_value   Float
-  duration         Int        @default(48)
-  type             RewardType @default(PERCENT)
-  redeemed         Boolean    @default(false)
-  redeemed_at      DateTime?
-  created_at       DateTime   @default(now())
+  user_limit Int? // Số người nhận tối đa
+  user_count Int  @default(0) // Số người đã nhận
 
-  user            User             @relation(fields: [user_id], references: [id])
-  eventReward     EventReward?     @relation(fields: [event_reward_id], references: [id], onDelete: SetNull)
   voucherProducts VoucherProduct[]
-  Order           Order?           @relation(fields: [order_id], references: [id])
+  vouchers        Voucher[] // Theo dõi ai dùng
+
+  is_active Boolean @default(true) // Trạng thái hoạt động của voucher template
+
+  event_id              String?
+  leaderboard_reward_id String?
+  event                 Event?             @relation(fields: [event_id], references: [id], onDelete: SetNull)
+  leaderboardReward     LeaderboardReward? @relation(fields: [leaderboard_reward_id], references: [id], onDelete: SetNull)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 }
 
 model VoucherProduct {
-  id         String @id @default(uuid())
-  voucher_id String
-  product_id String
+  id          String @id @default(uuid())
+  template_id String
+  product_id  String
 
-  voucher Voucher @relation(fields: [voucher_id], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  voucher VoucherTemplate @relation(fields: [template_id], references: [id], onDelete: Cascade)
+  product Product         @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
-  @@unique([voucher_id, product_id]) // Ensures a voucher can have a product only once
+  @@unique([template_id, product_id]) // Ensures a voucher can have a product only once
+}
+
+model Voucher {
+  id                  String @id @default(uuid())
+  voucher_template_id String
+
+  stripe_coupon_id String? @unique // ID của coupon trên Stripe
+
+  user_id  String
+  order_id String? @unique // Chỉ cho phép một lần sử dụng voucher cho mỗi đơn hàng
+
+  redeemed    Boolean  @default(false)
+  redeemed_at DateTime @default(now())
+
+  user            User            @relation(fields: [user_id], references: [id])
+  order           Order?          @relation(fields: [order_id], references: [id])
+  voucherTemplate VoucherTemplate @relation(fields: [voucher_template_id], references: [id])
+
+  expired_at DateTime? // Ngày hết hạn của voucher, nếu không có thì voucher sẽ không hết hạn
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
+model EventScore {
+  id       String @id @default(uuid())
+  user_id  String
+  event_id String
+  score    Int // Điểm số đạt được
+
+  // Thông tin bổ sung (optional)
+  completion_time Int? // Thời gian hoàn thành (giây) - để tiebreak
+  completed_at    DateTime @default(now()) // Thời điểm hoàn thành
+
+  user  User  @relation(fields: [user_id], references: [id])
+  event Event @relation(fields: [event_id], references: [id])
+
+  @@unique([user_id, event_id]) // Mỗi user chỉ có 1 điểm cho mỗi event
+  @@index([event_id, score]) // Index cho leaderboard
+}
+
+model LeaderboardReward {
+  id       String @id @default(uuid())
+  event_id String
+
+  // Thứ hạng áp dụng
+  rank_from Int // Từ thứ hạng
+  rank_to   Int // Đến thứ hạng
+
+  // Mô tả phần thưởng
+  title       String // Tên phần thưởng (VD: "Top 1", "Top 10")
+  description String? // Mô tả chi tiết
+
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  event            Event             @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  voucherTemplates VoucherTemplate[]
+
+  @@index([event_id, rank_from, rank_to])
 }

@@ -116,16 +116,22 @@ const addProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
     try {
         // Validate input
         (0, product_service_1.validateProductData)(req.body);
-        const { title, description, price, sale_price, image_url, images, product_category_id, product_brand_id, product_skinType_id, } = req.body;
+        const { title, description, price, sale_price, volume, ingredients, volume_type, image_url, images, product_category_id, product_brand_id, product_skinType_id, } = req.body;
+        // Tạo product code
+        const productCode = `PROD-${Date.now()}`;
         // Step 1: Tạo product trong DB
         const product = yield prisma_1.default.product.create({
             data: {
                 title,
                 description,
+                product_code: productCode,
                 price,
                 sale_price,
                 image_url,
                 images,
+                volume,
+                ingredients,
+                volume_type,
                 product_category_id,
                 product_brand_id,
                 product_skinType_id,
@@ -205,6 +211,9 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         const parsedSalePrice = updateData.sale_price
             ? parseInt(updateData.sale_price)
             : undefined;
+        const parsedVolume = updateData.volume
+            ? parseInt(updateData.volume)
+            : undefined;
         // Cập nhật thông tin sản phẩm trong Stripe nếu title hoặc image thay đổi
         if (product.stripe_product_id) {
             const titleChanged = updateData.title && updateData.title !== product.title;
@@ -235,7 +244,7 @@ const updateProduct = (req, res, next) => __awaiter(void 0, void 0, void 0, func
         // Cập nhật DB
         const updatedProduct = yield prisma_1.default.product.update({
             where: { id },
-            data: Object.assign(Object.assign({}, updateData), { price: parsedPrice, sale_price: parsedSalePrice, stripe_price_id: newStripePriceId }),
+            data: Object.assign(Object.assign({}, updateData), { price: parsedPrice, sale_price: parsedSalePrice, volume: parsedVolume, stripe_price_id: newStripePriceId }),
         });
         res.status(200).json({ success: true, product: updatedProduct });
     }

@@ -34,6 +34,9 @@ export const validateProductData = (data: any) => {
     title,
     price,
     total_stock,
+    volume,
+    ingredients,
+    volume_type,
     product_category_id,
     product_brand_id,
     product_skinType_id,
@@ -48,6 +51,15 @@ export const validateProductData = (data: any) => {
     !product_skinType_id
   ) {
     throw new ValidationError("Missing required fields!");
+  }
+
+  if (
+    volume_type &&
+    volume_type !== "ML" &&
+    volume_type !== "GRAM" &&
+    volume_type !== "PIECE"
+  ) {
+    throw new ValidationError("Invalid volume type!");
   }
 };
 

@@ -2,10 +2,14 @@
   {
     "id": "1",
     "user_id": "1",
-    "address": "Address 1",
-    "city": "City 1",
-    "pincode": "12345",
-    "phone": "1234567890",
-    "notes": "Notes 1"
+    "address": "123 Main St",
+    "to_city_id": "city1",
+    "to_ward_code": "ward1",
+    "to_district_id": "district1",
+    "city": "CityName",
+    "pincode": "123456",
+    "full_name": "Quan",
+    "phone": "0912345678",
+    "notes": ""
   }
 ]

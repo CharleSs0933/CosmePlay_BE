@@ -37,20 +37,19 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const dataDirectory = path_1.default.join(__dirname, "seedData");
         const orderedFileNames = [
-            // "productBrand.json",
-            // "productSkinType.json",
-            // "productCategory.json",
-            // "product.json",
-            // "user.json",
-            // "address.json",
-            // "post.json",
+            "productBrand.json",
+            "productSkinType.json",
+            "productCategory.json",
+            "product.json",
+            "user.json",
+            "address.json",
+            "post.json",
             "postStep.json",
-            // "event.json",
-            // "eventReward.json",
-            // "question.json",
-            // "questionOption.json",
-            // "batch.json",
-            // "supplier.json",
+            "event.json",
+            "question.json",
+            "questionOption.json",
+            "batch.json",
+            "supplier.json",
         ];
         const deleteFileNames = [...orderedFileNames].reverse();
         yield deleteAllData(deleteFileNames);

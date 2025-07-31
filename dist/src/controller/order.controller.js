@@ -50,15 +50,25 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
             const coupon = yield prisma_1.default.voucher.findUnique({
                 where: { stripe_coupon_id: couponId },
                 select: {
-                    voucherProducts: {
-                        select: { product_id: true },
+                    voucherTemplate: {
+                        select: {
+                            voucherProducts: {
+                                select: {
+                                    product: {
+                                        select: {
+                                            id: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             });
             if (!coupon) {
                 return next(new error_handler_1.ValidationError("Coupon not found!"));
             }
-            const voucherProductIds = new Set(coupon.voucherProducts.map((vp) => vp.product_id));
+            const voucherProductIds = new Set(coupon.voucherTemplate.voucherProducts.map((vp) => vp.product.id));
             // Kiểm tra xem có ít nhất 1 sản phẩm trong giỏ hàng thuộc danh sách voucher
             const hasValidProduct = cart.cartItems.some((item) => voucherProductIds.has(item.product.id));
             if (!hasValidProduct) {
@@ -133,7 +143,7 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
 });
 exports.createCheckoutSession = createCheckoutSession;
 const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g;
     try {
         const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
         const sig = req.headers["stripe-signature"];
@@ -160,46 +170,90 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 if (!cart) {
                     return next(new error_handler_1.ValidationError("Cart not found!"));
                 }
-                // Lấy thông tin sản phẩm từ Stripe session
-                const lineItems = yield stripe_1.default.checkout.sessions.listLineItems(session.id, {
-                    expand: ["data.price.product"],
-                });
-                // Map thành dữ liệu order item để lưu vào DB
-                const orderItemsData = lineItems.data.map((item) => {
-                    var _a, _b;
-                    const stripeProduct = item.price.product;
-                    const quantity = (_a = item.quantity) !== null && _a !== void 0 ? _a : 1;
-                    const total = ((_b = item.amount_total) !== null && _b !== void 0 ? _b : 0) / 100;
-                    const unitPrice = total / quantity;
+                let voucher = null;
+                if ((_b = session.discounts) === null || _b === void 0 ? void 0 : _b.length) {
+                    const discount = session.discounts[0];
+                    const couponId = typeof discount.coupon === "string" ? discount.coupon : null;
+                    if (couponId) {
+                        voucher = yield prisma_1.default.voucher.findUnique({
+                            where: { id: couponId },
+                            include: {
+                                voucherTemplate: true,
+                            },
+                        });
+                    }
+                }
+                // Tính toán chi tiết giá cả
+                const subtotal = cart.cartItems.reduce((sum, item) => {
+                    const itemPrice = item.product.sale_price || item.product.price;
+                    return sum + itemPrice * item.quantity;
+                }, 0);
+                // Tính discount amount từ Stripe session
+                const discountAmount = ((_c = session.total_details) === null || _c === void 0 ? void 0 : _c.amount_discount) || 0;
+                const shippingFee = ((_d = session.shipping_cost) === null || _d === void 0 ? void 0 : _d.amount_total) || 0;
+                const totalAmount = session.amount_total || 0;
+                // Tạo order number unique
+                const orderNumber = `ORD-${Date.now()}-${Math.random()
+                    .toString(36)
+                    .substr(2, 9)}`;
+                // Chuẩn bị dữ liệu OrderItems với thông tin chi tiết
+                const orderItemsData = cart.cartItems.map((item) => {
+                    const unitPrice = item.product.sale_price || item.product.price;
+                    const discountPerItem = voucher
+                        ? voucher.voucherTemplate.type === "PERCENT"
+                            ? (unitPrice * voucher.voucherTemplate.discount_value) / 100
+                            : voucher.voucherTemplate.discount_value / cart.cartItems.length
+                        : 0;
+                    const finalPrice = unitPrice - discountPerItem;
+                    const totalPrice = finalPrice * item.quantity;
                     return {
-                        product_id: stripeProduct.metadata.local_product_id,
-                        quantity,
-                        title: stripeProduct.name,
-                        price: unitPrice * 100, // Lưu dưới dạng integer
-                        image_url: stripeProduct.images[0],
+                        product_id: item.product.id,
+                        title: item.product.title,
+                        image_url: item.product.image_url,
+                        quantity: item.quantity,
+                        unit_price: unitPrice,
+                        discount_per_item: discountPerItem,
+                        final_price: finalPrice,
+                        total_price: totalPrice,
                     };
                 });
                 // Tạo order + cập nhật tồn kho + xoá cart trong 1 transaction
                 const { order } = yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-                    // 1. Tạo đơn hàng
+                    // 1. Tạo đơn hàng với thông tin đầy đủ
                     const order = yield tx.order.create({
                         data: {
+                            order_number: orderNumber,
                             user_id: userId,
+                            address_id: addressId,
+                            status: "PROCESSING",
+                            // Chi tiết các khoản tiền
+                            subtotal: subtotal / 100, // Convert from cents to currency unit
+                            discount_amount: discountAmount / 100,
+                            shipping_fee: shippingFee / 100,
+                            total_amount: totalAmount / 100,
+                            // Thông tin thanh toán
                             checkout_session_id: session.id,
                             payment_intent_id: session.payment_intent,
-                            address_id: addressId,
-                            total_amount: Number(session.amount_total),
                             payment_method: session.payment_method_types[0],
-                            status: "PROCESSING",
+                            payment_status: "PAID",
+                            // Thông tin voucher
+                            voucher_id: voucher ? voucher.id : null,
+                            // Tạo OrderItems
                             orderItems: {
-                                createMany: { data: orderItemsData },
+                                createMany: {
+                                    data: orderItemsData,
+                                },
                             },
+                        },
+                        include: {
+                            orderItems: true,
                         },
                     });
                     // 2. Trừ tồn kho theo lô (FIFO)
                     for (const item of cart.cartItems) {
                         const productId = item.product.id;
                         let quantityToDeduct = item.quantity;
+                        // Lấy các batch còn hàng, sắp xếp theo ngày hết hạn (FIFO)
                         const batches = yield tx.batch.findMany({
                             where: {
                                 product_id: productId,
@@ -208,6 +262,7 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             },
                             orderBy: { expired_at: "asc" },
                         });
+                        // Trừ stock từng batch
                         for (const batch of batches) {
                             if (quantityToDeduct <= 0)
                                 break;
@@ -220,8 +275,9 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                             });
                             quantityToDeduct -= deduct;
                         }
+                        // Kiểm tra còn thiếu hàng không
                         if (quantityToDeduct > 0) {
-                            throw new error_handler_1.ValidationError(`Not enough stock for product ${productId}`);
+                            throw new error_handler_1.ValidationError(`Not enough stock for product ${item.product.title} (${productId}). Missing: ${quantityToDeduct} units`);
                         }
                         // 3. Cập nhật tổng tồn kho của sản phẩm
                         yield tx.product.update({
@@ -241,99 +297,105 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     return { order };
                 }));
                 // 5. Đánh dấu voucher là đã sử dụng (nếu có)
-                if ((_b = session.discounts) === null || _b === void 0 ? void 0 : _b.length) {
-                    const discount = session.discounts[0];
-                    const couponId = typeof discount.coupon === "string" ? discount.coupon : null;
-                    if (couponId) {
-                        yield prisma_1.default.voucher.update({
-                            where: { stripe_coupon_id: couponId },
-                            data: {
-                                redeemed: true,
-                                redeemed_at: new Date(),
-                                order_id: order.id,
-                            },
-                        });
-                    }
+                if (voucher) {
+                    yield prisma_1.default.voucher.update({
+                        where: { id: voucher.id },
+                        data: {
+                            redeemed: true,
+                            redeemed_at: new Date(),
+                            order_id: order.id,
+                        },
+                    });
                 }
                 break;
             }
             case `coupon.created`: {
                 const coupon = event.data.object;
-                const userId = (_c = coupon.metadata) === null || _c === void 0 ? void 0 : _c.userId;
-                const eventId = (_d = coupon.metadata) === null || _d === void 0 ? void 0 : _d.eventId;
-                const eventRewardId = (_e = coupon.metadata) === null || _e === void 0 ? void 0 : _e.eventRewardId;
+                const userId = (_e = coupon.metadata) === null || _e === void 0 ? void 0 : _e.userId;
+                const eventId = (_f = coupon.metadata) === null || _f === void 0 ? void 0 : _f.eventId;
+                const eventRewardId = (_g = coupon.metadata) === null || _g === void 0 ? void 0 : _g.eventRewardId;
                 // Kiểm tra thông tin bắt buộc
                 if (!userId || !eventId || !eventRewardId) {
                     return next(new error_handler_1.ValidationError("Missing metadata!"));
                 }
                 // Tính ngày hiện tại + 9 tháng
-                const today = new Date();
-                const nineMonthsLater = new Date();
-                nineMonthsLater.setMonth(today.getMonth() + 9);
-                // Truy vấn danh sách sản phẩm có lô sắp hết hạn (trong vòng 9 tháng)
-                const expiringBatches = yield prisma_1.default.batch.findMany({
-                    where: {
-                        expired_at: { lte: nineMonthsLater },
-                        current_stock: { gt: 0 },
-                    },
-                    select: { product_id: true },
-                    distinct: ["product_id"],
-                });
-                const expiringProductIds = expiringBatches.map((b) => b.product_id);
-                // Lấy toàn bộ sản phẩm hợp lệ có stripe_product_id
-                const validProducts = yield prisma_1.default.product.findMany({
-                    where: {
-                        stripe_product_id: { not: null },
-                    },
-                    select: { id: true, stripe_product_id: true },
-                });
-                // Tách sản phẩm thành 2 nhóm: sắp hết hạn và còn lại
-                const expiringValidProducts = validProducts.filter((p) => expiringProductIds.includes(p.id));
-                const otherValidProducts = validProducts.filter((p) => !expiringProductIds.includes(p.id));
-                // Hàm trộn ngẫu nhiên
-                function shuffle(array) {
-                    return array.sort(() => Math.random() - 0.5);
-                }
-                // Lấy tối đa 5 sản phẩm ưu tiên từ nhóm sắp hết hạn
-                let selectedProducts;
-                if (expiringValidProducts.length >= 5) {
-                    selectedProducts = shuffle(expiringValidProducts).slice(0, 5);
-                }
-                else {
-                    const remaining = 5 - expiringValidProducts.length;
-                    selectedProducts = [
-                        ...expiringValidProducts,
-                        ...shuffle(otherValidProducts).slice(0, remaining),
-                    ];
-                }
-                // Lấy danh sách Stripe Product ID của các sản phẩm đã chọn
-                const productIds = selectedProducts.map((p) => p.id);
-                // Bắt đầu transaction để tạo voucher và cập nhật eventReward
-                yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-                    // Tạo voucher
-                    yield tx.voucher.create({
-                        data: Object.assign({ user_id: userId, discount_value: coupon.percent_off
-                                ? coupon.percent_off
-                                : coupon.amount_off, type: coupon.percent_off ? "PERCENT" : "AMOUNT", stripe_coupon_id: coupon.id, event_reward_id: eventRewardId }, (productIds.length > 0 && {
-                            voucherProducts: {
-                                create: productIds.map((productId) => ({
-                                    product_id: productId,
-                                })),
-                            },
-                        })),
-                    });
-                    // Giảm số lượng voucher đã phát cho phần thưởng sự kiện
-                    yield tx.eventReward.update({
-                        where: {
-                            id: eventRewardId,
-                        },
-                        data: {
-                            voucher_quantity: {
-                                decrement: 1,
-                            },
-                        },
-                    });
-                }));
+                // const today = new Date();
+                // const nineMonthsLater = new Date();
+                // nineMonthsLater.setMonth(today.getMonth() + 9);
+                // // Truy vấn danh sách sản phẩm có lô sắp hết hạn (trong vòng 9 tháng)
+                // const expiringBatches = await prisma.batch.findMany({
+                //   where: {
+                //     expired_at: { lte: nineMonthsLater },
+                //     current_stock: { gt: 0 },
+                //   },
+                //   select: { product_id: true },
+                //   distinct: ["product_id"],
+                // });
+                // const expiringProductIds = expiringBatches.map((b) => b.product_id);
+                // // Lấy toàn bộ sản phẩm hợp lệ có stripe_product_id
+                // const validProducts = await prisma.product.findMany({
+                //   where: {
+                //     stripe_product_id: { not: null },
+                //   },
+                //   select: { id: true, stripe_product_id: true },
+                // });
+                // // Tách sản phẩm thành 2 nhóm: sắp hết hạn và còn lại
+                // const expiringValidProducts = validProducts.filter((p) =>
+                //   expiringProductIds.includes(p.id)
+                // );
+                // const otherValidProducts = validProducts.filter(
+                //   (p) => !expiringProductIds.includes(p.id)
+                // );
+                // // Hàm trộn ngẫu nhiên
+                // function shuffle<T>(array: T[]): T[] {
+                //   return array.sort(() => Math.random() - 0.5);
+                // }
+                // // Lấy tối đa 5 sản phẩm ưu tiên từ nhóm sắp hết hạn
+                // let selectedProducts: typeof validProducts;
+                // if (expiringValidProducts.length >= 5) {
+                //   selectedProducts = shuffle(expiringValidProducts).slice(0, 5);
+                // } else {
+                //   const remaining = 5 - expiringValidProducts.length;
+                //   selectedProducts = [
+                //     ...expiringValidProducts,
+                //     ...shuffle(otherValidProducts).slice(0, remaining),
+                //   ];
+                // }
+                // // Lấy danh sách Stripe Product ID của các sản phẩm đã chọn
+                // const productIds = selectedProducts.map((p) => p.id);
+                // // Bắt đầu transaction để tạo voucher và cập nhật eventReward
+                // await prisma.$transaction(async (tx) => {
+                //   // Tạo voucher
+                //   await tx.voucher.create({
+                //     data: {
+                //       user_id: userId,
+                //       discount_value: coupon.percent_off
+                //         ? coupon.percent_off
+                //         : coupon.amount_off!,
+                //       type: coupon.percent_off ? "PERCENT" : "AMOUNT",
+                //       stripe_coupon_id: coupon.id,
+                //       event_reward_id: eventRewardId,
+                //       ...(productIds.length > 0 && {
+                //         voucherProducts: {
+                //           create: productIds.map((productId) => ({
+                //             product_id: productId,
+                //           })),
+                //         },
+                //       }),
+                //     },
+                //   });
+                //   // Giảm số lượng voucher đã phát cho phần thưởng sự kiện
+                //   await tx.eventReward.update({
+                //     where: {
+                //       id: eventRewardId,
+                //     },
+                //     data: {
+                //       voucher_quantity: {
+                //         decrement: 1,
+                //       },
+                //     },
+                //   });
+                // });
                 break;
             }
             default: {
@@ -362,14 +424,14 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         if (order.status !== "PROCESSING") {
             return next(new error_handler_1.ValidationError("You can only cancel orders that are processing!"));
         }
-        const refunds = yield stripe_1.default.refunds.create({
+        yield stripe_1.default.refunds.create({
             payment_intent: order.payment_intent_id,
             reason: "requested_by_customer",
         });
         // Cập nhật trạng thái đơn hàng
         yield prisma_1.default.order.update({
             where: { id },
-            data: { status: "CANCELLED" },
+            data: { status: "CANCELLED", payment_status: "REFUNDED" },
         });
         res.status(200).json({
             success: true,
@@ -388,14 +450,42 @@ const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
             where: { user_id: user.id },
             include: {
                 orderItems: true,
-                address: true,
+                address: {
+                    select: {
+                        address: true,
+                        city: true,
+                        pincode: true,
+                        phone: true,
+                        full_name: true,
+                    },
+                },
                 user: {
                     select: {
                         email: true,
                         name: true,
                     },
                 },
-                voucher: true,
+                voucher: {
+                    include: {
+                        voucherTemplate: {
+                            select: {
+                                discount_value: true,
+                                type: true,
+                                voucherProducts: {
+                                    select: {
+                                        product: {
+                                            select: {
+                                                id: true,
+                                                title: true,
+                                                image_url: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
         res.status(200).json({ success: true, orders });
@@ -415,11 +505,32 @@ const getOrderDetail = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 address: true,
                 user: {
                     select: {
+                        id: true,
                         email: true,
                         name: true,
                     },
                 },
-                voucher: true,
+                voucher: {
+                    include: {
+                        voucherTemplate: {
+                            select: {
+                                discount_value: true,
+                                type: true,
+                                voucherProducts: {
+                                    select: {
+                                        product: {
+                                            select: {
+                                                id: true,
+                                                title: true,
+                                                image_url: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!order) {
@@ -434,7 +545,26 @@ const getOrderDetail = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
 exports.getOrderDetail = getOrderDetail;
 const getAllOrders = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const orders = yield prisma_1.default.order.findMany();
+        const orders = yield prisma_1.default.order.findMany({
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                address: {
+                    select: {
+                        address: true,
+                        city: true,
+                        pincode: true,
+                        phone: true,
+                        full_name: true,
+                    },
+                },
+            },
+        });
         res.status(200).json({ success: true, orders });
     }
     catch (error) {
