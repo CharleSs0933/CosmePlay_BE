@@ -58,6 +58,17 @@ const getEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                                 type: true,
                                 user_limit: true,
                                 user_count: true,
+                                voucherProducts: {
+                                    select: {
+                                        product: {
+                                            select: {
+                                                id: true,
+                                                title: true,
+                                                image_url: true,
+                                            },
+                                        },
+                                    },
+                                },
                             },
                         },
                     },
@@ -71,7 +82,6 @@ const getEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                         type: true,
                         user_limit: true,
                         user_count: true,
-                        is_active: true,
                         voucherProducts: {
                             select: {
                                 product: {
@@ -79,7 +89,6 @@ const getEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
                                         id: true,
                                         title: true,
                                         image_url: true,
-                                        price: true,
                                     },
                                 },
                             },
