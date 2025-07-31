@@ -67,88 +67,79 @@ export const calculateReward = async (
 ) => {
   try {
     // 1. Tìm phần thưởng phù hợp
-
-    // 2. Lấy các sản phẩm sắp hết hạn trong 9 tháng tới
-    const today = new Date();
-    const nineMonthsLater = new Date();
-    nineMonthsLater.setMonth(today.getMonth() + 9);
-
-    const expiringBatches = await prisma.batch.findMany({
-      where: {
-        expired_at: { lte: nineMonthsLater },
-        current_stock: { gt: 0 },
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        voucherTemplates: {
+          where: { is_active: true },
+          orderBy: { created_at: "desc" },
+          include: {
+            voucherProducts: {
+              select: {
+                product: {
+                  select: {
+                    stripe_price_id: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
-      select: { product_id: true },
-      distinct: ["product_id"],
     });
 
-    const expiringProductIds = expiringBatches.map((b) => b.product_id);
-
-    // Lấy toàn bộ sản phẩm hợp lệ có stripe_product_id
-    const validProducts = await prisma.product.findMany({
-      where: {
-        stripe_product_id: { not: null },
-      },
-      select: { id: true, stripe_product_id: true },
-    });
-
-    // Hàm trộn ngẫu nhiên
-    function shuffle<T>(array: T[]): T[] {
-      return array.sort(() => Math.random() - 0.5);
+    if (!event) {
+      return next(new ValidationError("Event not found!"));
     }
-
-    // Tách danh sách sản phẩm sắp hết hạn và còn lại
-    const expiringValidProducts = validProducts.filter((p) =>
-      expiringProductIds.includes(p.id)
-    );
-    const otherValidProducts = validProducts.filter(
-      (p) => !expiringProductIds.includes(p.id)
+    // 2. Filter active voucher templates that haven't reached user_limit
+    const eligibleVoucherTemplates = event.voucherTemplates.filter(
+      (vt) => !vt.user_limit || vt.user_count < vt.user_limit
     );
 
-    // Lấy sản phẩm ngẫu nhiên theo đúng yêu cầu
-    let selectedProducts: typeof validProducts = [];
-
-    if (expiringValidProducts.length >= 5) {
-      selectedProducts = shuffle(expiringValidProducts).slice(0, 5);
-    } else {
-      const remaining = 5 - expiringValidProducts.length;
-      selectedProducts = [
-        ...expiringValidProducts,
-        ...shuffle(otherValidProducts).slice(0, remaining),
-      ];
+    if (eligibleVoucherTemplates.length === 0) {
+      return next(new ValidationError("No eligible vouchers available"));
     }
 
-    const stripeProductIds = selectedProducts.map((p) => p.stripe_product_id!);
+    // 3. Select a random voucher template
+    const randomIndex = Math.floor(
+      Math.random() * eligibleVoucherTemplates.length
+    );
+    const selectedVoucherTemplate = eligibleVoucherTemplates[randomIndex];
 
-    // 3. Tạo dữ liệu Coupon trên Stripe
+    // 4. Get applicable product IDs for the Stripe coupon
+    const stripeProductIds = selectedVoucherTemplate.voucherProducts.map(
+      (vp) => vp.product.stripe_price_id!
+    );
+
+    // 5. Tạo dữ liệu Coupon trên Stripe
     const couponData: Stripe.CouponCreateParams = {
-      max_redemptions: 1,
+      max_redemptions: 5,
       metadata: {
         userId: user.id,
         eventId,
-        // eventRewardId: eventReward.id,
+        voucherTemplateId: selectedVoucherTemplate.id,
       },
+      applies_to: {
+        products: stripeProductIds,
+      },
+      redeem_by: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Hết hạn sau 7 ngày
     };
 
-    // ✅ Nếu có sản phẩm hợp lệ, chỉ áp dụng cho các sản phẩm đó
-    if (stripeProductIds.length > 0) {
-      couponData.applies_to = {
-        products: stripeProductIds,
-      };
+    // Set discount type
+    if (selectedVoucherTemplate.type === "PERCENT") {
+      couponData.percent_off = selectedVoucherTemplate.discount_value;
+    } else if (selectedVoucherTemplate.type === "AMOUNT") {
+      couponData.amount_off = selectedVoucherTemplate.discount_value * 100; // Convert to cents
+      couponData.currency = "vnd";
     }
-
-    // 4. Thêm loại giảm giá vào coupon
-    // if (eventReward.type === "PERCENT") {
-    //   couponData.percent_off = eventReward.discount_value;
-    // } else {
-    //   couponData.amount_off = eventReward.discount_value;
-    //   couponData.currency = "vnd";
-    // }
 
     // 5. Tạo Coupon trên Stripe
     await stripe.coupons.create(couponData);
 
-    return null;
+    return {
+      discountType: selectedVoucherTemplate.type,
+      discountValue: selectedVoucherTemplate.discount_value,
+    };
   } catch (error) {
     next(error);
   }

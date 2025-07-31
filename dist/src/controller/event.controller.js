@@ -373,10 +373,8 @@ const calculateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 
         const reward = yield (0, event_service_1.calculateReward)(user, event.id, correct_answers, next);
         res.status(200).json({
             success: true,
-            reward: reward !== null && reward !== void 0 ? reward : null,
-            message: reward
-                ? "Coupon created successfully!"
-                : "Not enough correct answers!",
+            message: "Voucher have been added to you successfully!",
+            reward,
         });
     }
     catch (error) {

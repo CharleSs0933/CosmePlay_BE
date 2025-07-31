@@ -463,10 +463,8 @@ export const calculateEventReward = async (
 
     res.status(200).json({
       success: true,
-      reward: reward ?? null,
-      message: reward
-        ? "Coupon created successfully!"
-        : "Not enough correct answers!",
+      message: "Voucher have been added to you successfully!",
+      reward,
     });
   } catch (error) {
     next(error);
