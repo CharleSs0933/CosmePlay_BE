@@ -82,16 +82,16 @@ const calculateReward = (user, eventId, correctAnswers, next) => __awaiter(void 
             },
         });
         if (!event) {
-            return next(new error_handler_1.ValidationError("Event not found!"));
+            throw new error_handler_1.ValidationError("Event not found!");
         }
         // Check correct answers and milestone points
         if (correctAnswers < event.milestone_score) {
-            return next(new error_handler_1.ValidationError("Not enough correct answers!"));
+            throw new error_handler_1.ValidationError("Not enough correct answers!");
         }
         // 2. Filter active voucher templates that haven't reached user_limit
         const eligibleVoucherTemplates = event.voucherTemplates.filter((vt) => !vt.user_limit || vt.user_count < vt.user_limit);
         if (eligibleVoucherTemplates.length === 0) {
-            return next(new error_handler_1.ValidationError("No eligible vouchers available"));
+            throw new error_handler_1.ValidationError("No eligible vouchers available");
         }
         // 3. Select a random voucher template
         const randomIndex = Math.floor(Math.random() * eligibleVoucherTemplates.length);

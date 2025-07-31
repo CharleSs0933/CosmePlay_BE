@@ -89,12 +89,12 @@ export const calculateReward = async (
     });
 
     if (!event) {
-      return next(new ValidationError("Event not found!"));
+      throw new ValidationError("Event not found!");
     }
 
     // Check correct answers and milestone points
     if (correctAnswers < event.milestone_score) {
-      return next(new ValidationError("Not enough correct answers!"));
+      throw new ValidationError("Not enough correct answers!");
     }
 
     // 2. Filter active voucher templates that haven't reached user_limit
@@ -103,7 +103,7 @@ export const calculateReward = async (
     );
 
     if (eligibleVoucherTemplates.length === 0) {
-      return next(new ValidationError("No eligible vouchers available"));
+      throw new ValidationError("No eligible vouchers available");
     }
 
     // 3. Select a random voucher template
