@@ -92,7 +92,7 @@ router.put(
   updateVoucherTemplate
 );
 router.delete(
-  ":id/voucher-templates/:templateId",
+  "/:id/voucher-templates/:templateId",
   isAdminOrStaff,
   deleteVoucherTemplate
 );
