@@ -83,14 +83,14 @@ router.get(
   isAdminOrStaff,
   getVoucherTemplate
 );
-router.post("/:id/voucher-template", isAdminOrStaff, addEventVoucherTemplate);
+router.post("/:id/voucher-templates", isAdminOrStaff, addEventVoucherTemplate);
 router.put(
-  ":id/voucher-template/:templateId",
+  ":id/voucher-templates/:templateId",
   isAdminOrStaff,
   updateLeaderboardReward
 );
 router.delete(
-  ":id/voucher-template/:templateId",
+  ":id/voucher-templates/:templateId",
   isAdminOrStaff,
   deleteLeaderboardReward
 );
