@@ -87,7 +87,7 @@ router.get(
 );
 router.post("/:id/voucher-templates", isAdminOrStaff, addEventVoucherTemplate);
 router.put(
-  ":id/voucher-templates/:templateId",
+  "/:id/voucher-templates/:templateId",
   isAdminOrStaff,
   updateVoucherTemplate
 );
