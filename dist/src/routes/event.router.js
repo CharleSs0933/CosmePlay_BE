@@ -39,4 +39,5 @@ router.delete("/:id/voucher-templates/:templateId", isAdminOrStaff, voucherTempl
 router.get("/:id/leaderboard", event_controller_1.getEventLeaderboard);
 router.post("/play", isAuthenticated_1.isAuthenticated, event_controller_1.playEvent);
 router.post("/:id/calculate-reward", isAuthenticated_1.isAuthenticated, event_controller_1.calculateEventReward);
+router.post("/:id/finalize", isAdminOrStaff, event_controller_1.finalizeEvent);
 exports.default = router;

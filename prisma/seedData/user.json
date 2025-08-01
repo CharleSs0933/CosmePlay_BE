@@ -11,5 +11,75 @@
     "email": "admin@gmail.com",
     "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
     "role": "ADMIN"
+  },
+  {
+    "id": "3",
+    "name": "john_doe",
+    "email": "john.doe@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "USER"
+  },
+  {
+    "id": "4",
+    "name": "jane_smith",
+    "email": "jane.smith@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "USER"
+  },
+  {
+    "id": "5",
+    "name": "alice_wong",
+    "email": "alice.wong@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "STAFF"
+  },
+  {
+    "id": "6",
+    "name": "bob_jones",
+    "email": "bob.jones@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "USER"
+  },
+  {
+    "id": "7",
+    "name": "emma_brown",
+    "email": "emma.brown@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "USER"
+  },
+  {
+    "id": "8",
+    "name": "david_lee",
+    "email": "david.lee@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "ADMIN"
+  },
+  {
+    "id": "9",
+    "name": "sarah_taylor",
+    "email": "sarah.taylor@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "USER"
+  },
+  {
+    "id": "10",
+    "name": "michael_clark",
+    "email": "michael.clark@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "STAFF"
+  },
+  {
+    "id": "11",
+    "name": "laura_martin",
+    "email": "laura.martin@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "USER"
+  },
+  {
+    "id": "12",
+    "name": "chris_wilson",
+    "email": "chris.wilson@gmail.com",
+    "password": "$2b$10$v6PET4nP.LZ/XpITbwf4keCk659oytdRDmuvWpFXUSzF8.nuvty9u",
+    "role": "USER"
   }
 ]

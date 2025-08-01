@@ -10,6 +10,7 @@ import {
   calculateEventReward,
   deleteEvent,
   deleteEventQuestion,
+  finalizeEvent,
   getAllEvents,
   getAllQuestionsByEvent,
   getEvent,
@@ -101,5 +102,6 @@ router.delete(
 router.get("/:id/leaderboard", getEventLeaderboard);
 router.post("/play", isAuthenticated, playEvent);
 router.post("/:id/calculate-reward", isAuthenticated, calculateEventReward);
+router.post("/:id/finalize", isAdminOrStaff, finalizeEvent);
 
 export default router;
