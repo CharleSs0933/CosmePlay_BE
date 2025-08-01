@@ -33,8 +33,8 @@ router.post("/:id/rewards/:rewardId/vouchers", isAdminOrStaff, leaderboardReward
 router.get("/:id/voucher-templates", isAdminOrStaff, voucherTemplate_controller_1.getAllVoucherTemplates);
 router.get("/:id/voucher-templates/:templateId", isAdminOrStaff, voucherTemplate_controller_1.getVoucherTemplate);
 router.post("/:id/voucher-templates", isAdminOrStaff, voucherTemplate_controller_1.addEventVoucherTemplate);
-router.put(":id/voucher-templates/:templateId", isAdminOrStaff, leaderboardReward_controller_1.updateLeaderboardReward);
-router.delete(":id/voucher-templates/:templateId", isAdminOrStaff, leaderboardReward_controller_1.deleteLeaderboardReward);
+router.put(":id/voucher-templates/:templateId", isAdminOrStaff, voucherTemplate_controller_1.updateVoucherTemplate);
+router.delete(":id/voucher-templates/:templateId", isAdminOrStaff, voucherTemplate_controller_1.deleteVoucherTemplate);
 // ========== Game Play Routes ==========
 router.get("/:id/leaderboard", event_controller_1.getEventLeaderboard);
 router.post("/play", isAuthenticated_1.isAuthenticated, event_controller_1.playEvent);

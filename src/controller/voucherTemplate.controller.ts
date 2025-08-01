@@ -170,7 +170,8 @@ export const addEventVoucherTemplate = async (
 ) => {
   try {
     const { id } = req.params;
-    const { discount_value, type, user_limit, productIds } = req.body;
+    const { discount_value, type, user_limit, min_order_amount, productIds } =
+      req.body;
 
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) {
@@ -207,6 +208,7 @@ export const addEventVoucherTemplate = async (
         discount_value,
         type,
         user_limit,
+        min_order_amount,
         event_id: id,
         voucherProducts: {
           create: productIds.map((productId: string) => ({

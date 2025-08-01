@@ -29,8 +29,10 @@ import {
 } from "../controller/leaderboardReward.controller";
 import {
   addEventVoucherTemplate,
+  deleteVoucherTemplate,
   getAllVoucherTemplates,
   getVoucherTemplate,
+  updateVoucherTemplate,
 } from "../controller/voucherTemplate.controller";
 
 const router = express.Router();
@@ -87,12 +89,12 @@ router.post("/:id/voucher-templates", isAdminOrStaff, addEventVoucherTemplate);
 router.put(
   ":id/voucher-templates/:templateId",
   isAdminOrStaff,
-  updateLeaderboardReward
+  updateVoucherTemplate
 );
 router.delete(
   ":id/voucher-templates/:templateId",
   isAdminOrStaff,
-  deleteLeaderboardReward
+  deleteVoucherTemplate
 );
 
 // ========== Game Play Routes ==========

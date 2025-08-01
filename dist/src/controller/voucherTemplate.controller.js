@@ -165,7 +165,7 @@ exports.getVoucherTemplate = getVoucherTemplate;
 const addEventVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { discount_value, type, user_limit, productIds } = req.body;
+        const { discount_value, type, user_limit, min_order_amount, productIds } = req.body;
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
@@ -195,6 +195,7 @@ const addEventVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, vo
                 discount_value,
                 type,
                 user_limit,
+                min_order_amount,
                 event_id: id,
                 voucherProducts: {
                     create: productIds.map((productId) => ({
