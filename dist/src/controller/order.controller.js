@@ -143,7 +143,7 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
 });
 exports.createCheckoutSession = createCheckoutSession;
 const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d;
     try {
         const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
         const sig = req.headers["stripe-signature"];
@@ -307,37 +307,6 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                         },
                     });
                 }
-                break;
-            }
-            case `coupon.created`: {
-                const coupon = event.data.object;
-                const userId = (_e = coupon.metadata) === null || _e === void 0 ? void 0 : _e.userId;
-                const eventId = (_f = coupon.metadata) === null || _f === void 0 ? void 0 : _f.eventId;
-                const voucherTemplateId = (_g = coupon.metadata) === null || _g === void 0 ? void 0 : _g.voucherTemplateId;
-                // Kiểm tra thông tin bắt buộc
-                if (!userId || !eventId || !voucherTemplateId) {
-                    return next(new error_handler_1.ValidationError("Missing metadata!"));
-                }
-                // 7 date days from now
-                const today = new Date();
-                const expiredAt = today.setDate(today.getDate() + 7);
-                // Tạo voucher
-                yield prisma_1.default.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-                    yield tx.voucher.create({
-                        data: {
-                            user_id: userId,
-                            voucher_template_id: voucherTemplateId,
-                            stripe_coupon_id: coupon.id,
-                            expired_at: new Date(expiredAt),
-                        },
-                    });
-                    yield prisma_1.default.voucherTemplate.update({
-                        where: { id: voucherTemplateId },
-                        data: {
-                            user_count: { increment: 1 },
-                        },
-                    });
-                }));
                 break;
             }
             case `charge.updated`: {

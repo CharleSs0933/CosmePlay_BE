@@ -131,6 +131,24 @@ export const addLeaderboardReward = async (
       );
     }
 
+    const overlappingRewards = await prisma.leaderboardReward.findMany({
+      where: {
+        event_id: id,
+        OR: [
+          {
+            rank_from: { lte: rank_to },
+            rank_to: { gte: rank_from },
+          },
+        ],
+      },
+    });
+
+    if (overlappingRewards.length > 0) {
+      return next(
+        new ValidationError("Rank range overlaps with existing reward!")
+      );
+    }
+
     const reward = await prisma.leaderboardReward.create({
       data: {
         event_id: id,
@@ -288,8 +306,7 @@ export const addVoucherToLeaderboardReward = async (
 ) => {
   try {
     const { id, rewardId } = req.params;
-    const { discount_value, type, user_limit, productIds, min_order_amount } =
-      req.body;
+    const { discount_value, type, productIds, min_order_amount } = req.body;
 
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) {
@@ -317,7 +334,7 @@ export const addVoucherToLeaderboardReward = async (
       );
     }
 
-    if (!discount_value || !type || !user_limit) {
+    if (!discount_value || !type) {
       return next(new ValidationError("Missing required fields!"));
     }
 
@@ -325,7 +342,7 @@ export const addVoucherToLeaderboardReward = async (
       return next(new ValidationError("Invalid voucher type!"));
     }
 
-    if (!Array.isArray(productIds) || productIds.length === 0) {
+    if (!Array.isArray(productIds)) {
       return next(new ValidationError("Invalid product IDs!"));
     }
 
@@ -346,7 +363,7 @@ export const addVoucherToLeaderboardReward = async (
       data: {
         discount_value,
         type,
-        user_limit,
+        user_limit: reward.rank_to - reward.rank_from + 1,
         min_order_amount: min_order_amount || 0,
         leaderboard_reward_id: rewardId,
         voucherProducts: {

@@ -9,15 +9,33 @@ export const getAllVoucherTemplates = async (
 ) => {
   try {
     const { id } = req.params;
-    const { is_active, type } = req.query;
+    const { is_active, type, include_leaderboard } = req.query;
 
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) {
       return next(new ValidationError("Event not found!"));
     }
 
-    const where: any = { event_id: id };
-    if (is_active !== undefined) where.is_active = is_active === "true";
+    const where: any = {};
+
+    // Include both event vouchers and leaderboard reward vouchers
+    if (include_leaderboard === "true") {
+      where.OR = [
+        { event_id: id },
+        {
+          leaderboardReward: {
+            event_id: id,
+          },
+        },
+      ];
+    } else {
+      // Only event vouchers (excluding leaderboard reward vouchers)
+      where.event_id = id;
+      where.leaderboard_reward_id = undefined;
+    }
+
+    if (is_active !== undefined)
+      where.is_active = is_active === "true" ? true : undefined;
     if (type) where.type = type;
 
     const voucherTemplates = await prisma.voucherTemplate.findMany({
@@ -34,6 +52,14 @@ export const getAllVoucherTemplates = async (
                 sale_price: true,
               },
             },
+          },
+        },
+        leaderboardReward: {
+          select: {
+            id: true,
+            title: true,
+            rank_from: true,
+            rank_to: true,
           },
         },
         _count: {
@@ -66,8 +92,19 @@ export const getVoucherTemplate = async (
       return next(new ValidationError("Event not found!"));
     }
 
-    const voucherTemplate = await prisma.voucherTemplate.findUnique({
-      where: { id: templateId, event_id: id },
+    // Find template that belongs to this event (either directly or through leaderboard reward)
+    const voucherTemplate = await prisma.voucherTemplate.findFirst({
+      where: {
+        id: templateId,
+        OR: [
+          { event_id: id },
+          {
+            leaderboardReward: {
+              event_id: id,
+            },
+          },
+        ],
+      },
       include: {
         voucherProducts: {
           select: {
@@ -81,6 +118,15 @@ export const getVoucherTemplate = async (
                 product_code: true,
               },
             },
+          },
+        },
+        leaderboardReward: {
+          select: {
+            id: true,
+            title: true,
+            rank_from: true,
+            rank_to: true,
+            event_id: true,
           },
         },
         vouchers: {
@@ -139,7 +185,7 @@ export const addEventVoucherTemplate = async (
       return next(new ValidationError("Invalid voucher type!"));
     }
 
-    if (!Array.isArray(productIds) || productIds.length === 0) {
+    if (!Array.isArray(productIds)) {
       return next(new ValidationError("Invalid product IDs!"));
     }
 
@@ -151,6 +197,7 @@ export const addEventVoucherTemplate = async (
         },
       },
     });
+
     if (products.length !== productIds.length) {
       return next(new ValidationError("Some products do not exist!"));
     }
@@ -196,8 +243,18 @@ export const updateVoucherTemplate = async (
       return next(new ValidationError("Event not found!"));
     }
 
-    const existingTemplate = await prisma.voucherTemplate.findUnique({
-      where: { id: templateId, event_id: id },
+    const existingTemplate = await prisma.voucherTemplate.findFirst({
+      where: {
+        id: templateId,
+        OR: [
+          { event_id: id },
+          {
+            leaderboardReward: {
+              event_id: id,
+            },
+          },
+        ],
+      },
       include: {
         _count: {
           select: {
@@ -213,9 +270,17 @@ export const updateVoucherTemplate = async (
             },
           },
         },
-        leaderboardReward: true,
+        leaderboardReward: {
+          select: {
+            id: true,
+            title: true,
+            rank_from: true,
+            rank_to: true,
+          },
+        },
       },
     });
+
     if (!existingTemplate) {
       return next(new ValidationError("Voucher template not found!"));
     }
@@ -249,7 +314,7 @@ export const updateVoucherTemplate = async (
 
     // Validate and check products if productIds provided and no vouchers exist
     if (productIds && !hasVouchers) {
-      if (!Array.isArray(productIds) || productIds.length === 0) {
+      if (!Array.isArray(productIds)) {
         return next(new ValidationError("Invalid product IDs!"));
       }
 
@@ -358,12 +423,29 @@ export const deleteVoucherTemplate = async (
       return next(new ValidationError("Event not found!"));
     }
 
-    const voucherTemplate = await prisma.voucherTemplate.findUnique({
-      where: { id: templateId, event_id: id },
+    // Find template that belongs to this event (either directly or through leaderboard reward)
+    const voucherTemplate = await prisma.voucherTemplate.findFirst({
+      where: {
+        id: templateId,
+        OR: [
+          { event_id: id },
+          {
+            leaderboardReward: {
+              event_id: id,
+            },
+          },
+        ],
+      },
       include: {
         _count: {
           select: {
             vouchers: true,
+          },
+        },
+        leaderboardReward: {
+          select: {
+            id: true,
+            title: true,
           },
         },
       },
@@ -383,9 +465,15 @@ export const deleteVoucherTemplate = async (
     }
 
     await prisma.voucherTemplate.delete({ where: { id: templateId } });
-    res
-      .status(200)
-      .json({ success: true, message: "Voucher template deleted!" });
+
+    const templateType = voucherTemplate.leaderboardReward
+      ? `leaderboard reward "${voucherTemplate.leaderboardReward.title}"`
+      : "event";
+
+    res.status(200).json({
+      success: true,
+      message: `Voucher template from ${templateType} deleted!`,
+    });
   } catch (error) {
     next(error);
   }

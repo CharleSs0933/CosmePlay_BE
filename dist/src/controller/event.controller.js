@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getEventLeaderboard = exports.calculateEventReward = exports.playEvent = exports.deleteEventQuestion = exports.updateEventQuestion = exports.addEventQuestion = exports.getRandomQuestions = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
+exports.finalizeEvent = exports.getEventLeaderboard = exports.calculateEventReward = exports.playEvent = exports.deleteEventQuestion = exports.updateEventQuestion = exports.addEventQuestion = exports.getRandomQuestions = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
 const error_handler_1 = require("../packages/error-handler");
+const stripe_1 = __importDefault(require("../libs/stripe"));
 // ========== EVENT MANAGEMENT APIs ==========
 const getAllEvents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -365,17 +366,13 @@ const calculateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 
     try {
         const user = req.user;
         const { id } = req.params;
-        const { correct_answers } = req.body;
+        const { correct_answers, completion_time } = req.body; // Thêm completion_time
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
-        const reward = yield (0, event_service_1.calculateReward)(user, event.id, correct_answers, next);
-        res.status(200).json({
-            success: true,
-            message: "Voucher have been added to you successfully!",
-            reward,
-        });
+        const result = yield (0, event_service_1.calculateReward)(user, event.id, correct_answers, completion_time);
+        res.status(200).json(Object.assign({ success: true }, result));
     }
     catch (error) {
         next(error);
@@ -492,3 +489,181 @@ const getEventLeaderboard = (req, res, next) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.getEventLeaderboard = getEventLeaderboard;
+// API tổng kết và kết thúc event
+const finalizeEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { id } = req.params;
+        const { force_finalize = false } = req.body;
+        const event = yield prisma_1.default.event.findUnique({
+            where: { id },
+            include: {
+                leaderboardReward: {
+                    where: { is_active: true },
+                    include: {
+                        voucherTemplates: {
+                            where: { is_active: true },
+                            include: {
+                                voucherProducts: {
+                                    select: {
+                                        product: {
+                                            select: {
+                                                stripe_product_id: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    orderBy: { rank_from: "asc" },
+                },
+            },
+        });
+        if (!event) {
+            return next(new error_handler_1.ValidationError("Event not found!"));
+        }
+        // Check if event has ended (optional check, can be overridden with force_finalize)
+        if (!force_finalize && new Date() < event.end_time) {
+            return next(new error_handler_1.ValidationError("Event has not ended yet! Use force_finalize=true to override."));
+        }
+        // Get final leaderboard
+        const allScores = yield prisma_1.default.eventScore.findMany({
+            where: { event_id: id },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: [
+                { score: "desc" },
+                { completion_time: "asc" },
+                { completed_at: "asc" },
+            ],
+        });
+        if (allScores.length === 0) {
+            return next(new error_handler_1.ValidationError("No participants found for this event!"));
+        }
+        const distributionResults = [];
+        let totalVouchersDistributed = 0;
+        const errors = [];
+        // Process each leaderboard reward
+        for (const leaderboardReward of event.leaderboardReward) {
+            if (leaderboardReward.voucherTemplates.length === 0) {
+                continue;
+            }
+            // Get eligible participants for this reward tier
+            const eligibleParticipants = allScores.slice(leaderboardReward.rank_from - 1, leaderboardReward.rank_to);
+            if (eligibleParticipants.length === 0) {
+                continue;
+            }
+            const voucherTemplate = leaderboardReward.voucherTemplates[0]; // Assuming one template per reward
+            // Check which users haven't received vouchers for this reward yet
+            const existingVouchers = yield prisma_1.default.voucher.findMany({
+                where: {
+                    voucher_template_id: voucherTemplate.id,
+                },
+                select: {
+                    user_id: true,
+                },
+            });
+            const existingUserIds = new Set(existingVouchers.map((v) => v.user_id));
+            const newEligibleParticipants = eligibleParticipants.filter((p) => !existingUserIds.has(p.user.id));
+            if (newEligibleParticipants.length === 0) {
+                continue;
+            }
+            // Get applicable product IDs for the Stripe coupon
+            const stripeProductIds = voucherTemplate.voucherProducts
+                .map((vp) => vp.product.stripe_product_id)
+                .filter(Boolean);
+            // Create vouchers for each eligible participant
+            for (const participant of newEligibleParticipants) {
+                try {
+                    // Create Stripe coupon
+                    const couponData = {
+                        max_redemptions: 1,
+                        metadata: {
+                            userId: participant.user.id,
+                            eventId: id,
+                            voucherTemplateId: voucherTemplate.id,
+                            leaderboardRewardId: leaderboardReward.id,
+                            rank: (allScores.indexOf(participant) + 1).toString(),
+                        },
+                        redeem_by: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // 30 days expiry
+                    };
+                    // Set discount type
+                    if (voucherTemplate.type === "PERCENT") {
+                        couponData.percent_off = voucherTemplate.discount_value;
+                    }
+                    else if (voucherTemplate.type === "AMOUNT") {
+                        couponData.amount_off = voucherTemplate.discount_value;
+                        couponData.currency = "vnd";
+                    }
+                    // Set applicable products for the coupon
+                    if (stripeProductIds.length > 0) {
+                        couponData.applies_to = { products: stripeProductIds };
+                    }
+                    const stripeCoupon = yield stripe_1.default.coupons.create(couponData);
+                    // Create voucher record in database
+                    yield prisma_1.default.voucher.create({
+                        data: {
+                            voucher_template_id: voucherTemplate.id,
+                            stripe_coupon_id: stripeCoupon.id,
+                            user_id: participant.user.id,
+                            expired_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+                        },
+                    });
+                    totalVouchersDistributed++;
+                    distributionResults.push({
+                        user: participant.user,
+                        rank: allScores.indexOf(participant) + 1,
+                        score: participant.score,
+                        completion_time: participant.completion_time,
+                        reward: {
+                            title: leaderboardReward.title,
+                            discount_type: voucherTemplate.type,
+                            discount_value: voucherTemplate.discount_value,
+                            rank_range: `${leaderboardReward.rank_from}-${leaderboardReward.rank_to}`,
+                        },
+                        voucher_id: stripeCoupon.id,
+                    });
+                }
+                catch (error) {
+                    next(`Failed to create voucher for user ${participant.user.id}: ${error}`);
+                }
+            }
+            // Update user_count for this voucher template
+            yield prisma_1.default.voucherTemplate.update({
+                where: { id: voucherTemplate.id },
+                data: {
+                    user_count: {
+                        increment: newEligibleParticipants.length,
+                    },
+                },
+            });
+        }
+        // Mark event as inactive after finalization
+        yield prisma_1.default.event.update({
+            where: { id },
+            data: {
+                is_active: false,
+            },
+        });
+        res.status(200).json(Object.assign({ success: true, message: "Event finalized and rewards distributed successfully!", summary: {
+                event_title: event.title,
+                total_participants: allScores.length,
+                total_vouchers_distributed: totalVouchersDistributed,
+                rewards_distributed: distributionResults.length,
+                errors_count: errors.length,
+                event_status: "finalized",
+                finalized_at: new Date().toISOString(),
+            }, distribution_details: distributionResults }, (errors.length > 0 && { errors })));
+    }
+    catch (error) {
+        next(error);
+    }
+});
+exports.finalizeEvent = finalizeEvent;

@@ -18,14 +18,30 @@ const prisma_1 = __importDefault(require("../libs/prisma"));
 const getAllVoucherTemplates = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { is_active, type } = req.query;
+        const { is_active, type, include_leaderboard } = req.query;
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
-        const where = { event_id: id };
+        const where = {};
+        // Include both event vouchers and leaderboard reward vouchers
+        if (include_leaderboard === "true") {
+            where.OR = [
+                { event_id: id },
+                {
+                    leaderboardReward: {
+                        event_id: id,
+                    },
+                },
+            ];
+        }
+        else {
+            // Only event vouchers (excluding leaderboard reward vouchers)
+            where.event_id = id;
+            where.leaderboard_reward_id = undefined;
+        }
         if (is_active !== undefined)
-            where.is_active = is_active === "true";
+            where.is_active = is_active === "true" ? true : undefined;
         if (type)
             where.type = type;
         const voucherTemplates = yield prisma_1.default.voucherTemplate.findMany({
@@ -42,6 +58,14 @@ const getAllVoucherTemplates = (req, res, next) => __awaiter(void 0, void 0, voi
                                 sale_price: true,
                             },
                         },
+                    },
+                },
+                leaderboardReward: {
+                    select: {
+                        id: true,
+                        title: true,
+                        rank_from: true,
+                        rank_to: true,
                     },
                 },
                 _count: {
@@ -68,8 +92,19 @@ const getVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
-        const voucherTemplate = yield prisma_1.default.voucherTemplate.findUnique({
-            where: { id: templateId, event_id: id },
+        // Find template that belongs to this event (either directly or through leaderboard reward)
+        const voucherTemplate = yield prisma_1.default.voucherTemplate.findFirst({
+            where: {
+                id: templateId,
+                OR: [
+                    { event_id: id },
+                    {
+                        leaderboardReward: {
+                            event_id: id,
+                        },
+                    },
+                ],
+            },
             include: {
                 voucherProducts: {
                     select: {
@@ -83,6 +118,15 @@ const getVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0,
                                 product_code: true,
                             },
                         },
+                    },
+                },
+                leaderboardReward: {
+                    select: {
+                        id: true,
+                        title: true,
+                        rank_from: true,
+                        rank_to: true,
+                        event_id: true,
                     },
                 },
                 vouchers: {
@@ -132,7 +176,7 @@ const addEventVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, vo
         if (type !== "PERCENT" && type !== "AMOUNT") {
             return next(new error_handler_1.ValidationError("Invalid voucher type!"));
         }
-        if (!Array.isArray(productIds) || productIds.length === 0) {
+        if (!Array.isArray(productIds)) {
             return next(new error_handler_1.ValidationError("Invalid product IDs!"));
         }
         // Check if products exist
@@ -174,8 +218,18 @@ const updateVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
-        const existingTemplate = yield prisma_1.default.voucherTemplate.findUnique({
-            where: { id: templateId, event_id: id },
+        const existingTemplate = yield prisma_1.default.voucherTemplate.findFirst({
+            where: {
+                id: templateId,
+                OR: [
+                    { event_id: id },
+                    {
+                        leaderboardReward: {
+                            event_id: id,
+                        },
+                    },
+                ],
+            },
             include: {
                 _count: {
                     select: {
@@ -191,7 +245,14 @@ const updateVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void
                         },
                     },
                 },
-                leaderboardReward: true,
+                leaderboardReward: {
+                    select: {
+                        id: true,
+                        title: true,
+                        rank_from: true,
+                        rank_to: true,
+                    },
+                },
             },
         });
         if (!existingTemplate) {
@@ -217,7 +278,7 @@ const updateVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void
         }
         // Validate and check products if productIds provided and no vouchers exist
         if (productIds && !hasVouchers) {
-            if (!Array.isArray(productIds) || productIds.length === 0) {
+            if (!Array.isArray(productIds)) {
                 return next(new error_handler_1.ValidationError("Invalid product IDs!"));
             }
             const products = yield prisma_1.default.product.findMany({
@@ -312,12 +373,29 @@ const deleteVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
         }
-        const voucherTemplate = yield prisma_1.default.voucherTemplate.findUnique({
-            where: { id: templateId, event_id: id },
+        // Find template that belongs to this event (either directly or through leaderboard reward)
+        const voucherTemplate = yield prisma_1.default.voucherTemplate.findFirst({
+            where: {
+                id: templateId,
+                OR: [
+                    { event_id: id },
+                    {
+                        leaderboardReward: {
+                            event_id: id,
+                        },
+                    },
+                ],
+            },
             include: {
                 _count: {
                     select: {
                         vouchers: true,
+                    },
+                },
+                leaderboardReward: {
+                    select: {
+                        id: true,
+                        title: true,
                     },
                 },
             },
@@ -330,9 +408,13 @@ const deleteVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void
             return next(new error_handler_1.ValidationError("Cannot delete voucher template that has been used by users!"));
         }
         yield prisma_1.default.voucherTemplate.delete({ where: { id: templateId } });
-        res
-            .status(200)
-            .json({ success: true, message: "Voucher template deleted!" });
+        const templateType = voucherTemplate.leaderboardReward
+            ? `leaderboard reward "${voucherTemplate.leaderboardReward.title}"`
+            : "event";
+        res.status(200).json({
+            success: true,
+            message: `Voucher template from ${templateType} deleted!`,
+        });
     }
     catch (error) {
         next(error);

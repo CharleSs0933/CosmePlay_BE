@@ -63,9 +63,9 @@ export const calculateReward = async (
   user: any,
   eventId: string,
   correctAnswers: number,
-  next: NextFunction
+  completionTime?: number // Thời gian hoàn thành (giây)
 ) => {
-  // 1. Tìm phần thưởng phù hợp
+  // 1. Tìm event và kiểm tra tồn tại
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     include: {
@@ -91,41 +91,115 @@ export const calculateReward = async (
     throw new ValidationError("Event not found!");
   }
 
-  // Check correct answers and milestone points
-  if (correctAnswers < event.milestone_score) {
-    throw new ValidationError("Not enough correct answers!");
+  // 2. Kiểm tra xem user đã có điểm cho event này chưa
+  const existingScore = await prisma.eventScore.findUnique({
+    where: {
+      user_id_event_id: {
+        user_id: user.id,
+        event_id: eventId,
+      },
+    },
+  });
+
+  let eventScore;
+  let isNewHighScore = false;
+  let previousBestScore = 0;
+
+  if (existingScore) {
+    previousBestScore = existingScore.score;
+
+    // Chỉ cập nhật nếu điểm mới cao hơn hoặc (điểm bằng nhau nhưng thời gian hoàn thành nhanh hơn)
+    const shouldUpdate =
+      correctAnswers > existingScore.score ||
+      (correctAnswers === existingScore.score &&
+        completionTime &&
+        existingScore.completion_time &&
+        completionTime < existingScore.completion_time);
+
+    if (shouldUpdate) {
+      eventScore = await prisma.eventScore.update({
+        where: {
+          user_id_event_id: {
+            user_id: user.id,
+            event_id: eventId,
+          },
+        },
+        data: {
+          score: correctAnswers,
+          completion_time: completionTime || existingScore.completion_time,
+          completed_at: new Date(),
+        },
+      });
+      isNewHighScore = true;
+    } else {
+      eventScore = existingScore;
+      // Không phải high score mới, isNewHighScore vẫn là false
+    }
+  } else {
+    // Lần đầu chơi - tạo mới
+    previousBestScore = 0; // Chưa có điểm trước đó
+    eventScore = await prisma.eventScore.create({
+      data: {
+        user_id: user.id,
+        event_id: eventId,
+        score: correctAnswers,
+        completion_time: completionTime || null,
+        completed_at: new Date(),
+      },
+    });
+    isNewHighScore = true; // Lần đầu chơi luôn là high score
   }
 
-  // 2. Filter active voucher templates that haven't reached user_limit
+  // 3. Kiểm tra điểm số có đạt milestone không
+  if (correctAnswers < event.milestone_score) {
+    // Không đủ điểm để nhận thưởng nhưng vẫn lưu điểm
+    return {
+      score: correctAnswers,
+      previous_best_score: previousBestScore,
+      is_new_high_score: isNewHighScore,
+      milestone_reached: false,
+      required_score: event.milestone_score,
+      message: isNewHighScore
+        ? "New high score saved but milestone not reached. No reward given."
+        : "Score saved but milestone not reached. No reward given.",
+    };
+  }
+
+  // 5. Filter active voucher templates that haven't reached user_limit
   const eligibleVoucherTemplates = event.voucherTemplates.filter(
     (vt) => !vt.user_limit || vt.user_count < vt.user_limit
   );
 
   if (eligibleVoucherTemplates.length === 0) {
-    throw new ValidationError("No eligible vouchers available");
+    // Đạt milestone nhưng không còn voucher
+    return {
+      score: correctAnswers,
+      previous_best_score: previousBestScore,
+      is_new_high_score: isNewHighScore,
+      milestone_reached: true,
+      message: "Milestone reached but no vouchers available.",
+    };
   }
 
-  // 3. Select a random voucher template
+  // 6. Select a random voucher template
   const randomIndex = Math.floor(
     Math.random() * eligibleVoucherTemplates.length
   );
   const selectedVoucherTemplate = eligibleVoucherTemplates[randomIndex];
 
-  // 4. Get applicable product IDs for the Stripe coupon
+  // 7. Get applicable product IDs for the Stripe coupon
   const stripeProductIds = selectedVoucherTemplate.voucherProducts.map(
     (vp) => vp.product.stripe_product_id!
   );
 
-  // 5. Tạo dữ liệu Coupon trên Stripe
+  // 8. Tạo dữ liệu Coupon trên Stripe
   const couponData: Stripe.CouponCreateParams = {
-    max_redemptions: 5,
+    max_redemptions: 1, // Mỗi coupon chỉ dùng được 1 lần
     metadata: {
       userId: user.id,
       eventId,
       voucherTemplateId: selectedVoucherTemplate.id,
-    },
-    applies_to: {
-      products: stripeProductIds,
+      eventScoreId: eventScore.id, // Thêm reference đến event score
     },
     redeem_by: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Hết hạn sau 7 ngày
   };
@@ -134,15 +208,63 @@ export const calculateReward = async (
   if (selectedVoucherTemplate.type === "PERCENT") {
     couponData.percent_off = selectedVoucherTemplate.discount_value;
   } else if (selectedVoucherTemplate.type === "AMOUNT") {
-    couponData.amount_off = selectedVoucherTemplate.discount_value; // Convert to cents
+    couponData.amount_off = selectedVoucherTemplate.discount_value;
     couponData.currency = "vnd";
   }
 
-  // 5. Tạo Coupon trên Stripe
-  await stripe.coupons.create(couponData);
+  // Set applicable products for the coupon
+  if (stripeProductIds && stripeProductIds.length > 0) {
+    couponData.applies_to = { products: stripeProductIds };
+  }
+
+  // 9. Tạo Coupon trên Stripe
+  const stripeCoupon = await stripe.coupons.create(couponData);
+
+  // 10. Tạo voucher record trong database
+  const voucher = await prisma.voucher.create({
+    data: {
+      voucher_template_id: selectedVoucherTemplate.id,
+      stripe_coupon_id: stripeCoupon.id,
+      user_id: user.id,
+      expired_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày
+    },
+  });
+
+  // 11. Cập nhật user_count của voucher template
+  await prisma.voucherTemplate.update({
+    where: { id: selectedVoucherTemplate.id },
+    data: {
+      user_count: {
+        increment: 1,
+      },
+    },
+  });
 
   return {
-    discountType: selectedVoucherTemplate.type,
-    discountValue: selectedVoucherTemplate.discount_value,
+    score: correctAnswers,
+    previous_best_score: previousBestScore,
+    is_new_high_score: isNewHighScore,
+    milestone_reached: true,
+    eventScore: {
+      id: eventScore.id,
+      score: eventScore.score,
+      completion_time: eventScore.completion_time,
+      completed_at: eventScore.completed_at,
+    },
+    voucher: {
+      id: voucher.id,
+      stripe_coupon_id: voucher.stripe_coupon_id,
+      expired_at: voucher.expired_at,
+    },
+    reward: {
+      discountType: selectedVoucherTemplate.type,
+      discountValue: selectedVoucherTemplate.discount_value,
+      applicableProducts: selectedVoucherTemplate.voucherProducts.map((vp) => ({
+        id: vp.product.stripe_product_id,
+      })),
+    },
+    message: isNewHighScore
+      ? "Congratulations! New high score and you've earned a voucher reward!"
+      : "Congratulations! You've earned a voucher reward!",
   };
 };

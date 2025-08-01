@@ -364,43 +364,6 @@ export const stripeWebhooks = async (
         break;
       }
 
-      case `coupon.created`: {
-        const coupon = event.data.object as Stripe.Coupon;
-
-        const userId = coupon.metadata?.userId;
-        const eventId = coupon.metadata?.eventId;
-        const voucherTemplateId = coupon.metadata?.voucherTemplateId;
-
-        // Kiểm tra thông tin bắt buộc
-        if (!userId || !eventId || !voucherTemplateId) {
-          return next(new ValidationError("Missing metadata!"));
-        }
-
-        // 7 date days from now
-        const today = new Date();
-        const expiredAt = today.setDate(today.getDate() + 7);
-
-        // Tạo voucher
-        await prisma.$transaction(async (tx) => {
-          await tx.voucher.create({
-            data: {
-              user_id: userId,
-              voucher_template_id: voucherTemplateId,
-              stripe_coupon_id: coupon.id,
-              expired_at: new Date(expiredAt),
-            },
-          });
-
-          await prisma.voucherTemplate.update({
-            where: { id: voucherTemplateId },
-            data: {
-              user_count: { increment: 1 },
-            },
-          });
-        });
-
-        break;
-      }
       case `charge.updated`: {
         const charge = event.data.object as Stripe.Charge;
 

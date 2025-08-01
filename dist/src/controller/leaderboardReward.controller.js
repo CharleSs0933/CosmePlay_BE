@@ -120,6 +120,20 @@ const addLeaderboardReward = (req, res, next) => __awaiter(void 0, void 0, void 
         if (rank_from > rank_to) {
             return next(new error_handler_1.ValidationError("rank_from must be less than or equal to rank_to!"));
         }
+        const overlappingRewards = yield prisma_1.default.leaderboardReward.findMany({
+            where: {
+                event_id: id,
+                OR: [
+                    {
+                        rank_from: { lte: rank_to },
+                        rank_to: { gte: rank_from },
+                    },
+                ],
+            },
+        });
+        if (overlappingRewards.length > 0) {
+            return next(new error_handler_1.ValidationError("Rank range overlaps with existing reward!"));
+        }
         const reward = yield prisma_1.default.leaderboardReward.create({
             data: {
                 event_id: id,
@@ -238,7 +252,7 @@ exports.deleteLeaderboardReward = deleteLeaderboardReward;
 const addVoucherToLeaderboardReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id, rewardId } = req.params;
-        const { discount_value, type, user_limit, productIds, min_order_amount } = req.body;
+        const { discount_value, type, productIds, min_order_amount } = req.body;
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
@@ -258,13 +272,13 @@ const addVoucherToLeaderboardReward = (req, res, next) => __awaiter(void 0, void
         if (reward.voucherTemplates.length > 0) {
             return next(new error_handler_1.ValidationError("Leaderboard reward already has an active voucher template!"));
         }
-        if (!discount_value || !type || !user_limit) {
+        if (!discount_value || !type) {
             return next(new error_handler_1.ValidationError("Missing required fields!"));
         }
         if (type !== "PERCENT" && type !== "AMOUNT") {
             return next(new error_handler_1.ValidationError("Invalid voucher type!"));
         }
-        if (!Array.isArray(productIds) || productIds.length === 0) {
+        if (!Array.isArray(productIds)) {
             return next(new error_handler_1.ValidationError("Invalid product IDs!"));
         }
         // Check if products exist
@@ -282,7 +296,7 @@ const addVoucherToLeaderboardReward = (req, res, next) => __awaiter(void 0, void
             data: {
                 discount_value,
                 type,
-                user_limit,
+                user_limit: reward.rank_to - reward.rank_from + 1,
                 min_order_amount: min_order_amount || 0,
                 leaderboard_reward_id: rewardId,
                 voucherProducts: {
