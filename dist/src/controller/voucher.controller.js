@@ -12,9 +12,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllVouchers = exports.addVoucherTemplate = exports.getVouchersByUser = void 0;
+exports.getAllVouchers = exports.getVouchersByUser = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
-const voucher_service_1 = require("../services/voucher.service");
 const getVouchersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
@@ -49,29 +48,6 @@ const getVouchersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, 
     }
 });
 exports.getVouchersByUser = getVouchersByUser;
-const addVoucherTemplate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { discount_value, type, productIds, user_limit } = req.body;
-        // Validate input
-        yield (0, voucher_service_1.validateVoucherTemplateData)(req.body, next);
-        yield prisma_1.default.voucherTemplate.create({
-            data: {
-                discount_value,
-                type,
-                user_limit,
-                voucherProducts: {
-                    create: productIds.map((productId) => ({
-                        product_id: productId,
-                    })),
-                },
-            },
-        });
-    }
-    catch (error) {
-        next(error);
-    }
-});
-exports.addVoucherTemplate = addVoucherTemplate;
 const getAllVouchers = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const vouchers = yield prisma_1.default.voucher.findMany({
