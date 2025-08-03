@@ -311,6 +311,7 @@ enum EventType {
   SPIN
   DESIGN
   MEMORY
+  DEFENDER
 }
 
 model Question {

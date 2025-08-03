@@ -17,6 +17,19 @@ const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
 const error_handler_1 = require("../packages/error-handler");
 const stripe_1 = __importDefault(require("../libs/stripe"));
+const validTypes = [
+    "QUIZ",
+    "DROP",
+    "HUNT",
+    "PUZZLE",
+    "REFLEX",
+    "ARCADE",
+    "BINGO",
+    "DESIGN",
+    "MEMORY",
+    "SPIN",
+    "DEFENDER",
+];
 // ========== EVENT MANAGEMENT APIs ==========
 const getAllEvents = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -114,6 +127,13 @@ const addEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function*
         if (!title || !start_time || !end_time) {
             return next(new error_handler_1.ValidationError("Title, start_time, and end_time are required!"));
         }
+        // Validate event type
+        if (!type || !validTypes.includes(type)) {
+            return next(new error_handler_1.ValidationError("Invalid event type!"));
+        }
+        if (!validTypes.includes(type)) {
+            return next(new error_handler_1.ValidationError("Invalid event type!"));
+        }
         if (new Date(start_time) >= new Date(end_time)) {
             return next(new error_handler_1.ValidationError("End time must be after start time!"));
         }
@@ -150,6 +170,11 @@ const updateEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         const event = yield prisma_1.default.event.findUnique({ where: { id } });
         if (!event) {
             return next(new error_handler_1.ValidationError("Event not found!"));
+        }
+        // Validate event type
+        if (!updateData.type ||
+            !validTypes.includes(updateData.type)) {
+            return next(new error_handler_1.ValidationError("Invalid event type!"));
         }
         const updatedEvent = yield prisma_1.default.event.update({
             where: { id },

@@ -7,6 +7,21 @@ import {
 import { ValidationError } from "../packages/error-handler";
 import Stripe from "stripe";
 import stripe from "../libs/stripe";
+import { EventType } from "@prisma/client";
+
+const validTypes: EventType[] = [
+  "QUIZ",
+  "DROP",
+  "HUNT",
+  "PUZZLE",
+  "REFLEX",
+  "ARCADE",
+  "BINGO",
+  "DESIGN",
+  "MEMORY",
+  "SPIN",
+  "DEFENDER",
+];
 
 // ========== EVENT MANAGEMENT APIs ==========
 
@@ -133,6 +148,15 @@ export const addEvent = async (
       );
     }
 
+    // Validate event type
+    if (!type || !validTypes.includes(type as EventType)) {
+      return next(new ValidationError("Invalid event type!"));
+    }
+
+    if (!validTypes.includes(type)) {
+      return next(new ValidationError("Invalid event type!"));
+    }
+
     if (new Date(start_time) >= new Date(end_time)) {
       return next(new ValidationError("End time must be after start time!"));
     }
@@ -176,6 +200,14 @@ export const updateEvent = async (
     const event = await prisma.event.findUnique({ where: { id } });
     if (!event) {
       return next(new ValidationError("Event not found!"));
+    }
+
+    // Validate event type
+    if (
+      !updateData.type ||
+      !validTypes.includes(updateData.type as EventType)
+    ) {
+      return next(new ValidationError("Invalid event type!"));
     }
 
     const updatedEvent = await prisma.event.update({
