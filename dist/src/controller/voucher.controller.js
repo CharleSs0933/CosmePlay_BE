@@ -33,6 +33,7 @@ const getVouchersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                     select: {
                         type: true,
                         discount_value: true,
+                        min_order_amount: true,
                         voucherProducts: {
                             select: {
                                 product: true,
@@ -122,6 +123,7 @@ const getVouchersEventByUser = (req, res, next) => __awaiter(void 0, void 0, voi
                 select: {
                     type: true,
                     discount_value: true,
+                    min_order_amount: true,
                     voucherProducts: {
                         select: {
                             product: true,

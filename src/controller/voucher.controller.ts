@@ -24,6 +24,7 @@ export const getVouchersByUser = async (
           select: {
             type: true,
             discount_value: true,
+            min_order_amount: true,
             voucherProducts: {
               select: {
                 product: true,
@@ -123,6 +124,7 @@ export const getVouchersEventByUser = async (
         select: {
           type: true,
           discount_value: true,
+          min_order_amount: true,
           voucherProducts: {
             select: {
               product: true,
