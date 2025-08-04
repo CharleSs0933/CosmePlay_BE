@@ -49,9 +49,9 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
         if (couponId) {
             const coupon = yield prisma_1.default.voucher.findUnique({
                 where: { stripe_coupon_id: couponId },
-                select: {
+                include: {
                     voucherTemplate: {
-                        select: {
+                        include: {
                             voucherProducts: {
                                 select: {
                                     product: {
@@ -74,8 +74,18 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
                 coupon.voucherTemplate.voucherProducts.length !== 0) {
                 const hasValidProduct = cart.cartItems.some((item) => voucherProductIds.has(item.product.id));
                 if (!hasValidProduct) {
-                    return next(new error_handler_1.ValidationError("Coupon not valid for your cart!"));
+                    return next(new error_handler_1.ValidationError("No valid products for this coupon!"));
                 }
+            }
+            // Kiểm tra ngày hết hạn
+            if (coupon.expired_at) {
+                const now = new Date();
+                if (coupon.expired_at < now) {
+                    return next(new error_handler_1.ValidationError("Coupon has expired!"));
+                }
+            }
+            if (coupon.redeemed) {
+                return next(new error_handler_1.ValidationError("Coupon has already been redeemed!"));
             }
             validCoupon = couponId;
         }

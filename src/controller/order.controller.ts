@@ -48,9 +48,9 @@ export const createCheckoutSession = async (
     if (couponId) {
       const coupon = await prisma.voucher.findUnique({
         where: { stripe_coupon_id: couponId },
-        select: {
+        include: {
           voucherTemplate: {
-            select: {
+            include: {
               voucherProducts: {
                 select: {
                   product: {
@@ -83,9 +83,24 @@ export const createCheckoutSession = async (
         );
 
         if (!hasValidProduct) {
-          return next(new ValidationError("Coupon not valid for your cart!"));
+          return next(
+            new ValidationError("No valid products for this coupon!")
+          );
         }
       }
+
+      // Kiểm tra ngày hết hạn
+      if (coupon.expired_at) {
+        const now = new Date();
+        if (coupon.expired_at < now) {
+          return next(new ValidationError("Coupon has expired!"));
+        }
+      }
+
+      if (coupon.redeemed) {
+        return next(new ValidationError("Coupon has already been redeemed!"));
+      }
+
       validCoupon = couponId;
     }
 
