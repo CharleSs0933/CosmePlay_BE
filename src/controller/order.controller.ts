@@ -444,8 +444,6 @@ export const stripeWebhooks = async (
         await prisma.order.update({
           where: { id: order.id },
           data: {
-            status: "CANCELLED",
-            payment_status: "REFUNDED",
             receipt_url: charge.receipt_url || null,
           },
         });
@@ -473,6 +471,7 @@ export const cancelOrder = async (
   try {
     const { id } = req.params;
     const user = req.user;
+    const { reason } = req.body;
 
     const order = await prisma.order.findUnique({ where: { id } });
 
@@ -494,13 +493,13 @@ export const cancelOrder = async (
 
     await stripe.refunds.create({
       payment_intent: order.payment_intent_id!,
-      reason: "requested_by_customer",
+      reason,
     });
 
     // Cập nhật trạng thái đơn hàng
     await prisma.order.update({
       where: { id },
-      data: { status: "CANCELLED", payment_status: "REFUNDED" },
+      data: { status: "CANCELLED", payment_status: "REFUNDED", reason },
     });
 
     res.status(200).json({

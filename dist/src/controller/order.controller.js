@@ -371,8 +371,6 @@ const stripeWebhooks = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 yield prisma_1.default.order.update({
                     where: { id: order.id },
                     data: {
-                        status: "CANCELLED",
-                        payment_status: "REFUNDED",
                         receipt_url: charge.receipt_url || null,
                     },
                 });
@@ -394,6 +392,7 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     try {
         const { id } = req.params;
         const user = req.user;
+        const { reason } = req.body;
         const order = yield prisma_1.default.order.findUnique({ where: { id } });
         if (!order) {
             return next(new error_handler_1.ValidationError("Order not found!"));
@@ -406,12 +405,12 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         }
         yield stripe_1.default.refunds.create({
             payment_intent: order.payment_intent_id,
-            reason: "requested_by_customer",
+            reason,
         });
         // Cập nhật trạng thái đơn hàng
         yield prisma_1.default.order.update({
             where: { id },
-            data: { status: "CANCELLED", payment_status: "REFUNDED" },
+            data: { status: "CANCELLED", payment_status: "REFUNDED", reason },
         });
         res.status(200).json({
             success: true,

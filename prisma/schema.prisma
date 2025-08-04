@@ -200,6 +200,8 @@ model Order {
   payment_status      PaymentStatus
   receipt_url         String? // URL của biên lai thanh toán
 
+  reason String? // Lý do hủy đơn hàng (nếu có)
+
   // Thông tin voucher
   voucher_id String?
 
