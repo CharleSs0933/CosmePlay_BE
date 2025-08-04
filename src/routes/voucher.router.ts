@@ -8,11 +8,13 @@ import {
 import {
   getAllVouchers,
   getVouchersByUser,
+  getVouchersEventByUser,
 } from "../controller/voucher.controller";
 
 const router = express.Router();
 
 router.get("/", isAuthenticated, getVouchersByUser);
+router.get("/event/:eventId", isAuthenticated, getVouchersEventByUser);
 router.get(
   "/all",
   isAuthenticated,

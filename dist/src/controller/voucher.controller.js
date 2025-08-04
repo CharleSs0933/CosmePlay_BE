@@ -12,8 +12,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllVouchers = exports.getVouchersByUser = void 0;
+exports.getVouchersEventByUser = exports.getAllVouchers = exports.getVouchersByUser = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
+const error_handler_1 = require("../packages/error-handler");
 const getVouchersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
@@ -90,3 +91,46 @@ const getAllVouchers = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.getAllVouchers = getAllVouchers;
+const getVouchersEventByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const { eventId } = req.params;
+    if (!eventId) {
+        return next(new error_handler_1.ValidationError("Event ID is required!"));
+    }
+    // Check if event exists
+    const event = yield prisma_1.default.event.findUnique({
+        where: { id: eventId },
+    });
+    if (!event) {
+        return next(new error_handler_1.ValidationError("Event not found!"));
+    }
+    const vouchers = yield prisma_1.default.voucher.findMany({
+        where: {
+            user_id: user.id,
+            voucherTemplate: {
+                event_id: eventId,
+            },
+        },
+        include: {
+            order: {
+                select: {
+                    order_number: true,
+                    createdAt: true,
+                },
+            },
+            voucherTemplate: {
+                select: {
+                    type: true,
+                    discount_value: true,
+                    voucherProducts: {
+                        select: {
+                            product: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    res.status(200).json({ success: true, vouchers });
+});
+exports.getVouchersEventByUser = getVouchersEventByUser;
