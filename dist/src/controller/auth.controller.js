@@ -76,7 +76,7 @@ exports.userRegistration = userRegistration;
 // Verify OTP
 const verifyUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { email, otp, password, name } = req.body;
+        const { email, otp, password, name, phone } = req.body;
         if (!email || !otp || !password || !name) {
             return next(new error_handler_1.ValidationError("All fields are required!"));
         }
@@ -90,6 +90,7 @@ const verifyUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
             data: {
                 name,
                 email,
+                phone,
                 password: hashedPassword,
             },
         });
@@ -187,6 +188,7 @@ const getUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                phone: user.phone,
                 role: user.role,
             },
         });

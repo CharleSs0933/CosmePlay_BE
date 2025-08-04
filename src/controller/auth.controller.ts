@@ -49,7 +49,7 @@ export const verifyUser = async (
   next: NextFunction
 ) => {
   try {
-    const { email, otp, password, name } = req.body;
+    const { email, otp, password, name, phone } = req.body;
     if (!email || !otp || !password || !name) {
       return next(new ValidationError("All fields are required!"));
     }
@@ -67,6 +67,7 @@ export const verifyUser = async (
       data: {
         name,
         email,
+        phone,
         password: hashedPassword,
       },
     });
@@ -203,6 +204,7 @@ export const getUser = async (req: any, res: Response, next: NextFunction) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role: user.role,
       },
     });
