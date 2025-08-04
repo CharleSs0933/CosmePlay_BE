@@ -488,7 +488,7 @@ export const cancelOrder = async (
 
     await stripe.refunds.create({
       payment_intent: order.payment_intent_id!,
-      reason,
+      reason: "requested_by_customer",
     });
 
     // Cập nhật trạng thái đơn hàng

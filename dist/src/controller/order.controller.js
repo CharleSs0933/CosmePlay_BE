@@ -401,7 +401,7 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         }
         yield stripe_1.default.refunds.create({
             payment_intent: order.payment_intent_id,
-            reason,
+            reason: "requested_by_customer",
         });
         // Cập nhật trạng thái đơn hàng
         yield prisma_1.default.order.update({
