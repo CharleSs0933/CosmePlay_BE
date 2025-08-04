@@ -498,6 +498,8 @@ const getEventLeaderboard = (req, res, next) => __awaiter(void 0, void 0, void 0
             const userEntry = leaderboardWithRanks.find((entry) => entry.user.id === user.id);
             if (userEntry) {
                 userRank = {
+                    name: userEntry.user.name,
+                    email: userEntry.user.email,
                     rank: userEntry.rank,
                     score: userEntry.score,
                     completion_time: userEntry.completion_time,
