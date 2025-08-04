@@ -32,6 +32,13 @@ export const getVouchersByUser = async (
             },
           },
         },
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+          },
+        },
       },
     });
     res.status(200).json({ success: true, vouchers });

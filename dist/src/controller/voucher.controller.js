@@ -41,6 +41,13 @@ const getVouchersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, 
                         },
                     },
                 },
+                user: {
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                    },
+                },
             },
         });
         res.status(200).json({ success: true, vouchers });
