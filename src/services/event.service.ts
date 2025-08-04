@@ -1,4 +1,3 @@
-import { NextFunction } from "express";
 import { ValidationError } from "../packages/error-handler";
 import redis from "../libs/redis";
 import prisma from "../libs/prisma";
