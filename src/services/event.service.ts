@@ -33,37 +33,41 @@ export const validateEventData = (data: any) => {
     "MEMORY",
     "SPIN",
     "RACE",
+    "DEFENDER",
   ];
   if (!validTypes.includes(type)) {
     throw new ValidationError("Invalid event type!");
   }
 };
 
-export const checkPlayedRestrictions = async (
-  email: string,
-  next: NextFunction
-) => {
-  if (await redis.get(`is_played:${email}`)) {
-    throw new ValidationError(
-      "You have already played today! Please come back tomorrow!"
-    );
-  }
+// Hàm kiểm tra xem user đã nhận voucher trong ngày chưa
+export const checkVoucherRestrictions = async (
+  email: string
+): Promise<boolean> => {
+  const voucherKey = `voucher_received:${email}`;
+  const hasReceivedVoucher = await redis.get(voucherKey);
+  return !!hasReceivedVoucher;
+};
 
-  const user = await prisma.user.findUnique({ where: { email } });
+// Hàm đánh dấu user đã nhận voucher trong ngày
+export const markVoucherReceived = async (email: string) => {
+  const voucherKey = `voucher_received:${email}`;
+  // Set expiry at end of day (midnight)
+  const now = new Date();
+  const endOfDay = new Date(now);
+  endOfDay.setHours(23, 59, 59, 999);
+  const secondsUntilEndOfDay = Math.floor(
+    (endOfDay.getTime() - now.getTime()) / 1000
+  );
 
-  if (!user) {
-    throw new ValidationError("User not found!");
-  }
-
-  // Set lock trong Redis để giới hạn 1 lần/ngày
-  await redis.set(`is_played:${user.email}`, "true", "EX", 86400);
+  await redis.set(voucherKey, "true", "EX", secondsUntilEndOfDay);
 };
 
 export const calculateReward = async (
   user: any,
   eventId: string,
   correctAnswers: number,
-  completionTime?: number // Thời gian hoàn thành (giây)
+  completionTime?: number
 ) => {
   // 1. Tìm event và kiểm tra tồn tại
   const event = await prisma.event.findUnique({
@@ -133,11 +137,10 @@ export const calculateReward = async (
       isNewHighScore = true;
     } else {
       eventScore = existingScore;
-      // Không phải high score mới, isNewHighScore vẫn là false
     }
   } else {
     // Lần đầu chơi - tạo mới
-    previousBestScore = 0; // Chưa có điểm trước đó
+    previousBestScore = 0;
     eventScore = await prisma.eventScore.create({
       data: {
         user_id: user.id,
@@ -147,12 +150,11 @@ export const calculateReward = async (
         completed_at: new Date(),
       },
     });
-    isNewHighScore = true; // Lần đầu chơi luôn là high score
+    isNewHighScore = true;
   }
 
   // 3. Kiểm tra điểm số có đạt milestone không
   if (correctAnswers < event.milestone_score) {
-    // Không đủ điểm để nhận thưởng nhưng vẫn lưu điểm
     return {
       score: correctAnswers,
       previous_best_score: previousBestScore,
@@ -165,13 +167,28 @@ export const calculateReward = async (
     };
   }
 
+  // 4. Kiểm tra xem user đã nhận voucher trong ngày chưa
+  const hasReceivedVoucherToday = await checkVoucherRestrictions(user.email);
+
+  if (hasReceivedVoucherToday) {
+    return {
+      score: correctAnswers,
+      previous_best_score: previousBestScore,
+      is_new_high_score: isNewHighScore,
+      milestone_reached: true,
+      voucher_already_received: true,
+      message: isNewHighScore
+        ? "New high score saved! Milestone reached but you have already received a voucher today. Come back tomorrow for more rewards!"
+        : "Milestone reached but you have already received a voucher today. Come back tomorrow for more rewards!",
+    };
+  }
+
   // 5. Filter active voucher templates that haven't reached user_limit
   const eligibleVoucherTemplates = event.voucherTemplates.filter(
     (vt) => !vt.user_limit || vt.user_count < vt.user_limit
   );
 
   if (eligibleVoucherTemplates.length === 0) {
-    // Đạt milestone nhưng không còn voucher
     return {
       score: correctAnswers,
       previous_best_score: previousBestScore,
@@ -194,12 +211,12 @@ export const calculateReward = async (
 
   // 8. Tạo dữ liệu Coupon trên Stripe
   const couponData: Stripe.CouponCreateParams = {
-    max_redemptions: 1, // Mỗi coupon chỉ dùng được 1 lần
+    max_redemptions: 1,
     metadata: {
       userId: user.id,
       eventId,
       voucherTemplateId: selectedVoucherTemplate.id,
-      eventScoreId: eventScore.id, // Thêm reference đến event score
+      eventScoreId: eventScore.id,
     },
     redeem_by: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Hết hạn sau 7 ngày
   };
@@ -240,11 +257,15 @@ export const calculateReward = async (
     },
   });
 
+  // 12. Đánh dấu user đã nhận voucher trong ngày
+  await markVoucherReceived(user.email);
+
   return {
     score: correctAnswers,
     previous_best_score: previousBestScore,
     is_new_high_score: isNewHighScore,
     milestone_reached: true,
+    voucher_received: true,
     eventScore: {
       id: eventScore.id,
       score: eventScore.score,

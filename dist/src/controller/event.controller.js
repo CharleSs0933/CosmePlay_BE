@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.finalizeEvent = exports.getEventLeaderboard = exports.calculateEventReward = exports.playEvent = exports.deleteEventQuestion = exports.updateEventQuestion = exports.addEventQuestion = exports.getRandomQuestions = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
+exports.finalizeEvent = exports.getEventLeaderboard = exports.calculateEventReward = exports.checkUserVoucherStatus = exports.deleteEventQuestion = exports.updateEventQuestion = exports.addEventQuestion = exports.getRandomQuestions = exports.getAllQuestionsByEvent = exports.deleteEvent = exports.updateEvent = exports.addEvent = exports.getEvent = exports.getAllEvents = void 0;
 const prisma_1 = __importDefault(require("../libs/prisma"));
 const event_service_1 = require("../services/event.service");
 const error_handler_1 = require("../packages/error-handler");
@@ -376,17 +376,24 @@ const deleteEventQuestion = (req, res, next) => __awaiter(void 0, void 0, void 0
 });
 exports.deleteEventQuestion = deleteEventQuestion;
 // ========== REWARD MANAGEMENT APIs ==========
-const playEvent = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+// API để kiểm tra trạng thái voucher của user (thêm mới)
+const checkUserVoucherStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;
-        yield (0, event_service_1.checkPlayedRestrictions)(user.email, next);
-        res.status(200).json({ success: true });
+        const hasReceivedVoucherToday = yield (0, event_service_1.checkVoucherRestrictions)(user.email);
+        res.status(200).json({
+            success: true,
+            can_receive_voucher: !hasReceivedVoucherToday,
+            message: hasReceivedVoucherToday
+                ? "You have already received a voucher today. Come back tomorrow for more rewards!"
+                : "You can still receive a voucher today!",
+        });
     }
     catch (error) {
         next(error);
     }
 });
-exports.playEvent = playEvent;
+exports.checkUserVoucherStatus = checkUserVoucherStatus;
 const calculateEventReward = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = req.user;

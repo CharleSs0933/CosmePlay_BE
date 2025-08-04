@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import prisma from "../libs/prisma";
 import {
   calculateReward,
-  checkPlayedRestrictions,
+  checkVoucherRestrictions,
 } from "../services/event.service";
 import { ValidationError } from "../packages/error-handler";
 import Stripe from "stripe";
@@ -462,16 +462,23 @@ export const deleteEventQuestion = async (
 
 // ========== REWARD MANAGEMENT APIs ==========
 
-export const playEvent = async (
+// API để kiểm tra trạng thái voucher của user (thêm mới)
+export const checkUserVoucherStatus = async (
   req: any,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const user = req.user;
-    await checkPlayedRestrictions(user.email, next);
+    const hasReceivedVoucherToday = await checkVoucherRestrictions(user.email);
 
-    res.status(200).json({ success: true });
+    res.status(200).json({
+      success: true,
+      can_receive_voucher: !hasReceivedVoucherToday,
+      message: hasReceivedVoucherToday
+        ? "You have already received a voucher today. Come back tomorrow for more rewards!"
+        : "You can still receive a voucher today!",
+    });
   } catch (error) {
     next(error);
   }

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.calculateReward = exports.checkPlayedRestrictions = exports.validateEventData = void 0;
+exports.calculateReward = exports.markVoucherReceived = exports.checkVoucherRestrictions = exports.validateEventData = void 0;
 const error_handler_1 = require("../packages/error-handler");
 const redis_1 = __importDefault(require("../libs/redis"));
 const prisma_1 = __importDefault(require("../libs/prisma"));
@@ -40,26 +40,32 @@ const validateEventData = (data) => {
         "MEMORY",
         "SPIN",
         "RACE",
+        "DEFENDER",
     ];
     if (!validTypes.includes(type)) {
         throw new error_handler_1.ValidationError("Invalid event type!");
     }
 };
 exports.validateEventData = validateEventData;
-const checkPlayedRestrictions = (email, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (yield redis_1.default.get(`is_played:${email}`)) {
-        throw new error_handler_1.ValidationError("You have already played today! Please come back tomorrow!");
-    }
-    const user = yield prisma_1.default.user.findUnique({ where: { email } });
-    if (!user) {
-        throw new error_handler_1.ValidationError("User not found!");
-    }
-    // Set lock trong Redis để giới hạn 1 lần/ngày
-    yield redis_1.default.set(`is_played:${user.email}`, "true", "EX", 86400);
+// Hàm kiểm tra xem user đã nhận voucher trong ngày chưa
+const checkVoucherRestrictions = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const voucherKey = `voucher_received:${email}`;
+    const hasReceivedVoucher = yield redis_1.default.get(voucherKey);
+    return !!hasReceivedVoucher;
 });
-exports.checkPlayedRestrictions = checkPlayedRestrictions;
-const calculateReward = (user, eventId, correctAnswers, completionTime // Thời gian hoàn thành (giây)
-) => __awaiter(void 0, void 0, void 0, function* () {
+exports.checkVoucherRestrictions = checkVoucherRestrictions;
+// Hàm đánh dấu user đã nhận voucher trong ngày
+const markVoucherReceived = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    const voucherKey = `voucher_received:${email}`;
+    // Set expiry at end of day (midnight)
+    const now = new Date();
+    const endOfDay = new Date(now);
+    endOfDay.setHours(23, 59, 59, 999);
+    const secondsUntilEndOfDay = Math.floor((endOfDay.getTime() - now.getTime()) / 1000);
+    yield redis_1.default.set(voucherKey, "true", "EX", secondsUntilEndOfDay);
+});
+exports.markVoucherReceived = markVoucherReceived;
+const calculateReward = (user, eventId, correctAnswers, completionTime) => __awaiter(void 0, void 0, void 0, function* () {
     // 1. Tìm event và kiểm tra tồn tại
     const event = yield prisma_1.default.event.findUnique({
         where: { id: eventId },
@@ -122,12 +128,11 @@ const calculateReward = (user, eventId, correctAnswers, completionTime // Thời
         }
         else {
             eventScore = existingScore;
-            // Không phải high score mới, isNewHighScore vẫn là false
         }
     }
     else {
         // Lần đầu chơi - tạo mới
-        previousBestScore = 0; // Chưa có điểm trước đó
+        previousBestScore = 0;
         eventScore = yield prisma_1.default.eventScore.create({
             data: {
                 user_id: user.id,
@@ -137,11 +142,10 @@ const calculateReward = (user, eventId, correctAnswers, completionTime // Thời
                 completed_at: new Date(),
             },
         });
-        isNewHighScore = true; // Lần đầu chơi luôn là high score
+        isNewHighScore = true;
     }
     // 3. Kiểm tra điểm số có đạt milestone không
     if (correctAnswers < event.milestone_score) {
-        // Không đủ điểm để nhận thưởng nhưng vẫn lưu điểm
         return {
             score: correctAnswers,
             previous_best_score: previousBestScore,
@@ -153,10 +157,23 @@ const calculateReward = (user, eventId, correctAnswers, completionTime // Thời
                 : "Score saved but milestone not reached. No reward given.",
         };
     }
+    // 4. Kiểm tra xem user đã nhận voucher trong ngày chưa
+    const hasReceivedVoucherToday = yield (0, exports.checkVoucherRestrictions)(user.email);
+    if (hasReceivedVoucherToday) {
+        return {
+            score: correctAnswers,
+            previous_best_score: previousBestScore,
+            is_new_high_score: isNewHighScore,
+            milestone_reached: true,
+            voucher_already_received: true,
+            message: isNewHighScore
+                ? "New high score saved! Milestone reached but you have already received a voucher today. Come back tomorrow for more rewards!"
+                : "Milestone reached but you have already received a voucher today. Come back tomorrow for more rewards!",
+        };
+    }
     // 5. Filter active voucher templates that haven't reached user_limit
     const eligibleVoucherTemplates = event.voucherTemplates.filter((vt) => !vt.user_limit || vt.user_count < vt.user_limit);
     if (eligibleVoucherTemplates.length === 0) {
-        // Đạt milestone nhưng không còn voucher
         return {
             score: correctAnswers,
             previous_best_score: previousBestScore,
@@ -172,12 +189,12 @@ const calculateReward = (user, eventId, correctAnswers, completionTime // Thời
     const stripeProductIds = selectedVoucherTemplate.voucherProducts.map((vp) => vp.product.stripe_product_id);
     // 8. Tạo dữ liệu Coupon trên Stripe
     const couponData = {
-        max_redemptions: 1, // Mỗi coupon chỉ dùng được 1 lần
+        max_redemptions: 1,
         metadata: {
             userId: user.id,
             eventId,
             voucherTemplateId: selectedVoucherTemplate.id,
-            eventScoreId: eventScore.id, // Thêm reference đến event score
+            eventScoreId: eventScore.id,
         },
         redeem_by: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7, // Hết hạn sau 7 ngày
     };
@@ -213,11 +230,14 @@ const calculateReward = (user, eventId, correctAnswers, completionTime // Thời
             },
         },
     });
+    // 12. Đánh dấu user đã nhận voucher trong ngày
+    yield (0, exports.markVoucherReceived)(user.email);
     return {
         score: correctAnswers,
         previous_best_score: previousBestScore,
         is_new_high_score: isNewHighScore,
         milestone_reached: true,
+        voucher_received: true,
         eventScore: {
             id: eventScore.id,
             score: eventScore.score,

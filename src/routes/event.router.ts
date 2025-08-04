@@ -8,6 +8,7 @@ import {
   addEvent,
   addEventQuestion,
   calculateEventReward,
+  checkUserVoucherStatus,
   deleteEvent,
   deleteEventQuestion,
   finalizeEvent,
@@ -16,7 +17,6 @@ import {
   getEvent,
   getEventLeaderboard,
   getRandomQuestions,
-  playEvent,
   updateEvent,
   updateEventQuestion,
 } from "../controller/event.controller";
@@ -100,7 +100,7 @@ router.delete(
 
 // ========== Game Play Routes ==========
 router.get("/:id/leaderboard", isAuthenticated, getEventLeaderboard);
-router.post("/play", isAuthenticated, playEvent);
+router.post("/check", isAuthenticated, checkUserVoucherStatus);
 router.post("/:id/calculate-reward", isAuthenticated, calculateEventReward);
 router.post("/:id/finalize", isAdminOrStaff, finalizeEvent);
 
