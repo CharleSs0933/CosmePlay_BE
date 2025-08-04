@@ -430,6 +430,29 @@ export const stripeWebhooks = async (
         break;
       }
 
+      case `charge.refunded`: {
+        const charge = event.data.object as Stripe.Charge;
+        const order = await prisma.order.findUnique({
+          where: { payment_intent_id: charge.payment_intent as string },
+        });
+
+        if (!order) {
+          return next(new ValidationError("Order not found!"));
+        }
+
+        // Cập nhật trạng thái đơn hàng
+        await prisma.order.update({
+          where: { id: order.id },
+          data: {
+            status: "CANCELLED",
+            payment_status: "REFUNDED",
+            receipt_url: charge.receipt_url || null,
+          },
+        });
+
+        break;
+      }
+
       default: {
         console.log(`Unhandled event type: ${event.type}`);
         break;
