@@ -70,9 +70,12 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
             }
             const voucherProductIds = new Set(coupon.voucherTemplate.voucherProducts.map((vp) => vp.product.id));
             // Kiểm tra xem có ít nhất 1 sản phẩm trong giỏ hàng thuộc danh sách voucher
-            const hasValidProduct = cart.cartItems.some((item) => voucherProductIds.has(item.product.id));
-            if (!hasValidProduct) {
-                return next(new error_handler_1.ValidationError("Coupon not valid for your cart!"));
+            if (coupon.voucherTemplate.voucherProducts &&
+                coupon.voucherTemplate.voucherProducts.length !== 0) {
+                const hasValidProduct = cart.cartItems.some((item) => voucherProductIds.has(item.product.id));
+                if (!hasValidProduct) {
+                    return next(new error_handler_1.ValidationError("Coupon not valid for your cart!"));
+                }
             }
             validCoupon = couponId;
         }

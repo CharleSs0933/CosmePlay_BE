@@ -74,14 +74,18 @@ export const createCheckoutSession = async (
       );
 
       // Kiểm tra xem có ít nhất 1 sản phẩm trong giỏ hàng thuộc danh sách voucher
-      const hasValidProduct = cart.cartItems.some((item) =>
-        voucherProductIds.has(item.product.id)
-      );
+      if (
+        coupon.voucherTemplate.voucherProducts &&
+        coupon.voucherTemplate.voucherProducts.length !== 0
+      ) {
+        const hasValidProduct = cart.cartItems.some((item) =>
+          voucherProductIds.has(item.product.id)
+        );
 
-      if (!hasValidProduct) {
-        return next(new ValidationError("Coupon not valid for your cart!"));
+        if (!hasValidProduct) {
+          return next(new ValidationError("Coupon not valid for your cart!"));
+        }
       }
-
       validCoupon = couponId;
     }
 
