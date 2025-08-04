@@ -464,25 +464,18 @@ export const stripeWebhooks = async (
 };
 
 export const cancelOrder = async (
-  req: any,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
-    const user = req.user;
     const { reason, images } = req.body;
 
     const order = await prisma.order.findUnique({ where: { id } });
 
     if (!order) {
       return next(new ValidationError("Order not found!"));
-    }
-
-    if (order.user_id !== user.id) {
-      return next(
-        new ValidationError("You are not allowed to cancel this order!")
-      );
     }
 
     if (order.status !== "PROCESSING" && order.status !== "DELIVERED") {

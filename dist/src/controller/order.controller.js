@@ -391,14 +391,10 @@ exports.stripeWebhooks = stripeWebhooks;
 const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const user = req.user;
         const { reason, images } = req.body;
         const order = yield prisma_1.default.order.findUnique({ where: { id } });
         if (!order) {
             return next(new error_handler_1.ValidationError("Order not found!"));
-        }
-        if (order.user_id !== user.id) {
-            return next(new error_handler_1.ValidationError("You are not allowed to cancel this order!"));
         }
         if (order.status !== "PROCESSING" && order.status !== "DELIVERED") {
             return next(new error_handler_1.ValidationError("You can only cancel orders that are processing or delivered!"));
