@@ -569,7 +569,7 @@ const updateOrderStatus = (req, res, next) => __awaiter(void 0, void 0, void 0, 
         if (!status ||
             (status !== "PROCESSING" &&
                 status !== "SHIPPED" &&
-                status !== "DELIVERD" &&
+                status !== "DELIVERED" &&
                 status !== "CANCELLED")) {
             return next(new error_handler_1.ValidationError("Status is invalid!"));
         }

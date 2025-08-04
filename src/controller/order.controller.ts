@@ -679,7 +679,7 @@ export const updateOrderStatus = async (
       !status ||
       (status !== "PROCESSING" &&
         status !== "SHIPPED" &&
-        status !== "DELIVERD" &&
+        status !== "DELIVERED" &&
         status !== "CANCELLED")
     ) {
       return next(new ValidationError("Status is invalid!"));

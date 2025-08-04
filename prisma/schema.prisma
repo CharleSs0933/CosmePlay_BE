@@ -275,7 +275,7 @@ model PostStep {
 enum OrderStatus {
   PROCESSING
   SHIPPED
-  DELIVERD
+  DELIVERED
   CANCELLED
 }
 
