@@ -212,7 +212,19 @@ export const stripeWebhooks = async (
             voucher = await prisma.voucher.findUnique({
               where: { stripe_coupon_id: couponId },
               include: {
-                voucherTemplate: true,
+                voucherTemplate: {
+                  include: {
+                    voucherProducts: {
+                      select: {
+                        product: {
+                          select: {
+                            id: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             });
           }
@@ -237,11 +249,24 @@ export const stripeWebhooks = async (
         // Chuẩn bị dữ liệu OrderItems với thông tin chi tiết
         const orderItemsData = cart.cartItems.map((item) => {
           const unitPrice = item.product.sale_price || item.product.price;
-          const discountPerItem = voucher
-            ? voucher.voucherTemplate.type === "PERCENT"
-              ? (unitPrice * voucher.voucherTemplate.discount_value) / 100
-              : 0
-            : 0;
+          let discountPerItem = 0;
+
+          if (voucher) {
+            // Kiểm tra xem sản phẩm có áp dụng voucher không
+            const isProductEligible =
+              voucher.voucherTemplate.voucherProducts.length === 0 ||
+              voucher.voucherTemplate.voucherProducts.some(
+                (vp) => vp.product.id === item.product.id
+              );
+
+            if (isProductEligible) {
+              if (voucher.voucherTemplate.type === "PERCENT") {
+                // Discount theo phần trăm
+                discountPerItem =
+                  (unitPrice * voucher.voucherTemplate.discount_value) / 100;
+              }
+            }
+          }
 
           const finalPrice = unitPrice - discountPerItem;
           const totalPrice = finalPrice * item.quantity;
