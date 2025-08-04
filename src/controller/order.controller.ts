@@ -471,7 +471,7 @@ export const cancelOrder = async (
   try {
     const { id } = req.params;
     const user = req.user;
-    const { reason } = req.body;
+    const { reason, images } = req.body;
 
     const order = await prisma.order.findUnique({ where: { id } });
 
@@ -485,9 +485,11 @@ export const cancelOrder = async (
       );
     }
 
-    if (order.status !== "PROCESSING") {
+    if (order.status !== "PROCESSING" && order.status !== "DELIVERED") {
       return next(
-        new ValidationError("You can only cancel orders that are processing!")
+        new ValidationError(
+          "You can only cancel orders that are processing or delivered!"
+        )
       );
     }
 
@@ -499,7 +501,7 @@ export const cancelOrder = async (
     // Cập nhật trạng thái đơn hàng
     await prisma.order.update({
       where: { id },
-      data: { status: "CANCELLED", payment_status: "REFUNDED", reason },
+      data: { status: "CANCELLED", payment_status: "REFUNDED", reason, images },
     });
 
     res.status(200).json({

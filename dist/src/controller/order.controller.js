@@ -392,7 +392,7 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
     try {
         const { id } = req.params;
         const user = req.user;
-        const { reason } = req.body;
+        const { reason, images } = req.body;
         const order = yield prisma_1.default.order.findUnique({ where: { id } });
         if (!order) {
             return next(new error_handler_1.ValidationError("Order not found!"));
@@ -400,8 +400,8 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         if (order.user_id !== user.id) {
             return next(new error_handler_1.ValidationError("You are not allowed to cancel this order!"));
         }
-        if (order.status !== "PROCESSING") {
-            return next(new error_handler_1.ValidationError("You can only cancel orders that are processing!"));
+        if (order.status !== "PROCESSING" && order.status !== "DELIVERED") {
+            return next(new error_handler_1.ValidationError("You can only cancel orders that are processing or delivered!"));
         }
         yield stripe_1.default.refunds.create({
             payment_intent: order.payment_intent_id,
@@ -410,7 +410,7 @@ const cancelOrder = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
         // Cập nhật trạng thái đơn hàng
         yield prisma_1.default.order.update({
             where: { id },
-            data: { status: "CANCELLED", payment_status: "REFUNDED", reason },
+            data: { status: "CANCELLED", payment_status: "REFUNDED", reason, images },
         });
         res.status(200).json({
             success: true,
