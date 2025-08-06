@@ -101,6 +101,19 @@ export const createCheckoutSession = async (
         return next(new ValidationError("Coupon has already been redeemed!"));
       }
 
+      if (
+        coupon.voucherTemplate.min_order_amount &&
+        coupon.voucherTemplate.min_order_amount > 0 &&
+        coupon.voucherTemplate.min_order_amount >
+          // Tính tổng giá trị giỏ hàng
+          cart.cartItems.reduce((sum, item) => {
+            const itemPrice = item.product.sale_price || item.product.price;
+            return sum + itemPrice * item.quantity;
+          }, 0)
+      ) {
+        return next(new ValidationError("Minimum order amount not met!"));
+      }
+
       validCoupon = couponId;
     }
 
@@ -541,6 +554,27 @@ export const getOrdersByUser = async (
           select: {
             email: true,
             name: true,
+          },
+        },
+        voucher: {
+          include: {
+            voucherTemplate: {
+              select: {
+                discount_value: true,
+                type: true,
+                voucherProducts: {
+                  select: {
+                    product: {
+                      select: {
+                        id: true,
+                        title: true,
+                        image_url: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
       },

@@ -87,6 +87,16 @@ const createCheckoutSession = (req, res, next) => __awaiter(void 0, void 0, void
             if (coupon.redeemed) {
                 return next(new error_handler_1.ValidationError("Coupon has already been redeemed!"));
             }
+            if (coupon.voucherTemplate.min_order_amount &&
+                coupon.voucherTemplate.min_order_amount > 0 &&
+                coupon.voucherTemplate.min_order_amount >
+                    // Tính tổng giá trị giỏ hàng
+                    cart.cartItems.reduce((sum, item) => {
+                        const itemPrice = item.product.sale_price || item.product.price;
+                        return sum + itemPrice * item.quantity;
+                    }, 0)) {
+                return next(new error_handler_1.ValidationError("Minimum order amount not met!"));
+            }
             validCoupon = couponId;
         }
         // 4. Kiểm tra hoặc tạo Stripe customer
@@ -448,6 +458,27 @@ const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                     select: {
                         email: true,
                         name: true,
+                    },
+                },
+                voucher: {
+                    include: {
+                        voucherTemplate: {
+                            select: {
+                                discount_value: true,
+                                type: true,
+                                voucherProducts: {
+                                    select: {
+                                        product: {
+                                            select: {
+                                                id: true,
+                                                title: true,
+                                                image_url: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
                 },
             },
