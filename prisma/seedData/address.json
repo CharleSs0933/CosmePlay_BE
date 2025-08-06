@@ -2,14 +2,14 @@
   {
     "id": "1",
     "user_id": "1",
-    "address": "123 Main St",
-    "to_city_id": "city1",
-    "to_ward_code": "ward1",
-    "to_district_id": "district1",
-    "city": "CityName",
+    "address": "12 Đường Si Ma Cai",
+    "to_city_id": "269",
+    "to_ward_code": "90816",
+    "to_district_id": "2264",
+    "city": "Lào Cai",
     "pincode": "123456",
     "full_name": "Quan",
-    "phone": "0912345678",
+    "phone": "0938562745",
     "notes": ""
   }
 ]

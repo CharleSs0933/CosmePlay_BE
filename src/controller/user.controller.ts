@@ -92,7 +92,7 @@ export const createUser = async (
   next: NextFunction
 ) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     if (
       !name ||
@@ -117,6 +117,7 @@ export const createUser = async (
         name,
         email,
         password: hashedPassword,
+        phone,
         role,
       },
       omit: {
@@ -137,7 +138,7 @@ export const updateUser = async (
 ) => {
   try {
     const { id } = req.params;
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     if (role && role !== "ADMIN" && role !== "STAFF" && role !== "USER") {
       return next(new ValidationError("Invalid role"));
@@ -159,6 +160,7 @@ export const updateUser = async (
         name,
         email,
         role,
+        phone,
       },
       omit: {
         password: true,

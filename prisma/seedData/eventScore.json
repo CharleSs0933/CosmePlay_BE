@@ -78,5 +78,165 @@
     "score": 160,
     "completion_time": 290,
     "completed_at": "2025-08-01T12:10:00.000Z"
+  },
+  {
+    "id": "11",
+    "user_id": "3",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 150,
+    "completion_time": 300,
+    "completed_at": "2025-08-01T10:00:00.000Z"
+  },
+  {
+    "id": "12",
+    "user_id": "4",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 200,
+    "completion_time": 250,
+    "completed_at": "2025-08-01T10:05:00.000Z"
+  },
+  {
+    "id": "13",
+    "user_id": "5",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 100,
+    "completion_time": 350,
+    "completed_at": "2025-08-01T10:10:00.000Z"
+  },
+  {
+    "id": "14",
+    "user_id": "6",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 175,
+    "completion_time": 280,
+    "completed_at": "2025-08-01T10:15:00.000Z"
+  },
+  {
+    "id": "15",
+    "user_id": "7",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 120,
+    "completion_time": 320,
+    "completed_at": "2025-08-01T11:00:00.000Z"
+  },
+  {
+    "id": "16",
+    "user_id": "8",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 130,
+    "completion_time": 310,
+    "completed_at": "2025-08-01T11:05:00.000Z"
+  },
+  {
+    "id": "17",
+    "user_id": "9",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 190,
+    "completion_time": 260,
+    "completed_at": "2025-08-01T11:10:00.000Z"
+  },
+  {
+    "id": "18",
+    "user_id": "10",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 220,
+    "completion_time": 240,
+    "completed_at": "2025-08-01T12:00:00.000Z"
+  },
+  {
+    "id": "19",
+    "user_id": "11",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 110,
+    "completion_time": 340,
+    "completed_at": "2025-08-01T12:05:00.000Z"
+  },
+  {
+    "id": "20",
+    "user_id": "12",
+    "event_id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "score": 160,
+    "completion_time": 290,
+    "completed_at": "2025-08-01T12:10:00.000Z"
+  },
+  {
+    "id": "21",
+    "user_id": "3",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 150,
+    "completion_time": 300,
+    "completed_at": "2025-08-01T10:00:00.000Z"
+  },
+  {
+    "id": "22",
+    "user_id": "4",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 200,
+    "completion_time": 250,
+    "completed_at": "2025-08-01T10:05:00.000Z"
+  },
+  {
+    "id": "23",
+    "user_id": "5",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 100,
+    "completion_time": 350,
+    "completed_at": "2025-08-01T10:10:00.000Z"
+  },
+  {
+    "id": "24",
+    "user_id": "6",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 175,
+    "completion_time": 280,
+    "completed_at": "2025-08-01T10:15:00.000Z"
+  },
+  {
+    "id": "25",
+    "user_id": "7",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 120,
+    "completion_time": 320,
+    "completed_at": "2025-08-01T11:00:00.000Z"
+  },
+  {
+    "id": "26",
+    "user_id": "8",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 130,
+    "completion_time": 310,
+    "completed_at": "2025-08-01T11:05:00.000Z"
+  },
+  {
+    "id": "27",
+    "user_id": "9",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 190,
+    "completion_time": 260,
+    "completed_at": "2025-08-01T11:10:00.000Z"
+  },
+  {
+    "id": "28",
+    "user_id": "10",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 220,
+    "completion_time": 240,
+    "completed_at": "2025-08-01T12:00:00.000Z"
+  },
+  {
+    "id": "29",
+    "user_id": "11",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 110,
+    "completion_time": 340,
+    "completed_at": "2025-08-01T12:05:00.000Z"
+  },
+  {
+    "id": "30",
+    "user_id": "12",
+    "event_id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "score": 160,
+    "completion_time": 290,
+    "completed_at": "2025-08-01T12:10:00.000Z"
   }
 ]

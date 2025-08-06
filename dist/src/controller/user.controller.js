@@ -85,7 +85,7 @@ const getUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* 
 exports.getUser = getUser;
 const createUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, phone } = req.body;
         if (!name ||
             !email ||
             !password ||
@@ -103,6 +103,7 @@ const createUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 name,
                 email,
                 password: hashedPassword,
+                phone,
                 role,
             },
             omit: {
@@ -119,7 +120,7 @@ exports.createUser = createUser;
 const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, phone } = req.body;
         if (role && role !== "ADMIN" && role !== "STAFF" && role !== "USER") {
             return next(new error_handler_1.ValidationError("Invalid role"));
         }
@@ -138,6 +139,7 @@ const updateUser = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
                 name,
                 email,
                 role,
+                phone,
             },
             omit: {
                 password: true,

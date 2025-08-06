@@ -4,8 +4,8 @@
     "title": "Glow & Know?",
     "description": "Test your beauty IQ and unlock exclusive rewards!",
     "image_url": "https://hzjfxfzm26.ufs.sh/f/KMp0egfMgYyWzhKMNWdFM1HmlgIecpOCBs5u4Jq30fUNxQz6",
-    "start_time": "2025-06-10T08:00:00.000Z",
-    "end_time": "2025-06-15T23:59:00.000Z",
+    "start_time": "2025-07-10T08:00:00.000Z",
+    "end_time": "2025-10-15T23:59:00.000Z",
     "milestone_score": 15,
     "type": "QUIZ",
     "is_active": true,
@@ -17,7 +17,7 @@
     "description": "The ultimate beauty collecting game! Catch falling makeup, unlock new looks, and become the ultimate beauty guru.",
     "image_url": "https://hzjfxfzm26.ufs.sh/f/KMp0egfMgYyW0S07pmjvH6zSQAPTDVLocRxF49K3JjiXNhsb",
     "start_time": "2025-07-11T00:00:00.000Z",
-    "end_time": "2025-07-20T23:59:59.000Z",
+    "end_time": "2025-10-20T23:59:59.000Z",
     "milestone_score": 200,
     "type": "DROP",
     "is_active": true,
@@ -60,11 +60,11 @@
     "created_at": "2025-07-25T08:30:00.000Z"
   },
   {
-    "id": "e4f5a6b7-c8d9-4e0f-1a2b-3d4e5f6a7b8c",
-    "title": "Arcade Adventure",
+    "id": "0f1fabcc-5e27-4a09-a68c-2e3b32e60e6f",
+    "title": "Internshift",
     "description": "Classic arcade challenges await!",
-    "image_url": "https://hzjfxfzm26.ufs.sh/f/KMp0egfMgYyWRMYfFwa18srvSQHTwJ0C2cUVBDt43pluOfNq",
-    "start_time": "2025-09-01T09:00:00.000Z",
+    "image_url": "https://hzjfxfzm26.ufs.sh/f/KMp0egfMgYyWr3ekIEzejSHDYmuaAJ1UXnzr3k2GliO5BgZ8",
+    "start_time": "2025-08-05T09:00:00.000Z",
     "end_time": "2025-09-07T23:59:00.000Z",
     "milestone_score": 0,
     "type": "ARCADE",
@@ -130,5 +130,17 @@
     "type": "MEMORY",
     "is_active": false,
     "created_at": "2025-07-25T10:00:00.000Z"
+  },
+  {
+    "id": "5140f9fe-ddef-4c3c-87d8-bddd1374199b",
+    "title": "Beauty Defender",
+    "description": "Beauty Defender is a fast-paced arcade game where players protect a central cosmetic item from incoming threats. Control the Beauty Defender to fire projectiles, destroying flying objects before they hit your precious cosmetic. Earn points for each successful defense, aiming for the highest score as the challenge intensifies",
+    "image_url": "https://hzjfxfzm26.ufs.sh/f/KMp0egfMgYyWmWPwtzQJGYoapiWH4q3SO81VsEdKAXnFlh05",
+    "start_time": "2025-07-11T00:00:00.000Z",
+    "end_time": "2025-10-20T23:59:59.000Z",
+    "type": "DEFENDER",
+    "is_active": true,
+    "created_at": "2025-08-03T11:48:09.925Z",
+    "milestone_score": 1000
   }
 ]
