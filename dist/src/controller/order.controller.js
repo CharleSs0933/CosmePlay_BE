@@ -437,6 +437,7 @@ const getOrdersByUser = (req, res, next) => __awaiter(void 0, void 0, void 0, fu
                 orderItems: {
                     select: {
                         title: true,
+                        product_id: true,
                         image_url: true,
                         quantity: true,
                         unit_price: true,
@@ -500,6 +501,7 @@ const getOrderDetail = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                     select: {
                         title: true,
                         image_url: true,
+                        product_id: true,
                         quantity: true,
                         unit_price: true,
                         discount_per_item: true,

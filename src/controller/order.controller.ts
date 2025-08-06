@@ -533,6 +533,7 @@ export const getOrdersByUser = async (
         orderItems: {
           select: {
             title: true,
+            product_id: true,
             image_url: true,
             quantity: true,
             unit_price: true,
@@ -601,6 +602,7 @@ export const getOrderDetail = async (
           select: {
             title: true,
             image_url: true,
+            product_id: true,
             quantity: true,
             unit_price: true,
             discount_per_item: true,
